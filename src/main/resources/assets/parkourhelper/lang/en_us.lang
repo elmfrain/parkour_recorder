@@ -1,0 +1,8 @@
+gui.save_selection.title=Saves Selection
+gui.save_selection.list=Saves List
+gui.save_selection.aside=Information
+gui.save_selection.open=Open
+gui.save_selection.delete=Delete
+gui.save_selection.rename=Rename
+
+recording.unamed=Unamed
