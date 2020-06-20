@@ -50,6 +50,7 @@ public class SessionHUD extends Gui
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
+		drawRect(res.getScaledWidth() - stringWidth - border - lip, border - lip, res.getScaledWidth() - border + lip, border + stringHeight + lip, c1);
 		mc.fontRenderer.drawString(s, res.getScaledWidth() - stringWidth - border, border, c);
 	}
 }

@@ -13,7 +13,7 @@ public class RecordingSession implements IParkourSession {
 	protected Recording recording = null;
 	protected boolean onOverride = false;
 	protected boolean isRecording = false;
-	private byte nbRecordPresses = 0;
+	protected byte nbRecordPresses = 0;
 
 	public Recording getRecording()
 	{ return recording; }

@@ -74,6 +74,7 @@ public class PlaybackSession implements IParkourSession {
 			overridingSession.recording = recording;
 			overridingSession.onOverride = true;
 			overridingSession.isRecording = true;
+			overridingSession.nbRecordPresses = 1;
 			
 			return overridingSession;
 		}

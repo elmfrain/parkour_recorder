@@ -31,7 +31,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.SoundEvents;
 
-public class GuiSaveSelector extends GuiScreen
+public class GuiSaveSelection extends GuiScreen
 {
 	private Recording[] records;
 	private Recording currentSelection = null;

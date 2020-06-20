@@ -1,6 +1,6 @@
 package com.elmfer.parkourhelper;
 
-import com.elmfer.parkourhelper.gui.GuiSaveSelector;
+import com.elmfer.parkourhelper.gui.GuiSaveSelection;
 import com.elmfer.parkourhelper.parkour.IParkourSession;
 import com.elmfer.parkourhelper.parkour.PlaybackSession;
 import com.elmfer.parkourhelper.parkour.RecordingSession;
@@ -58,7 +58,7 @@ public class EventHandler {
 				reloadResources();
 			
 			if(settings.keybindLoad.isPressed())
-				mc.displayGuiScreen(new GuiSaveSelector());
+				mc.displayGuiScreen(new GuiSaveSelection());
 		}
 	}
 	
