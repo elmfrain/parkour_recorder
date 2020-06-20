@@ -37,10 +37,7 @@ public class GuiButton extends net.minecraft.client.gui.GuiButton{
 	@Override
 	public boolean mousePressed(Minecraft mc, int mouseX, int mouseY)
 	{
-		int mX = (int) (mouseX - xTranslate);
-    	int mY = (int) (mouseY - yTranslate);
-    	int factor = (new ScaledResolution(mc)).getScaleFactor();
-    	return this.enabled && this.visible && mX >= this.x && mY >= this.y && mX < this.x + this.width && mY < this.y + this.height && mouseInViewport(mouseX, mouseY);
+    	return this.enabled && this.visible && this.hovered;
 	}
 	
 	@Override

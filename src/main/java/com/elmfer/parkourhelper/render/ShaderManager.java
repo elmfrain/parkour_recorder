@@ -47,7 +47,6 @@ public class ShaderManager {
 	
 	static {
 		DEFAULT_SHADER = makeProgram("VecShader.glsl", "FragShader.glsl");
-		GUI_SHADER = makeProgram("gui/vec.glsl", "gui/frag.glsl");
 	}
 	
 	public static float getFarPlaneDistance()
@@ -65,7 +64,6 @@ public class ShaderManager {
 		{
 			glDeleteProgram(DEFAULT_SHADER);
 			DEFAULT_SHADER = makeProgram("VecShader.glsl", "FragShader.glsl");
-			GUI_SHADER = makeProgram("gui/vec.glsl", "gui/frag.glsl");
 			System.out.println("[Shaders] : Reloaded Shaders");
 		}
 	}

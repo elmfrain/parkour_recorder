@@ -4,5 +4,6 @@ gui.save_selection.aside=Information
 gui.save_selection.open=Open
 gui.save_selection.delete=Delete
 gui.save_selection.rename=Rename
+gui.save_selection.warn.cannot_open_while_recording_or_playing=Cannot open while recording or during playback.
 
 recording.unamed=Unamed

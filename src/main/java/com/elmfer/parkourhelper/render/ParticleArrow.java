@@ -38,9 +38,9 @@ public class ParticleArrow extends Particle{
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
 		GlStateManager.disableTexture2D();
-		float x = (float)((int)posX + 0.5 - interpPosX);
-        float y = (float)((int)posY - interpPosY);
-        float z = (float)((int)posZ + 0.5 - interpPosZ);
+		float x = (float)(posX - interpPosX);
+        float y = (float)(posY - interpPosY);
+        float z = (float)(posZ - interpPosZ);
         float angle = (particleAge + partialTicks) * 2;
         
         FloatBuffer worldSpaceMatrix = BufferUtils.createFloatBuffer(16);
@@ -69,15 +69,15 @@ public class ParticleArrow extends Particle{
         {
         	GlStateManager.enableCull();
         	int prevFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
-        	GL11.glTranslated((int)(posX) - interpPosX, (int)(posY) - 1 - interpPosY, (int)(posZ) - interpPosZ);
+        	GL11.glTranslated(posX - interpPosX, posY - interpPosY, posZ - interpPosZ);
         	ShaderManager.importMatricies(ShaderManager.getDefaultShader(), worldSpaceMatrix, normalSpaceMatrix);
         	
         	GL20.glUniform1i(GL20.glGetUniformLocation(shader, "enableWhiteScreen"), 1);
-        	GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 0.8f);
+        	GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 2.0f);
         	GlStateManager.depthFunc(GL11.GL_LEQUAL);
     		ModelManager.renderModel("box");
     		
-    		GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 1.5f);
+    		GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 1.0f);
         	GlStateManager.depthFunc(GL11.GL_GREATER);
     		ModelManager.renderModel("box");
     		GL20.glUniform1i(GL20.glGetUniformLocation(shader, "enableWhiteScreen"), 0);
@@ -87,7 +87,7 @@ public class ParticleArrow extends Particle{
         GL11.glPopMatrix();
         GL11.glPushMatrix();
         {
-        	double distance = (new Vec3d((int)(posX) + 0.5, posY, (int)(posZ) + 0.5)).distanceTo(Minecraft.getMinecraft().player.getPositionVector());
+        	double distance = (new Vec3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getMinecraft().player.getPositionVector());
         	GL11.glTranslated(x, y, z);
         	GL11.glTranslated(0, Math.sin((particleAge + partialTicks) * Math.PI / 20.0) * 0.3 + 1.4, 0);
         	GL11.glScalef(0.5f, 0.5f, 0.5f);

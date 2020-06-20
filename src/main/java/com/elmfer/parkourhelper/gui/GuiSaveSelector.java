@@ -14,17 +14,22 @@ import java.awt.Graphics;
 import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.Gui;
 import com.elmfer.parkourhelper.gui.GuiButton;
 import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.gui.GuiScreen;
 import com.elmfer.parkourhelper.gui.GuiTextField;
+import com.elmfer.parkourhelper.parkour.PlaybackSession;
+import com.elmfer.parkourhelper.parkour.RecordingSession;
 import com.elmfer.parkourhelper.render.GraphicsHelper;
 import com.elmfer.parkourhelper.render.ShaderManager;
 
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.init.SoundEvents;
 
 public class GuiSaveSelector extends GuiScreen
 {
@@ -94,7 +99,7 @@ public class GuiSaveSelector extends GuiScreen
 	{
 		if(button.id == 0)
 		{
-			EventHandler.recording = currentSelection;
+			EventHandler.session = new PlaybackSession(currentSelection);
 			mc.displayGuiScreen(null);
 		}
 		if(button.id == 1)
@@ -166,7 +171,10 @@ public class GuiSaveSelector extends GuiScreen
 					textField.textboxKeyTyped(typedChar, keyCode);
 					//If enter is pressed
 					if(keyCode == 28 && rename(textField.getText()))
+					{
+						mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 						setShouldClose(true);
+					}
 				}
 				@Override
 				public void mouseClicked(int mouseX, int mouseY, int mouseButton)
@@ -284,7 +292,7 @@ public class GuiSaveSelector extends GuiScreen
 			asideBody.popMatrix();
 			
 			aside.pushMatrix(false);
-			{
+			{				
 				for(int i = 0; i < buttonList.size(); i++)
 				{
 					buttonList.get(i).width = aside.getWidth();
@@ -293,6 +301,18 @@ public class GuiSaveSelector extends GuiScreen
 				}
 			}
 			aside.popMatrix();
+			
+			all.pushMatrix(false);
+			{
+				GuiButton open = (GuiButton) buttonList.get(0);
+				boolean flag = EventHandler.session.isSessionActive();
+				open.enabled = !flag && open.enabled;
+				
+				String warning = I18n.format("gui.save_selection.warn.cannot_open_while_recording_or_playing");
+				if(open.isMouseOver() && flag && currentSelection != null) drawHoveringText(warning, mouseX, mouseY);
+				RenderHelper.disableStandardItemLighting();
+			}
+			all.popMatrix();
 			
 			if(currentSelection != null)
 			{

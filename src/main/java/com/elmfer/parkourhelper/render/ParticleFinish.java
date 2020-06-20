@@ -45,9 +45,9 @@ public class ParticleFinish extends Particle{
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
 		GlStateManager.disableTexture2D();
-		float x = (float)(posX + 0.5 - interpPosX);
+		float x = (float)(posX - interpPosX);
         float y = (float)(posY - interpPosY);
-        float z = (float)(posZ + 0.5 - interpPosZ);
+        float z = (float)(posZ - interpPosZ);
         float angle = (float) Math.sin((particleAge + partialTicks) * Math.PI / 20.0) * 10.0f;
         
         FloatBuffer worldSpaceMatrix = BufferUtils.createFloatBuffer(16);

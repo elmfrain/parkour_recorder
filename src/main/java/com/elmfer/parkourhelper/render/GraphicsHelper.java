@@ -1,15 +1,6 @@
 package com.elmfer.parkourhelper.render;
 
-import java.nio.FloatBuffer;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-
-import com.elmfer.parkourhelper.gui.GUIAlphaMask;
-import com.elmfer.parkourhelper.gui.GuiButton;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -17,7 +8,6 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 public class GraphicsHelper {
 	
-	public static GUIAlphaMask guiMask = null;
 	
 	public static int getIntColor(float red, float green, float blue, float alpha)
 	{
@@ -56,12 +46,6 @@ public class GraphicsHelper {
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
-	}
-	
-	public static void setupAlphaMask()
-	{
-		guiMask.framebufferClear();
-		guiMask.bindFramebuffer(true);
 	}
 	
 	public static void endAlphaMask()
