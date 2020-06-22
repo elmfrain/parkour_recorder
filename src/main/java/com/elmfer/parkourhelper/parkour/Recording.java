@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper;
+package com.elmfer.parkourhelper.parkour;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import com.ibm.icu.text.DecimalFormat;
 
@@ -22,7 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
-public class Recording implements Collection<ParkourFrame>
+public class Recording implements List<ParkourFrame>
 {
 	public static final int BYTES = 100;
 	public static final File SAVING_DIRECTORY = new File("parkour-saves");
@@ -42,7 +43,8 @@ public class Recording implements Collection<ParkourFrame>
 	public Vec3d lastPos = new Vec3d(0, 0, 0);
 	public Vec3d lastVel = new Vec3d(0, 0, 0);
 	private String name;
-	private File recordFile;
+	protected String originalName = null;
+	protected File recordFile = null;
 	
 	public Recording(Vec3d startingPos, Vec3d staringVel) {
 		initPos = startingPos;
@@ -55,6 +57,18 @@ public class Recording implements Collection<ParkourFrame>
 		name = null;
 	}
 	
+	public Recording(Recording copy)
+	{
+		frames.addAll(copy.frames);
+		initPos = copy.initPos;
+		initVel = copy.initVel;
+		lastPos = copy.lastPos;
+		lastVel = copy.lastVel;
+		name = copy.name;
+		originalName = copy.originalName;
+		recordFile = copy.recordFile;
+	}
+	
 	@Override
 	public String toString()
 	{
@@ -62,11 +76,21 @@ public class Recording implements Collection<ParkourFrame>
 		Vec3d lastPos = new Vec3d((int) this.lastPos.x, (int) this.lastPos.y, (int) this.lastPos.z);
 		String s = "";
 		String tab = "\n   ";
-		s += "File: " + tab + (recordFile != null ? recordFile.getName() : "[" + I18n.format("recording.unamed") + "]") + "\n\n";
+		if(recordFile != null) s += "File: " + tab + (recordFile != null ? recordFile.getName() : "[" + I18n.format("recording.unsaved") + "]") + "\n\n";
 		s += "Recording Length: " + tab + frames.size() / 20.0f + "s\n\n";
 		s += "Starting Position: " + tab + initPos + "\n\n";
 		s += "Ending Position: " + tab + lastPos + "\n\n";
 		return s;
+	}
+	
+	public File getFile()
+	{
+		return recordFile;
+	}
+	
+	public String getOriginalName()
+	{
+		return originalName;
 	}
 	
 	public byte[] serialize()
@@ -94,7 +118,7 @@ public class Recording implements Collection<ParkourFrame>
 	{
 		Minecraft mc = Minecraft.getMinecraft();
 		String worldName = getWorldPath(mc);
-		String recordFileName = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss").format(Calendar.getInstance().getTime());
+		String recordFileName = getFormattedTime();
 		this.name = this.name == null ? recordFileName : this.name;
 		
 		File worldDir = new File(SAVING_DIRECTORY.getPath() + '/' + worldName);
@@ -185,6 +209,7 @@ public class Recording implements Collection<ParkourFrame>
 		Vec3d lastVel = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
 		Recording newRecording = new Recording(initPos, initVel);
 		newRecording.name = name.length() == 0 ? null : name;
+		newRecording.originalName = name;
 		newRecording.lastPos = lastPos;
 		newRecording.lastVel = lastVel;
 		
@@ -192,6 +217,11 @@ public class Recording implements Collection<ParkourFrame>
 			newRecording.add(ParkourFrame.deSerialize(buffer));
 		
 		return newRecording;
+	}
+	
+	public static String getFormattedTime()
+	{
+		return new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss").format(Calendar.getInstance().getTime());
 	}
 	
 	public static String getCurrentWorldName(Minecraft mc)
@@ -266,5 +296,45 @@ public class Recording implements Collection<ParkourFrame>
 	@Override
 	public boolean remove(Object o) {
 		return frames.remove(o);
+	}
+	@Override
+	public void add(int index, ParkourFrame element)
+	{
+		frames.add(index, element);
+	}
+	@Override
+	public boolean addAll(int index, Collection<? extends ParkourFrame> c)
+	{
+		return frames.addAll(index, c);
+	}
+	@Override
+	public int indexOf(Object o)
+	{
+		return frames.indexOf(o);
+	}
+	@Override
+	public int lastIndexOf(Object o)
+	{
+		return frames.lastIndexOf(o);
+	}
+	@Override
+	public ListIterator<ParkourFrame> listIterator()
+	{
+		return frames.listIterator();
+	}
+	@Override
+	public ListIterator<ParkourFrame> listIterator(int index)
+	{
+		return frames.listIterator(index);
+	}
+	@Override
+	public ParkourFrame set(int index, ParkourFrame element)
+	{
+		return frames.set(index, element);
+	}
+	@Override
+	public List<ParkourFrame> subList(int fromIndex, int toIndex)
+	{
+		return frames.subList(fromIndex, toIndex);
 	}
 }

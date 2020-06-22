@@ -1,8 +1,13 @@
 package com.elmfer.parkourhelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.elmfer.parkourhelper.gui.GuiSaveSelection;
+import com.elmfer.parkourhelper.gui.GuiSaveSession;
 import com.elmfer.parkourhelper.parkour.IParkourSession;
 import com.elmfer.parkourhelper.parkour.PlaybackSession;
+import com.elmfer.parkourhelper.parkour.Recording;
 import com.elmfer.parkourhelper.parkour.RecordingSession;
 import com.elmfer.parkourhelper.parkour.SessionHUD;
 import com.elmfer.parkourhelper.render.ModelManager;
@@ -20,9 +25,11 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 
 public class EventHandler {
 	
+	public static final int MAX_HISTORY_SIZE = 16;
 	static Minecraft mc = Minecraft.getMinecraft();
 	static SessionHUD hud = new SessionHUD();
 	public static IParkourSession session = new RecordingSession();
+	public static List<Recording> recordHistory = new ArrayList<>();
 	
 	@SubscribeEvent
 	public static void onOverlayRender(RenderGameOverlayEvent event)
@@ -33,13 +40,13 @@ public class EventHandler {
 	@SubscribeEvent
 	public static void onRenderTick(TickEvent.RenderTickEvent event)
 	{
-		if(event.phase == Phase.START)
+		if(event.phase == Phase.START && mc.player != null)
 			session.onRenderTick();
 	}
 	@SubscribeEvent
 	public static void onTick(TickEvent.ClientTickEvent event)
 	{	
-		if(event.phase == Phase.START)
+		if(event.phase == Phase.START && mc.player != null)
 		{
 			session.onClientTick();
 			
@@ -59,7 +66,19 @@ public class EventHandler {
 			
 			if(settings.keybindLoad.isPressed())
 				mc.displayGuiScreen(new GuiSaveSelection());
+			
+			if(settings.keybindSave.isPressed())
+				mc.displayGuiScreen(new GuiSaveSession());
 		}
+	}
+	
+	public static void addToHistory(Recording recording)
+	{
+		if(recordHistory.size() == MAX_HISTORY_SIZE)
+		{
+			recordHistory.remove(0);
+		}
+		recordHistory.add(recording);
 	}
 	
 	private static void reloadResources()

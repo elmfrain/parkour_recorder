@@ -8,4 +8,5 @@ public interface IParkourSession {
 	public void onClientTick();
 	public void onRenderTick();
 	public boolean isSessionActive();
+	public void cleanUp();
 }

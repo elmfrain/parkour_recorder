@@ -7,6 +7,7 @@ import java.io.IOException;
 import com.elmfer.parkourhelper.EventHandler;
 import com.elmfer.parkourhelper.parkour.PlaybackSession;
 import com.elmfer.parkourhelper.parkour.Recording;
+import com.elmfer.parkourhelper.parkour.RecordingSession;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -16,31 +17,29 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.SoundEvents;
+import net.minecraftforge.fml.client.config.GuiConfig;
 
-public class GuiSaveSelection extends GuiScreen
+public class GuiSaveSession extends GuiScreen
 {
-	private Recording[] records = null;
-	private Recording currentSelection = null;
 	private GuiButtonList theList = new GuiButtonList();
 	private GuiAlertBox alertBox = null;
+	private Recording currentSelection = null;
 	
 	@Override
 	public void initGui()
 	{
-		records = Recording.loadSaves();
 		int buttonMargin = 5;
 		int buttonHeight = 20;
 		theList.buttonList.clear();
-		for(int i = 0; i < records.length; i++)
-		{
-			if(records[i].getName() != null)
-				theList.buttonList.add(new GuiButton(i, 0, 0, records[i].getName()));
-			else
-				theList.buttonList.add(new GuiButton(i, 0, 0, "Save " + i));
-		}
-		addButton(new GuiButton(0, 0, 0, I18n.format("gui.save_selection.open")));
-		addButton(new GuiButton(1, 0, (buttonHeight + buttonMargin), I18n.format("gui.save_selection.delete")));
-		addButton(new GuiButton(2, 0, (buttonHeight + buttonMargin) * 2, I18n.format("gui.save_selection.rename")));
+		buttonList.clear();
+		for(int i = 0; i < EventHandler.recordHistory.size(); i++)
+			theList.buttonList.add(new GuiButton(i, 0, 0, EventHandler.recordHistory.get(i).getName()));
+		
+		addButton(new GuiButton(0, 0, 0, I18n.format("gui.save_session.save_last")));
+		addButton(new GuiButton(1, 0, 0, I18n.format("gui.save_session.erase_history")));
+		addButton(new GuiButton(2, 0, 0, I18n.format("gui.save_session.save")));
+		addButton(new GuiButton(3, 0, 0, I18n.format("gui.save_session.remove")));
+		addButton(new GuiButton(4, 0, 0, I18n.format("gui.save_session.open")));
 		
 		if(alertBox != null)
 			alertBox.initGui();
@@ -77,13 +76,13 @@ public class GuiSaveSelection extends GuiScreen
 		
 		GuiButton button = theList.getButton();
 		if(button != null)
-			currentSelection = records[button.id];
+			currentSelection = EventHandler.recordHistory.get(button.id);
 	}
 	
 	@Override
 	protected void actionPerformed(net.minecraft.client.gui.GuiButton button)
 	{
-		if(button.id == 0)
+		if(button.id == 4)
 		{
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(currentSelection);
@@ -91,13 +90,20 @@ public class GuiSaveSelection extends GuiScreen
 		}
 		if(button.id == 1)
 		{
-			GuiAlertBox deleteBox = new GuiConfirmationBox("Should Delete?", this::delete);
-			alertBox = deleteBox;
+			GuiAlertBox clearBox = new GuiConfirmationBox("Should Clear History?", this::clearHistory);
+			alertBox = clearBox;
 			alertBox.initGui();
 		}
-		if(button.id == 2)
+		if(button.id == 3)
 		{
-			GuiAlertBox renameBox = new GuiAlertBox("Rename Recording")
+			GuiAlertBox removeBox = new GuiConfirmationBox("Should Remove?", this::remove);
+			alertBox = removeBox;
+			alertBox.initGui();
+		}
+		if(button.id == 0 || button.id == 2)
+		{
+			if(button.id == 0) currentSelection = EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1);
+			GuiAlertBox nameBox = new GuiAlertBox("Name Recording")
 			{
 				GuiTextField textField = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, 0, 0, 80, 20);
 				String prevText = currentSelection.getName();
@@ -108,9 +114,9 @@ public class GuiSaveSelection extends GuiScreen
 					super.initGui();
 					int margins = 20 / (new ScaledResolution(mc)).getScaleFactor();
 					textField.setMaxStringLength(128);
-					textField.setText(currentSelection.getName());
+					if(textField.getText().isEmpty()) textField.setText(currentSelection.getName());
 					textField.setCursorPositionZero();
-					addButton(new GuiButton(0, 0, 0, I18n.format("gui.save_selection.rename")));
+					addButton(new GuiButton(0, 0, 0, "Save"));
 					addButton(new GuiButton(-1, 0, 0, "Cancel"));
 					height = 40 + margins;
 				}
@@ -119,7 +125,7 @@ public class GuiSaveSelection extends GuiScreen
 				{
 					textField.textboxKeyTyped(typedChar, keyCode);
 					//If enter is pressed
-					if(keyCode == 28 && rename(textField.getText()))
+					if(keyCode == 28 && save(textField.getText()))
 					{
 						mc.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
 						setShouldClose(true);
@@ -155,11 +161,11 @@ public class GuiSaveSelection extends GuiScreen
 				public void actionPerformed(net.minecraft.client.gui.GuiButton button)
 				{
 					super.actionPerformed(button);
-					if(button.id == 0 && rename(textField.getText()))
+					if(button.id == 0 && save(textField.getText()))
 						setShouldClose(true);
 				}
 			};
-			alertBox = renameBox;
+			alertBox = nameBox;
 			alertBox.initGui();
 		}
 	}
@@ -177,6 +183,9 @@ public class GuiSaveSelection extends GuiScreen
 		int buttonMargin = 5;
 		int buttonHeight = 14;
 		
+		int fade1 = getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
+		int fade2 = getIntColor(0.0f, 0.0f, 0.0f, 0.0f);
+		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport body = new GuiViewport(all);
 		body.left = body.top = bodyMargin; body.right -= bodyMargin; body.bottom -= bodyMargin;
@@ -189,15 +198,22 @@ public class GuiSaveSelection extends GuiScreen
 		list.right -= listMargin;
 		list.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
 		list.bottom -= listMargin;
+		GuiViewport actionsBody = new GuiViewport(body);
+		actionsBody.left = listBody.right + listMargin; actionsBody.top = listMargin;
+		actionsBody.right -= listMargin;
+		GuiViewport actions = new GuiViewport(actionsBody);
+		actions.left = listMargin; actions.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
+		actions.right -= listMargin;
+		actions.bottom = actions.top + 2 * (buttonMargin + buttonHeight);
+		actionsBody.bottom = actions.bottom + listMargin;
 		GuiViewport asideBody = new GuiViewport(body);
-		asideBody.top = listMargin; asideBody.bottom -= listMargin;
-		asideBody.left = listBody.right + listMargin;
+		asideBody.left = listBody.right + listMargin; asideBody.top = actionsBody.bottom + listMargin;
 		asideBody.right -= listMargin;
+		asideBody.bottom -= listMargin;
 		GuiViewport aside = new GuiViewport(asideBody);
-		aside.left = listMargin;
+		aside.left = listMargin; aside.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
 		aside.right -= listMargin;
-		aside.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
-		aside.bottom = aside.top + (buttonHeight + buttonMargin) * buttonList.size();
+		aside.bottom = aside.top + (buttonMargin + buttonHeight) * 3;
 		GuiViewport desc = new GuiViewport(asideBody);
 		desc.left = listMargin;
 		desc.right -= listMargin;
@@ -206,15 +222,10 @@ public class GuiSaveSelection extends GuiScreen
 		
 		GlStateManager.pushMatrix();
 		{
-			int fade1 = getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
-			int fade2 = getIntColor(0.0f, 0.0f, 0.0f, 0.0f);
-			int grad1 = getIntColor(0.0f, 0.0f, 0.0f, 1.0f);
-			int grad2 = getIntColor(0.0f, 0.0f, 0.0f, 0.0f);
-			
 			all.pushMatrix(false);
 			{
 				drawDefaultBackground();
-				drawCenteredString(fontRenderer, I18n.format("gui.save_selection.title"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
+				drawCenteredString(fontRenderer, I18n.format("gui.save_session.title"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
 			}
 			all.popMatrix();
 			
@@ -227,26 +238,45 @@ public class GuiSaveSelection extends GuiScreen
 			listBody.pushMatrix(false);
 			{	
 				drawGradientRect(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				fontRenderer.drawString(I18n.format("gui.save_selection.list") + worldName, listMargin, listMargin, 0xFFFFFFFF);
+				fontRenderer.drawString(I18n.format("gui.save_session.record_history") + worldName, listMargin, listMargin, 0xFFFFFFFF);
 			}
 			listBody.popMatrix();
 			
 			theList.drawScreen(mouseX, mouseY, partialTicks, list);
 			
+			actionsBody.pushMatrix(true);
+			{
+				drawGradientRect(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				fontRenderer.drawString(I18n.format("gui.save_session.actions"), listMargin, listMargin, 0xFFFFFFFF);
+			}
+			actionsBody.popMatrix();
+			
+			actions.pushMatrix(false);
+			{
+				for(int i = 0; i < 2; i++)
+				{
+					buttonList.get(i).width = actions.getWidth();
+					buttonList.get(i).height = buttonHeight;
+					buttonList.get(i).y = (buttonHeight + buttonMargin) * i;
+					buttonList.get(i).drawButton(mc, mouseX, mouseY, partialTicks);
+				}
+			}
+			actions.popMatrix();
+			
 			asideBody.pushMatrix(true);
 			{
-				drawGradientRect(0, 0, asideBody.getWidth(), asideBody.getHeight() / 6, fade1, fade2);
-				fontRenderer.drawString(I18n.format("gui.save_selection.aside"), listMargin, listMargin, 0xFFFFFFFF);
+				drawGradientRect(0, 0, asideBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				fontRenderer.drawString(I18n.format("gui.save_session.information"), listMargin, listMargin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 			
 			aside.pushMatrix(false);
-			{				
-				for(int i = 0; i < buttonList.size(); i++)
+			{
+				for(int i = 2; i < buttonList.size(); i++)
 				{
 					buttonList.get(i).width = aside.getWidth();
 					buttonList.get(i).height = buttonHeight;
-					buttonList.get(i).y = (buttonHeight + buttonMargin) * i;
+					buttonList.get(i).y = (buttonHeight + buttonMargin) * (i - 2);
 					buttonList.get(i).drawButton(mc, mouseX, mouseY, partialTicks);
 					buttonList.get(i).enabled = currentSelection != null;
 				}
@@ -255,17 +285,17 @@ public class GuiSaveSelection extends GuiScreen
 			
 			all.pushMatrix(false);
 			{
-				GuiButton open = (GuiButton) buttonList.get(0);
+				GuiButton open = (GuiButton) buttonList.get(4);
 				boolean flag = EventHandler.session.isSessionActive();
 				open.enabled = !flag && open.enabled;
 				
-				String warning = I18n.format("gui.save_selection.warn.cannot_open_while_recording_or_playing");
+				String warning = I18n.format("gui.save_session.warn.cannot_open_while_recording_or_playing");
 				if(open.isMouseOver() && flag && currentSelection != null) drawHoveringText(warning, mouseX, mouseY);
 				RenderHelper.disableStandardItemLighting();
 			}
 			all.popMatrix();
 			
-			if(currentSelection != null)
+			if(currentSelection != null && desc.getHeight() > 0)
 			{
 				desc.pushMatrix(true);
 				{
@@ -285,24 +315,31 @@ public class GuiSaveSelection extends GuiScreen
 		}
 	 }
 	
-	private boolean rename(String newName)
+	private boolean save(String newName)
 	{
 		if(newName.length() > 0)
 		{
 			currentSelection.rename(newName);
 			currentSelection.save();
-			buttonList.clear();
-			initGui();
+			remove();
 			return true;
 		}
 		else return false;
 	}
 	
-	private void delete()
+	private void remove()
 	{
-		Recording.deleteSave(currentSelection);
-		buttonList.clear();
-		initGui();
+		EventHandler.recordHistory.remove(currentSelection);
 		currentSelection = null;
+		initGui();
+	}
+	
+	private void clearHistory()
+	{
+		EventHandler.recordHistory.clear();
+		currentSelection = null;
+		if(!EventHandler.session.isSessionActive())
+			EventHandler.session = new RecordingSession();
+		initGui();
 	}
 }

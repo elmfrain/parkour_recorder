@@ -16,7 +16,7 @@ public class ParkourHelperMod
 	
 	public static final String MOD_ID = "parkourhelper";
 	public static final String MOD_NAME = "Parkour Helper Mod";
-	public static final String MOD_VERSION = "0.0.3.1-1.12.2";
+	public static final String MOD_VERSION = "0.0.4.2-1.12.2";
 	
 	@SidedProxy(clientSide = "com.elmfer.parkourhelper.proxies.ClientProxy", serverSide = "com.elmfer.parkourhelper.proxies.ServerProxy")
 	public static CommonProxy proxy;

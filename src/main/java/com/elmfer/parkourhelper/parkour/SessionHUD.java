@@ -24,8 +24,18 @@ public class SessionHUD extends Gui
 		String s = "Stopped";
 		if(EventHandler.session instanceof RecordingSession)
 		{
-			if(((RecordingSession) EventHandler.session).onOverride) s = "Overiding";
+			if(((RecordingSession) EventHandler.session).onOverride)
+			{
+				s = "Overriding";
+				if(((RecordingSession) EventHandler.session).recording.getName() != null)
+				{
+					String name = ((RecordingSession) EventHandler.session).recording.getName();
+					name = name == null ? "[" + I18n.format("recording.unamed") + "]" : name;
+					s += ": " + name;
+				}
+			}
 			else if(((RecordingSession) EventHandler.session).isRecording) s = "Recording";
+			
 		}
 		else if(EventHandler.session instanceof PlaybackSession)
 		{

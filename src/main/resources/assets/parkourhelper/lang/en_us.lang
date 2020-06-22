@@ -6,4 +6,15 @@ gui.save_selection.delete=Delete
 gui.save_selection.rename=Rename
 gui.save_selection.warn.cannot_open_while_recording_or_playing=Cannot open while recording or during playback.
 
+gui.save_session.title=Save Session
+gui.save_session.record_history=Record History
+gui.save_session.actions=Actions
+gui.save_session.save_last=Save Last
+gui.save_session.erase_history=Erase History
+gui.save_session.information=Information
+gui.save_session.save=Save
+gui.save_session.remove=Remove
+gui.save_session.open=Open
+gui.save_session.warn.cannot_open_while_recording_or_playing=Cannot open while recording or during playback.
+
 recording.unamed=Unamed

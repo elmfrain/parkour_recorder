@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper;
+package com.elmfer.parkourhelper.parkour;
 
 import java.nio.ByteBuffer;
 

@@ -1,8 +1,6 @@
 package com.elmfer.parkourhelper.parkour;
 
 import com.elmfer.parkourhelper.ControlledMovementInput;
-import com.elmfer.parkourhelper.ParkourFrame;
-import com.elmfer.parkourhelper.Recording;
 import com.elmfer.parkourhelper.render.ParticleArrow;
 import com.elmfer.parkourhelper.render.ParticleFinish;
 
@@ -62,19 +60,16 @@ public class PlaybackSession implements IParkourSession {
 	public IParkourSession onOverride()
 	{
 		if(isPlaying)
-		{
-			int size = recording.size();
-			for(int i = frameNumber ; i < size ; i++)
-			{
-				recording.remove(frameNumber);
-			}
-			stop();
-			
+		{	
 			RecordingSession overridingSession = new RecordingSession();
-			overridingSession.recording = recording;
+			overridingSession.recording = new Recording(recording.initPos, recording.initVel);
+			overridingSession.recordingToOverride = recording;
 			overridingSession.onOverride = true;
 			overridingSession.isRecording = true;
 			overridingSession.nbRecordPresses = 1;
+			overridingSession.overrideStart = frameNumber;
+			overridingSession.recording.rename(recording.getName());
+			stop();
 			
 			return overridingSession;
 		}
@@ -119,10 +114,6 @@ public class PlaybackSession implements IParkourSession {
 			mc.player.rotationYaw = currentFrame.headYaw;
 			mc.player.rotationPitch = currentFrame.headPitch;
 			mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-			double motionX = mc.player.posX - mc.player.prevPosX;
-			double motionY = mc.player.posY - mc.player.prevPosY;
-			double motionZ = mc.player.posZ - mc.player.prevPosZ;
-			mc.player.setVelocity(motionX, motionY, motionZ);
 		}
 	}
 	
@@ -130,6 +121,12 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		isPlaying = false;
+		
+		double motionX = mc.player.posX - mc.player.prevPosX;
+		double motionY = mc.player.posY - mc.player.prevPosY;
+		double motionZ = mc.player.posZ - mc.player.prevPosZ;
+		mc.player.setVelocity(motionX, motionY, motionZ);
+		
 		mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
 	}
 
@@ -154,5 +151,11 @@ public class PlaybackSession implements IParkourSession {
 	public boolean isSessionActive()
 	{
 		return isPlaying;
+	}
+
+	@Override
+	public void cleanUp()
+	{
+		despawnParticles();
 	}
 }

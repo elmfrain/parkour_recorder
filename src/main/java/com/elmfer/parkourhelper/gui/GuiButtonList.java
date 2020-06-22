@@ -55,9 +55,9 @@ public class GuiButtonList extends Gui {
 		int listHeight = (buttonHeight + buttonMargin) * buttonList.size() + 80;
 		int scrollMovement = Math.max(0, listHeight - viewport.getHeight());
 		
-		if(viewport.isHovered(mouseX, mouseY) && scrollPos <= 0) scrollSpeed += Mouse.getDWheel() / 20.0f;
+		if(viewport.isHovered(mouseX, mouseY) && scrollPos <= 0) scrollSpeed += Mouse.getDWheel() / 40.0f;
 		Mouse.getDWheel();
-		scrollSpeed *= 0.93f;
+		scrollSpeed *= 0.95f;
 		scrollPos += scrollSpeed;
 		if(scrollPos > 0) {scrollPos = 0.0f; scrollSpeed = 0.0f;}
 		if(scrollPos < -scrollMovement) {scrollPos = -scrollMovement; scrollSpeed = 0.0f;}
