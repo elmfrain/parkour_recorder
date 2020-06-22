@@ -337,6 +337,7 @@ public class GuiSaveSession extends GuiScreen
 	private void clearHistory()
 	{
 		EventHandler.recordHistory.clear();
+		EventHandler.session.cleanUp();
 		currentSelection = null;
 		if(!EventHandler.session.isSessionActive())
 			EventHandler.session = new RecordingSession();

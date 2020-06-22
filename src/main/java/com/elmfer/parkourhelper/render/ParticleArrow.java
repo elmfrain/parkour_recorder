@@ -41,7 +41,8 @@ public class ParticleArrow extends Particle{
 		float x = (float)(posX - interpPosX);
         float y = (float)(posY - interpPosY);
         float z = (float)(posZ - interpPosZ);
-        float angle = (particleAge + partialTicks) * 2;
+        float ticks = particleAge + partialTicks;
+        float angle = (float) ((60.0f * Math.log(2 * ticks + 1) + ticks) * 2);
         
         FloatBuffer worldSpaceMatrix = BufferUtils.createFloatBuffer(16);
 		FloatBuffer normalSpaceMatrix = BufferUtils.createFloatBuffer(16);
@@ -88,9 +89,11 @@ public class ParticleArrow extends Particle{
         GL11.glPushMatrix();
         {
         	double distance = (new Vec3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getMinecraft().player.getPositionVector());
+        	distance *= Math.min(ticks / 20.0f, 1);
+        	double scale = Math.max(-Math.pow((ticks - 25), 3) / 15625 + 0.5, 0.5);
         	GL11.glTranslated(x, y, z);
         	GL11.glTranslated(0, Math.sin((particleAge + partialTicks) * Math.PI / 20.0) * 0.3 + 1.4, 0);
-        	GL11.glScalef(0.5f, 0.5f, 0.5f);
+        	GL11.glScaled(scale, scale, scale);
         	GL11.glRotatef(angle, 0, 1, 0);
         	GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, (float) ((distance - 0.5) / 3.0));
         	ShaderManager.importMatricies(ShaderManager.getDefaultShader(), worldSpaceMatrix, normalSpaceMatrix);
