@@ -77,8 +77,11 @@ public class RecordingSession implements IParkourSession {
 	{
 		if(recording != null)
 		{
-			nbRecordPresses = 1;
-			onRecord();
+			if(isRecording)
+			{
+				nbRecordPresses = 1;
+				onRecord();
+			}
 			PlaybackSession playback = new PlaybackSession(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
 			playback.onPlay();
 			return playback;

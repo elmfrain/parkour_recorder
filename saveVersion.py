@@ -27,10 +27,10 @@ def process_info():
             new_line += '\n'
         if line.find("\"version\"") > -1:
             i = line.find("\"version\"")
-            new_line = line[:i] + "\"version\": \"" + sys.argv[1] + '\"\n'
+            new_line = line[:i] + "\"version\": \"" + sys.argv[1] + '\",\n'
         elif line.find("\"mcversion\"") > -1:
             i = line.find("\"mcversion\"")
-            new_line = line[:i] + "\"mcversion\": \"" + sys.argv[2] + '\"\n'
+            new_line = line[:i] + "\"mcversion\": \"" + sys.argv[2] + '\",\n'
         lines.extend(new_line)
 
     info_file.seek(0)
@@ -83,6 +83,18 @@ def process_gradle():
 def all_files_found():
     return gradle_file != None and java_file != None and info_file != None
 
+def is_mod_entry(path):
+    a_java_file = open(path, 'r')
+    lines = a_java_file.read().split('\n')
+
+    for line in lines:
+        if line.find("@Mod") > -1:
+            a_java_file.close()
+            return True
+
+    a_java_file.close()
+    return False
+
 for (dirpath, dirnames, filenames) in os.walk(main_dir):
     if main_dir + "\\bin" in dirpath or main_dir + "\\build" in dirpath:
         continue
@@ -90,8 +102,9 @@ for (dirpath, dirnames, filenames) in os.walk(main_dir):
         if f in files_to_change:
             if f == files_to_change[0] and gradle_file == None:
                 gradle_file = open(dirpath + '\\' + f, 'r+')
-            elif f == files_to_change[1] and java_file == None:
-                java_file = open(dirpath + '\\' + f, 'r+')
+            elif f == files_to_change[1] and java_file == None and f[-5:] == ".java":
+                if is_mod_entry(dirpath + '\\' + f):
+                    java_file = open(dirpath + '\\' + f, 'r+')
             elif f == files_to_change[2] and info_file == None:
                 info_file = open(dirpath + '\\' + f, 'r+')
     if all_files_found():
