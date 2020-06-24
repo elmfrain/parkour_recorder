@@ -21,12 +21,12 @@ public class SessionHUD extends Gui
 	{
 		Settings settings = Settings.getSettings();
 		
-		String s = "Stopped";
+		String s = I18n.format("hud.session.stopped");
 		if(EventHandler.session instanceof RecordingSession)
 		{
 			if(((RecordingSession) EventHandler.session).onOverride)
 			{
-				s = "Overriding";
+				s = I18n.format("hud.session.overriding");
 				if(((RecordingSession) EventHandler.session).recording.getName() != null)
 				{
 					String name = ((RecordingSession) EventHandler.session).recording.getName();
@@ -34,13 +34,13 @@ public class SessionHUD extends Gui
 					s += ": " + name;
 				}
 			}
-			else if(((RecordingSession) EventHandler.session).isRecording) s = "Recording";
+			else if(((RecordingSession) EventHandler.session).isRecording) s = I18n.format("hud.session.recording");
 			
 		}
 		else if(EventHandler.session instanceof PlaybackSession)
 		{
-			if(((PlaybackSession) EventHandler.session).isPlaying()) s = "Playing";
-			if(((PlaybackSession) EventHandler.session).isWaitingForPlayer()) s = "Waiting For Player";
+			if(((PlaybackSession) EventHandler.session).isPlaying()) s = I18n.format("hud.session.playing");
+			if(((PlaybackSession) EventHandler.session).isWaitingForPlayer()) s = I18n.format("hud.session.waiting_for_player");
 			String name = ((PlaybackSession) EventHandler.session).recording.getName();
 			name = name == null ? "[" + I18n.format("recording.unamed") + "]" : name;
 			s += " - " + name;

@@ -75,11 +75,11 @@ public class Recording implements List<ParkourFrame>
 		Vec3d initPos = new Vec3d((int) this.initPos.x, (int) this.initPos.y, (int) this.initPos.z);
 		Vec3d lastPos = new Vec3d((int) this.lastPos.x, (int) this.lastPos.y, (int) this.lastPos.z);
 		String s = "";
-		String tab = "\n   ";
-		if(recordFile != null) s += "File: " + tab + (recordFile != null ? recordFile.getName() : "[" + I18n.format("recording.unsaved") + "]") + "\n\n";
-		s += "Recording Length: " + tab + frames.size() / 20.0f + "s\n\n";
-		s += "Starting Position: " + tab + initPos + "\n\n";
-		s += "Ending Position: " + tab + lastPos + "\n\n";
+		String tab = ":\n   ";
+		if(recordFile != null) s += I18n.format("recording.file") + tab + (recordFile != null ? recordFile.getName() : "[" + I18n.format("recording.unsaved") + "]") + "\n\n";
+		s += I18n.format("recording.recording_length") + tab + frames.size() / 20.0f + "s\n\n";
+		s += I18n.format("recording.starting_position") + tab + initPos + "\n\n";
+		s += I18n.format("recording.ending_position") + tab + lastPos + "\n\n";
 		return s;
 	}
 	

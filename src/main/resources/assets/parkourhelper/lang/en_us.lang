@@ -18,3 +18,13 @@ gui.save_session.open=Open
 gui.save_session.warn.cannot_open_while_recording_or_playing=Cannot open while recording or during playback.
 
 recording.unamed=Unamed
+recording.file=File
+recording.recording_length=Recording Length
+recording.starting_position=Starting Position
+recording.ending_position=Ending Position
+
+hud.session.stopped=Stopped
+hud.session.overriding=Overriding
+hud.session.recording=Recording
+hud.session.playing=Playing
+hud.session.waiting_for_player=Waiting For Player

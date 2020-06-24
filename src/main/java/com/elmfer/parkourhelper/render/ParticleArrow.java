@@ -90,7 +90,7 @@ public class ParticleArrow extends Particle{
         {
         	double distance = (new Vec3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getMinecraft().player.getPositionVector());
         	distance *= Math.min(ticks / 20.0f, 1);
-        	double scale = Math.max(-Math.pow((ticks - 25), 3) / 15625 + 0.5, 0.5);
+        	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	GL11.glTranslated(x, y, z);
         	GL11.glTranslated(0, Math.sin((particleAge + partialTicks) * Math.PI / 20.0) * 0.3 + 1.4, 0);
         	GL11.glScaled(scale, scale, scale);
