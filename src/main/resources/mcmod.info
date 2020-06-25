@@ -9,8 +9,8 @@
   "updateUrl": "",
   "authorList": ["elmfer"],
   "credits": "",
-  "logoFile": "/logo.png",
-  "screenshots": [],
+  "logoFile": "assets/parkourhelper/logo.png",
+  "screenshots": ["assets/parkourhelper/screenshots/screenshot-1.png", "assets/parkourhelper/screenshots/screenshot-2.png"],
   "dependencies": []
 }
 ]
