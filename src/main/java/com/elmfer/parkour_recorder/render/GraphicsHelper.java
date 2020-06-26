@@ -1,8 +1,10 @@
-package com.elmfer.parkourhelper.render;
+package com.elmfer.parkour_recorder.render;
 
-import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
+import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
@@ -19,6 +21,7 @@ public class GraphicsHelper {
 		return value;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static void gradientRectToRight(int left, int top, int right, int bottom, int startColor, int endColor)
 	{
 		float f = (float)(startColor >> 24 & 255) / 255.0F;
@@ -29,11 +32,11 @@ public class GraphicsHelper {
         float f5 = (float)(endColor >> 16 & 255) / 255.0F;
         float f6 = (float)(endColor >> 8 & 255) / 255.0F;
         float f7 = (float)(endColor & 255) / 255.0F;
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.disableAlpha();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.shadeModel(7425);
+        RenderSystem.disableTexture();
+        RenderSystem.enableBlend();
+        RenderSystem.disableAlphaTest();
+        RenderSystem.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
+        RenderSystem.shadeModel(7425);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
@@ -42,15 +45,10 @@ public class GraphicsHelper {
         bufferbuilder.pos((double)left, (double)bottom, 0.0f).color(f1, f2, f3, f).endVertex();
         bufferbuilder.pos((double)right, (double)bottom, 0.0f).color(f5, f6, f7, f4).endVertex();
         tessellator.draw();
-        GlStateManager.shadeModel(7424);
-        GlStateManager.disableBlend();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableTexture2D();
-	}
-	
-	public static void endAlphaMask()
-	{
-		Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(true);
+        RenderSystem.shadeModel(7424);
+        RenderSystem.disableBlend();
+        RenderSystem.enableAlphaTest();
+        RenderSystem.enableTexture();
 	}
 	
 	private static int floatToByte(float value)

@@ -1,36 +1,39 @@
-package com.elmfer.parkourhelper.render;
+package com.elmfer.parkour_recorder.render;
 
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class ParticleFinish extends Particle{
 	
 	private static final double expireDuration = 20.0;
 	private int expiredAge = 0;
 
-	public ParticleFinish(World worldIn, double posXIn, double posYIn, double posZIn) {
+	public ParticleFinish(ClientWorld worldIn, double posXIn, double posYIn, double posZIn) {
 		super(worldIn, posXIn, posYIn, posZIn);
 	}
 
 	@Override
-	public void onUpdate()
+	public void tick()
     {
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
-        particleAge++;
+        age++;
         if(isExpired) expiredAge++;
     }
 	
@@ -41,14 +44,15 @@ public class ParticleFinish extends Particle{
 	}
 	
 	@Override
-	public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ)
+	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks)
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
-		GlStateManager.disableTexture2D();
-		float x = (float)(posX - interpPosX);
-        float y = (float)(posY - interpPosY);
-        float z = (float)(posZ - interpPosZ);
-        float ticks = particleAge + partialTicks;
+		RenderSystem.disableTexture();
+		Vector3d vector3d = renderInfo.getProjectedView();
+		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vector3d.getX());
+	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vector3d.getY());
+	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vector3d.getZ());
+        float ticks = age + partialTicks;
         float angle = (float) Math.sin(ticks * Math.PI / 20.0) * 10.0f;
         
         FloatBuffer worldSpaceMatrix = BufferUtils.createFloatBuffer(16);
@@ -59,7 +63,7 @@ public class ParticleFinish extends Particle{
 		{
 		    GL11.glLoadIdentity();
 		    GL11.glTranslated(x, y, z);
-		    GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, worldSpaceMatrix);
+		    GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, worldSpaceMatrix);
 		}
 		GL11.glPopMatrix();
 		//NormalSpace Matrix Calculation
@@ -67,16 +71,16 @@ public class ParticleFinish extends Particle{
 		{
 			GL11.glLoadIdentity();
 			GL11.glRotatef(angle, 0, 0, 1);
-			GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, normalSpaceMatrix);
+			GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, normalSpaceMatrix);
 		}
 		GL11.glPopMatrix();
 		
         int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         int shader = ShaderManager.getDefaultShader();
-        OpenGlHelper.glUseProgram(shader);
+        GL30.glUseProgram(shader);
         GL11.glPushMatrix();
         {
-        	double distance = (new Vec3d(posX, posY, posZ)).distanceTo(Minecraft.getMinecraft().player.getPositionVector());
+        	double distance = (new Vector3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().player.getPositionVec());
         	double expiredAmount = 1.0 - (expiredAge + (isExpired ? partialTicks : 0)) / expireDuration;
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	distance *= expiredAmount;
@@ -94,7 +98,13 @@ public class ParticleFinish extends Particle{
         }
         GL11.glPopMatrix();
 		if(tex2DEnabled)
-			GlStateManager.enableTexture2D();
-		OpenGlHelper.glUseProgram(prevShader);
+			RenderSystem.enableTexture();
+		GL30.glUseProgram(prevShader);
+	}
+
+	@Override
+	public IParticleRenderType getRenderType()
+	{
+		return IParticleRenderType.CUSTOM;
 	}
 }

@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper.parkour;
+package com.elmfer.parkour_recorder.parkour;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -15,13 +15,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.ibm.icu.text.DecimalFormat;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class Recording implements List<ParkourFrame>
 {
@@ -38,22 +34,22 @@ public class Recording implements List<ParkourFrame>
 	};
 	
 	private final List<ParkourFrame> frames = new ArrayList<ParkourFrame>();
-	public final Vec3d initPos;
-	public final Vec3d initVel;
-	public Vec3d lastPos = new Vec3d(0, 0, 0);
-	public Vec3d lastVel = new Vec3d(0, 0, 0);
+	public final Vector3d initPos;
+	public final Vector3d initVel;
+	public Vector3d lastPos = new Vector3d(0, 0, 0);
+	public Vector3d lastVel = new Vector3d(0, 0, 0);
 	private String name;
 	protected String originalName = null;
 	protected File recordFile = null;
 	
-	public Recording(Vec3d startingPos, Vec3d staringVel) {
+	public Recording(Vector3d startingPos, Vector3d staringVel) {
 		initPos = startingPos;
 		initVel = staringVel;
 		this.name = null;
 	}
 	public Recording() {
-		initPos = new Vec3d(0, 0, 0);
-		initVel = new Vec3d(0, 0, 0);
+		initPos = new Vector3d(0, 0, 0);
+		initVel = new Vector3d(0, 0, 0);
 		name = null;
 	}
 	
@@ -72,8 +68,8 @@ public class Recording implements List<ParkourFrame>
 	@Override
 	public String toString()
 	{
-		Vec3d initPos = new Vec3d((int) this.initPos.x, (int) this.initPos.y, (int) this.initPos.z);
-		Vec3d lastPos = new Vec3d((int) this.lastPos.x, (int) this.lastPos.y, (int) this.lastPos.z);
+		Vector3d initPos = new Vector3d((int) this.initPos.x, (int) this.initPos.y, (int) this.initPos.z);
+		Vector3d lastPos = new Vector3d((int) this.lastPos.x, (int) this.lastPos.y, (int) this.lastPos.z);
 		String s = "";
 		String tab = ":\n   ";
 		if(recordFile != null) s += I18n.format("recording.file") + tab + (recordFile != null ? recordFile.getName() : "[" + I18n.format("recording.unsaved") + "]") + "\n\n";
@@ -116,7 +112,7 @@ public class Recording implements List<ParkourFrame>
 	
 	public void save()
 	{
-		Minecraft mc = Minecraft.getMinecraft();
+		Minecraft mc = Minecraft.getInstance();
 		String worldName = getWorldPath(mc);
 		String recordFileName = getFormattedTime();
 		this.name = this.name == null ? recordFileName : this.name;
@@ -156,7 +152,7 @@ public class Recording implements List<ParkourFrame>
 	
 	public static Recording[] loadSaves()
 	{
-		Minecraft mc = Minecraft.getMinecraft();
+		Minecraft mc = Minecraft.getInstance();
 		File worldDir = new File(SAVING_DIRECTORY.getPath() + '/' + getWorldPath(mc));
 		Recording[] records = new Recording[0];
 		
@@ -203,10 +199,10 @@ public class Recording implements List<ParkourFrame>
 		
 		String name = new String(namedata, StandardCharsets.UTF_8);
 		int recordingSize = buffer.getInt();
-		Vec3d initPos = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-		Vec3d initVel = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-		Vec3d lastPos = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-		Vec3d lastVel = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vector3d initPos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vector3d initVel = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vector3d lastPos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vector3d lastVel = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
 		Recording newRecording = new Recording(initPos, initVel);
 		newRecording.name = name.length() == 0 ? null : name;
 		newRecording.originalName = name;
@@ -226,13 +222,13 @@ public class Recording implements List<ParkourFrame>
 	
 	public static String getCurrentWorldName(Minecraft mc)
 	{
-		if(mc.getIntegratedServer() != null) return mc.getIntegratedServer().getFolderName();
+		if(mc.getIntegratedServer() != null) return mc.getIntegratedServer().getName();
 		else return mc.getCurrentServerData().serverName + ": " + mc.getCurrentServerData().serverIP;
 	}
 	
 	private static String getWorldPath(Minecraft mc)
 	{
-		if(mc.getIntegratedServer() != null) return "local/" + mc.getIntegratedServer().getFolderName();
+		if(mc.getIntegratedServer() != null) return "local/" + mc.getIntegratedServer().getName();
 		else return "servers/" + mc.getCurrentServerData().serverIP.replace('.', '-').replace(':', '_');
 	}
 	

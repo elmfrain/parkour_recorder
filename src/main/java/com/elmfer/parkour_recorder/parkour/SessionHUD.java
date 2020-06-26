@@ -1,26 +1,24 @@
-package com.elmfer.parkourhelper.parkour;
+package com.elmfer.parkour_recorder.parkour;
 
 import org.lwjgl.opengl.GL11;
 
-import com.elmfer.parkourhelper.EventHandler;
-import com.elmfer.parkourhelper.Settings;
-import com.elmfer.parkourhelper.render.GraphicsHelper;
+import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 
+import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.resources.I18n;
 
-public class SessionHUD extends Gui 
+public class SessionHUD extends AbstractGui
 {
 	
 	int lastRecordingSize = 0;
 	
 	public void render()
 	{
-		Settings settings = Settings.getSettings();
-		
 		String s = I18n.format("hud.session.stopped");
 		if(EventHandler.session instanceof RecordingSession)
 		{
@@ -46,21 +44,22 @@ public class SessionHUD extends Gui
 			s += " - " + name;
 		}
 		
-		Minecraft mc = Minecraft.getMinecraft();
+		Minecraft mc = Minecraft.getInstance();
+		MainWindow res = mc.getMainWindow();
 		
 		int border = 10;
-		int lip = 2;
+		//int lip = 2;
 		int stringWidth = mc.fontRenderer.getStringWidth(s);
-		int stringHeight = mc.fontRenderer.FONT_HEIGHT;
+		//int stringHeight = mc.fontRenderer.FONT_HEIGHT;
 		
-		ScaledResolution res = new ScaledResolution(mc);
-		int width = res.getScaledWidth();
+		//int width = res.getScaledWidth();
 		int c = GraphicsHelper.getIntColor(0.9f, 0.9f, 0.9f, 1.0f);
-		int c1 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.2f);
+		//int c1 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.2f);
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-		drawRect(res.getScaledWidth() - stringWidth - border - lip, border - lip, res.getScaledWidth() - border + lip, border + stringHeight + lip, c1);
-		mc.fontRenderer.drawString(s, res.getScaledWidth() - stringWidth - border, border, c);
+		
+		//drawRect(res.getScaledWidth() - stringWidth - border - lip, border - lip, res.getScaledWidth() - border + lip, border + stringHeight + lip, c1);
+		//drawString
+		func_238471_a_(new MatrixStack(), mc.fontRenderer, s, res.getScaledWidth() - stringWidth - border, border, c);
 	}
 }

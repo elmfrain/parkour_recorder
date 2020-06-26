@@ -1,14 +1,13 @@
-package com.elmfer.parkourhelper.parkour;
+package com.elmfer.parkour_recorder.parkour;
 
-import com.elmfer.parkourhelper.EventHandler;
+import com.elmfer.parkour_recorder.EventHandler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
-import net.minecraft.util.math.Vec3d;
 
 public class RecordingSession implements IParkourSession {
 
-	protected static final Minecraft mc = Minecraft.getMinecraft();
+	protected static final Minecraft mc = Minecraft.getInstance();
 	protected Recording recording = null;
 	protected Recording recordingToOverride = null;
 	protected int overrideStart = 0;
@@ -30,13 +29,13 @@ public class RecordingSession implements IParkourSession {
 		case 0:
 			mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
 			if(recording == null)
-				recording = new Recording(mc.player.getPositionVector(), new Vec3d(mc.player.motionX, mc.player.motionY, mc.player.motionZ));
+				recording = new Recording(mc.player.getPositionVec(), mc.player.getMotion());
 			isRecording = true;
 			nbRecordPresses++;
 			break;
 		case 1:		
-			recording.lastPos = mc.player.getPositionVector();
-			recording.lastVel = new Vec3d(mc.player.motionX, mc.player.motionY, mc.player.motionZ);
+			recording.lastPos = mc.player.getPositionVec();
+			recording.lastVel = mc.player.getMotion();
 			
 			if(onOverride)
 			{

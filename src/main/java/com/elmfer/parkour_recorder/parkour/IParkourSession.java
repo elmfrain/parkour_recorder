@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper.parkour;
+package com.elmfer.parkour_recorder.parkour;
 
 public interface IParkourSession {
 	

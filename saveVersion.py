@@ -9,7 +9,7 @@ if len(sys.argv) < 3:
 
 main_dir = os.path.dirname(os.path.realpath(__file__))
 
-files_to_change = ["build.gradle", "ParkourHelperMod.java", "mcmod.info"]
+files_to_change = ["build.gradle", ".java", "mcmod.info"]
 
 
 gradle_file = None
@@ -99,16 +99,21 @@ for (dirpath, dirnames, filenames) in os.walk(main_dir):
     if main_dir + "\\bin" in dirpath or main_dir + "\\build" in dirpath:
         continue
     for f in filenames:
-        if f in files_to_change:
+        if f in files_to_change or f[-5:] == files_to_change[1]:
             if f == files_to_change[0] and gradle_file == None:
                 gradle_file = open(dirpath + '\\' + f, 'r+')
-            elif f == files_to_change[1] and java_file == None and f[-5:] == ".java":
+            elif java_file == None and f[-5:] == files_to_change[1]:
                 if is_mod_entry(dirpath + '\\' + f):
                     java_file = open(dirpath + '\\' + f, 'r+')
             elif f == files_to_change[2] and info_file == None:
                 info_file = open(dirpath + '\\' + f, 'r+')
     if all_files_found():
         break
+
+if len(sys.argv) < 3:
+    print("Unable to find all files!")
+    time.sleep(1)
+    exit(0)
 
 process_info()
 process_java()

@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper.render;
+package com.elmfer.parkour_recorder.render;
 
 import static org.lwjgl.opengl.GL20.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
@@ -22,15 +22,12 @@ import java.util.Scanner;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL45;
 
-import com.elmfer.parkourhelper.ParkourHelperMod;
+import com.elmfer.parkour_recorder.ParkourRecorderMod;
 
+import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
@@ -40,7 +37,6 @@ public class ShaderManager {
 	
 	private static int DEFAULT_SHADER;
 	private static int GUI_SHADER;
-	private static int reloadCountdown = 0;
 	private static long lastTime = System.currentTimeMillis();
 	private static int countdownTime = 1000;
 	
@@ -51,7 +47,7 @@ public class ShaderManager {
 	
 	public static float getFarPlaneDistance()
 	{
-		return (float)(Minecraft.getMinecraft().gameSettings.renderDistanceChunks * 16 * MathHelper.SQRT_2);
+		return (float)(Minecraft.getInstance().gameSettings.renderDistanceChunks * 16 * MathHelper.SQRT_2);
 	}
 	public static float getNearPlaneDistance()
 	{
@@ -80,9 +76,10 @@ public class ShaderManager {
 	
 	public static void blitMCFramebuffer(Framebuffer toThisFrameBuffer)
 	{
-		Minecraft mc = Minecraft.getMinecraft();
+		Minecraft mc = Minecraft.getInstance();
+		MainWindow res = mc.getMainWindow();
 		
-		GL45.glBlitNamedFramebuffer(mc.getFramebuffer().framebufferObject, toThisFrameBuffer.framebufferObject, 0, 0, mc.displayWidth, mc.displayHeight, 0, 0, mc.displayWidth, mc.displayHeight, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
+		GL45.glBlitNamedFramebuffer(mc.getFramebuffer().framebufferObject, toThisFrameBuffer.framebufferObject, 0, 0, res.getWidth(), res.getHeight(), 0, 0, res.getWidth(), res.getHeight(), GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
 	}
 	
 	public static int getUniformLocation(String param)
@@ -92,27 +89,28 @@ public class ShaderManager {
 	
 	public static void importMatricies(int shader)
 	{
-		Minecraft mc = Minecraft.getMinecraft();
+		Minecraft mc = Minecraft.getInstance();
 		FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
 		FloatBuffer modelViewMatrix = BufferUtils.createFloatBuffer(16);
+		MainWindow res = mc.getMainWindow();
 		
-		GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelViewMatrix);
+		GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
+		GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelViewMatrix);
 		
-		GL20.glUniformMatrix4(GL20.glGetUniformLocation(shader, "projection"), false, projectionMatrix);
-		GL20.glUniformMatrix4(GL20.glGetUniformLocation(shader, "modelView"), false, modelViewMatrix);
+		GL20.glUniformMatrix4fv(GL20.glGetUniformLocation(shader, "projection"), false, projectionMatrix);
+		GL20.glUniformMatrix4fv(GL20.glGetUniformLocation(shader, "modelView"), false, modelViewMatrix);
 		GL20.glUniform1i(GL20.glGetUniformLocation(shader, "tex1"), 0);
 		GL20.glUniform1i(GL20.glGetUniformLocation(shader, "texturesEnabled"), GL11.glIsEnabled(GL11.GL_TEXTURE_2D) ? 1 : 0);
-		GL20.glUniform1f(GL20.glGetUniformLocation(shader, "displayWidth"), mc.displayWidth);
-		GL20.glUniform1f(GL20.glGetUniformLocation(shader, "displayHeight"), mc.displayHeight);
+		GL20.glUniform1f(GL20.glGetUniformLocation(shader, "displayWidth"), res.getWidth());
+		GL20.glUniform1f(GL20.glGetUniformLocation(shader, "displayHeight"), res.getHeight());
 	}
 	
 	public static void importMatricies(int shader, FloatBuffer worldSpaceMatrix, FloatBuffer normalSpaceMatrix)
 	{
 		importMatricies(shader);
 		
-		GL20.glUniformMatrix4(GL20.glGetUniformLocation(shader, "worldSpace"), false, worldSpaceMatrix);
-		GL20.glUniformMatrix4(GL20.glGetUniformLocation(shader, "normalSpace"), false, normalSpaceMatrix);
+		GL20.glUniformMatrix4fv(GL20.glGetUniformLocation(shader, "worldSpace"), false, worldSpaceMatrix);
+		GL20.glUniformMatrix4fv(GL20.glGetUniformLocation(shader, "normalSpace"), false, normalSpaceMatrix);
 	}
 	
 	public static int makeProgram(String vecShaderName, String fragShaderName) 
@@ -121,8 +119,8 @@ public class ShaderManager {
 		int fShader = glCreateShader(GL_FRAGMENT_SHADER);
 		int program = glCreateProgram();
 		
-		glShaderSource(vShader, parseFile(new ResourceLocation(ParkourHelperMod.MOD_ID, "shaders/" + vecShaderName)));
-		glShaderSource(fShader, parseFile(new ResourceLocation(ParkourHelperMod.MOD_ID, "shaders/" + fragShaderName)));
+		glShaderSource(vShader, parseFile(new ResourceLocation(ParkourRecorderMod.MOD_ID, "shaders/" + vecShaderName)));
+		glShaderSource(fShader, parseFile(new ResourceLocation(ParkourRecorderMod.MOD_ID, "shaders/" + fragShaderName)));
 		
 		glCompileShader(vShader);
 		glCompileShader(fShader);
@@ -153,7 +151,7 @@ public class ShaderManager {
 		String code = "";
 		
 		try {
-			InputStream bufferedFile = Minecraft.getMinecraft().getResourceManager().getResource(file).getInputStream();
+			InputStream bufferedFile = Minecraft.getInstance().getResourceManager().getResource(file).getInputStream();
 			Scanner scanner = new Scanner(bufferedFile);
 			while(scanner.hasNextLine()) {
 				code += scanner.nextLine() + "\n";

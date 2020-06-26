@@ -1,32 +1,27 @@
-package com.elmfer.parkourhelper;
+package com.elmfer.parkour_recorder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.elmfer.parkourhelper.gui.GuiSaveSelection;
-import com.elmfer.parkourhelper.gui.GuiSaveSession;
-import com.elmfer.parkourhelper.parkour.IParkourSession;
-import com.elmfer.parkourhelper.parkour.PlaybackSession;
-import com.elmfer.parkourhelper.parkour.Recording;
-import com.elmfer.parkourhelper.parkour.RecordingSession;
-import com.elmfer.parkourhelper.parkour.SessionHUD;
-import com.elmfer.parkourhelper.render.ModelManager;
-import com.elmfer.parkourhelper.render.ParticleArrow;
-import com.elmfer.parkourhelper.render.ParticleFinish;
-import com.elmfer.parkourhelper.render.ShaderManager;
+import com.elmfer.parkour_recorder.parkour.IParkourSession;
+import com.elmfer.parkour_recorder.parkour.Recording;
+import com.elmfer.parkour_recorder.parkour.RecordingSession;
+import com.elmfer.parkour_recorder.parkour.SessionHUD;
+import com.elmfer.parkour_recorder.render.ModelManager;
+import com.elmfer.parkour_recorder.render.ShaderManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class EventHandler {
 	
 	public static final int MAX_HISTORY_SIZE = 16;
-	static Minecraft mc = Minecraft.getMinecraft();
+	static Minecraft mc = Minecraft.getInstance();
 	static SessionHUD hud = new SessionHUD();
 	public static IParkourSession session = new RecordingSession();
 	public static List<Recording> recordHistory = new ArrayList<>();
@@ -63,12 +58,6 @@ public class EventHandler {
 			
 			if(settings.keybindReloadShaders.isPressed())
 				reloadResources();
-			
-			if(settings.keybindLoad.isPressed())
-				mc.displayGuiScreen(new GuiSaveSelection());
-			
-			if(settings.keybindSave.isPressed())
-				mc.displayGuiScreen(new GuiSaveSession());
 		}
 	}
 	
@@ -84,8 +73,8 @@ public class EventHandler {
 	private static void reloadResources()
 	{
 		ShaderManager.reloadShaders();
-		ModelManager.loadModelFromResource(new ResourceLocation(ParkourHelperMod.MOD_ID, "models/arrow.ply"));
-		ModelManager.loadModelFromResource(new ResourceLocation(ParkourHelperMod.MOD_ID, "models/box.ply"));
-		ModelManager.loadModelFromResource(new ResourceLocation(ParkourHelperMod.MOD_ID, "models/finish.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/arrow.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/box.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/finish.ply"));
 	}
 }

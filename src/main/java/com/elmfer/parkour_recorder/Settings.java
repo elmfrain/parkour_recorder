@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper;
+package com.elmfer.parkour_recorder;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.registry.ClientRegistry;

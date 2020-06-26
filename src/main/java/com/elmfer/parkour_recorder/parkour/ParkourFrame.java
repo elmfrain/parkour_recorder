@@ -1,10 +1,10 @@
-package com.elmfer.parkourhelper.parkour;
+package com.elmfer.parkour_recorder.parkour;
 
 import java.nio.ByteBuffer;
 
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.MovementInput;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class ParkourFrame {
 	
@@ -17,13 +17,14 @@ public class ParkourFrame {
 	public final double posZ;
 	private final short flags;
 	
-	public ParkourFrame(GameSettings gameSettingsIn, EntityPlayerSP playerIn)
+	public ParkourFrame(net.minecraft.client.GameSettings gameSettingsIn, ClientPlayerEntity playerIn)
 	{
 		headYaw = playerIn.getRotationYawHead();
 		headPitch = playerIn.rotationPitch;
-		posX = playerIn.posX;
-		posY = playerIn.posY;
-		posZ = playerIn.posZ;
+		Vector3d playerPos = playerIn.getPositionVec();
+		posX = playerPos.x;
+		posY = playerPos.y;
+		posZ = playerPos.z;
 		short flags = 0;
 		if(gameSettingsIn.keyBindJump.isKeyDown()) flags |= 0x001;
 		if(gameSettingsIn.keyBindSneak.isKeyDown()) flags |= 0x002;
@@ -58,14 +59,14 @@ public class ParkourFrame {
 		return new ParkourFrame(flags, headYaw, headPitch, posX, posY, posZ);
 	}
 	
-	public void setInput(MovementInput input, EntityPlayerSP playerIn)
+	public void setInput(MovementInput input, ClientPlayerEntity playerIn)
 	{
 		input.forwardKeyDown = getFlag(Flags.FORWARD);
 		input.backKeyDown = getFlag(Flags.BACKWARD);
 		input.leftKeyDown = getFlag(Flags.LEFT_STRAFE);
 		input.rightKeyDown = getFlag(Flags.RIGHT_STRAFE);
 		input.jump = getFlag(Flags.JUMPING);
-		input.sneak = getFlag(Flags.SNEAKING);
+		input.sneaking = getFlag(Flags.SNEAKING);
 		playerIn.setSneaking(getFlag(Flags.SNEAKING));
 		playerIn.setSprinting(getFlag(Flags.SPRINTING));
 	}

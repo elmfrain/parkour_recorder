@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper;
+package com.elmfer.parkour_recorder;
 
 import net.minecraft.util.MovementInput;
 
@@ -49,7 +49,7 @@ public class ControlledMovementInput extends MovementInput {
             this.rightKeyDown = false;
         }
 
-        if (this.sneak)
+        if (this.sneaking)
         {
             this.moveStrafe = (float)((double)this.moveStrafe * 0.3D);
             this.moveForward = (float)((double)this.moveForward * 0.3D);

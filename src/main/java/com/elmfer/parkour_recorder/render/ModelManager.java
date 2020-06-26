@@ -1,4 +1,4 @@
-package com.elmfer.parkourhelper.render;
+package com.elmfer.parkour_recorder.render;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -14,10 +14,9 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import com.elmfer.parkourhelper.ParkourHelperMod;
+import com.elmfer.parkour_recorder.ParkourRecorderMod;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.util.ResourceLocation;
 
@@ -30,10 +29,10 @@ public class ModelManager {
 		
 		try {
 			
-			InputStream modelStream = Minecraft.getMinecraft().getResourceManager().getResource(model).getInputStream();
+			InputStream modelStream = Minecraft.getInstance().getResourceManager().getResource(model).getInputStream();
 			BufferedInputStream modelFile = new BufferedInputStream(modelStream);
 			modelFile.mark(Integer.MAX_VALUE);
-			String[] modelPath = model.getResourcePath().split("/");
+			String[] modelPath = model.getPath().split("/");
 			String modelName = modelPath[modelPath.length - 1].replace(".ply", "");
 			Scanner scanner = new Scanner(modelStream);
 			int vertexCount = 0;
@@ -81,14 +80,14 @@ public class ModelManager {
 					}
 					else if(faceCount < faceTotal)
 					{
-						int a = 0, b = 0, c = 0, d = 0;
+						int a = 0, b = 0, c = 0;
+						scanner.nextInt();
 						a = scanner.nextInt();
 						b = scanner.nextInt();
 						c = scanner.nextInt();
-						d = scanner.nextInt();
+						modelIndecies.putInt(a);
 						modelIndecies.putInt(b);
 						modelIndecies.putInt(c);
-						modelIndecies.putInt(d);
 						faceCount++;
 					}
 					else break;
@@ -104,7 +103,7 @@ public class ModelManager {
 			modelFile.close();
 		}catch(IOException e) {
 			CrashReport report = new CrashReport("Invalid Model: ", e.getCause());
-			Minecraft.getMinecraft().crashed(report);
+			Minecraft.getInstance().crashed(report);
 		}
 	}
 	
@@ -114,7 +113,7 @@ public class ModelManager {
 		{models.get(modelName).render(); return true;}
 		else
 		{
-			loadModelFromResource(new ResourceLocation(ParkourHelperMod.MOD_ID, "models/" + modelName + ".ply"));
+			loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/" + modelName + ".ply"));
 		}
 		return false;
 	}
@@ -156,14 +155,13 @@ public class ModelManager {
 		
 		public void cleanUp()
 		{
-			OpenGlHelper.glDeleteBuffers(glBufferID);
-			OpenGlHelper.glDeleteBuffers(glElemBufferID);
+			GL15.glDeleteBuffers(glBufferID);
+			GL15.glDeleteBuffers(glElemBufferID);
 			GL30.glDeleteVertexArrays(glVertArrayID);
 		}
 		
 		public void render()
 		{
-			int prevVertArray = GL11.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
 			GL30.glBindVertexArray(glVertArrayID);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
 			GL30.glBindVertexArray(0);

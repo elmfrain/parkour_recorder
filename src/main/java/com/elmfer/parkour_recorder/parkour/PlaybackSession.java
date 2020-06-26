@@ -1,16 +1,16 @@
-package com.elmfer.parkourhelper.parkour;
+package com.elmfer.parkour_recorder.parkour;
 
-import com.elmfer.parkourhelper.ControlledMovementInput;
-import com.elmfer.parkourhelper.render.ParticleArrow;
-import com.elmfer.parkourhelper.render.ParticleFinish;
+import com.elmfer.parkour_recorder.ControlledMovementInput;
+import com.elmfer.parkour_recorder.render.ParticleArrow;
+import com.elmfer.parkour_recorder.render.ParticleFinish;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class PlaybackSession implements IParkourSession {
 
-	protected static final Minecraft mc = Minecraft.getMinecraft();
+	protected static final Minecraft mc = Minecraft.getInstance();
 	public final Recording recording;
 	private ParticleArrow arrow;
 	private ParticleFinish finish;
@@ -79,7 +79,7 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVector()) < 0.25)
+		if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVec()) < 0.25)
 		{
 			isPlaying = true;
 			mc.player.movementInput = new ControlledMovementInput();
@@ -122,9 +122,10 @@ public class PlaybackSession implements IParkourSession {
 		despawnParticles();
 		isPlaying = false;
 		
-		double motionX = mc.player.posX - mc.player.prevPosX;
-		double motionY = mc.player.posY - mc.player.prevPosY;
-		double motionZ = mc.player.posZ - mc.player.prevPosZ;
+		Vector3d playerPos = mc.player.getPositionVec();
+		double motionX = playerPos.x - mc.player.prevPosX;
+		double motionY = playerPos.y - mc.player.prevPosY;
+		double motionZ = playerPos.z - mc.player.prevPosZ;
 		mc.player.setVelocity(motionX, motionY, motionZ);
 		
 		mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
@@ -135,10 +136,10 @@ public class PlaybackSession implements IParkourSession {
 		despawnParticles();
 		
 		arrow = new ParticleArrow(mc.world, recording.initPos.x, recording.initPos.y, recording.initPos.z);
-		mc.effectRenderer.addEffect(arrow);
+		mc.particles.addEffect(arrow);
 		
 		finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
-		mc.effectRenderer.addEffect(finish);
+		mc.particles.addEffect(finish);
 	}
 	
 	private void despawnParticles()
