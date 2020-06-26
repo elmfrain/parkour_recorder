@@ -48,18 +48,20 @@ public class SessionHUD extends AbstractGui
 		MainWindow res = mc.getMainWindow();
 		
 		int border = 10;
-		//int lip = 2;
+		int lip = 2;
 		int stringWidth = mc.fontRenderer.getStringWidth(s);
-		//int stringHeight = mc.fontRenderer.FONT_HEIGHT;
+		int stringHeight = mc.fontRenderer.FONT_HEIGHT;
 		
-		//int width = res.getScaledWidth();
+		int width = res.getScaledWidth();
 		int c = GraphicsHelper.getIntColor(0.9f, 0.9f, 0.9f, 1.0f);
-		//int c1 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.2f);
+		int c1 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.2f);
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
-		//drawRect(res.getScaledWidth() - stringWidth - border - lip, border - lip, res.getScaledWidth() - border + lip, border + stringHeight + lip, c1);
-		//drawString
-		func_238471_a_(new MatrixStack(), mc.fontRenderer, s, res.getScaledWidth() - stringWidth - border, border, c);
+		/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
+		func_238467_a_(new MatrixStack(), res.getScaledWidth() - stringWidth - border - lip, border - lip, res.getScaledWidth() - border + lip, border + stringHeight + lip, c1);
+		
+		/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
+		func_238476_c_(new MatrixStack(), mc.fontRenderer, s, res.getScaledWidth() - stringWidth - border, border, c);
 	}
 }

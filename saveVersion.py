@@ -9,7 +9,7 @@ if len(sys.argv) < 3:
 
 main_dir = os.path.dirname(os.path.realpath(__file__))
 
-files_to_change = ["build.gradle", ".java", "mcmod.info"]
+files_to_change = ["build.gradle", ".java", "mods.toml"]
 
 
 gradle_file = None
@@ -25,12 +25,8 @@ def process_info():
         new_line = line
         if i < len(prev_lines) - 1:
             new_line += '\n'
-        if line.find("\"version\"") > -1:
-            i = line.find("\"version\"")
-            new_line = line[:i] + "\"version\": \"" + sys.argv[1] + '\",\n'
-        elif line.find("\"mcversion\"") > -1:
-            i = line.find("\"mcversion\"")
-            new_line = line[:i] + "\"mcversion\": \"" + sys.argv[2] + '\",\n'
+        if line.find("version") == 0:
+            new_line = "version=\"" + sys.argv[1] + '-' + sys.argv[2] + "\"\n"
         lines.extend(new_line)
 
     info_file.seek(0)

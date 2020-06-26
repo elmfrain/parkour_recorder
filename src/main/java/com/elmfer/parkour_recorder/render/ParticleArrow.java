@@ -67,6 +67,8 @@ public class ParticleArrow extends Particle{
 		
         int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         int shader = ShaderManager.getDefaultShader();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL20.glUseProgram(shader);
         GL11.glPushMatrix();
         {
@@ -110,6 +112,6 @@ public class ParticleArrow extends Particle{
 	@Override
 	public IParticleRenderType getRenderType() {
 		// TODO Auto-generated method stub
-		return null;
+		return IParticleRenderType.CUSTOM;
 	}
 }
