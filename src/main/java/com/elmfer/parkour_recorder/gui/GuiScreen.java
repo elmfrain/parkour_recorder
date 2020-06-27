@@ -24,7 +24,6 @@ public class GuiScreen extends Screen{
 		widgetList = this.field_230710_m_;
 		eventListeners = this.field_230705_e_;
 		mc = Minecraft.getInstance();
-		GuiButton.currentZLevel = 0;
 	}
 	@Override
 	public boolean func_231043_a_(double mouseX, double mouseY, double mouseW)
@@ -82,7 +81,7 @@ public class GuiScreen extends Screen{
 	
 	protected void initGui()
 	{
-		
+		GuiButton.currentZLevel = 0;
 	}
 	
 	protected <T extends Widget> T addWidget(T widget)

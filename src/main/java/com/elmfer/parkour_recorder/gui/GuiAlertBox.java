@@ -6,6 +6,7 @@ import static com.elmfer.parkour_recorder.render.GraphicsHelper.gradientRectToRi
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
@@ -26,6 +27,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 	@Override
 	protected void initGui()
 	{
+		widgetList.clear();
 		GuiButton.currentZLevel = 1;
 		GuiButton closeButton = new GuiButton(0, 0, "", this::close) 
 		{

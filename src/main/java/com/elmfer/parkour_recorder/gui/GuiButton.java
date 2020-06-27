@@ -113,7 +113,7 @@ public class GuiButton extends Button {
     	viewportHeight = (int) (viewport[3] / factor);
     	int mX = (int) (mouseX - xTranslate);
     	int mY = (int) (mouseY - yTranslate);
-    	setHovered(zLevel == currentZLevel && mX >= x() && mY >= y() && mX < x() + width() && mY < y() + height() && mouseInViewport(mouseX, mouseY));;
+    	setHovered(zLevel == currentZLevel && mX >= x() && mY >= y() && mX < x() + width() && mY < y() + height() && mouseInViewport(mouseX, mouseY));
 	}
 	
 	private boolean mouseInViewport(double mouseX, double mouseY)

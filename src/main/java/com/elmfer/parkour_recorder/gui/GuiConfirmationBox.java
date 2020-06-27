@@ -7,15 +7,15 @@ import net.minecraft.client.gui.widget.button.Button;
 
 public class GuiConfirmationBox extends GuiAlertBox {
 	
-	private Callback callback;
+	private ICallback callback;
 	
-	public GuiConfirmationBox(String title, Callback func, GuiScreen parent)
+	public GuiConfirmationBox(String title, ICallback func, GuiScreen parent)
 	{
 		super(title, parent);
 		callback = func;
 	}
 	
-	public static interface Callback
+	public static interface ICallback
 	{
 		public void callBack();
 	}

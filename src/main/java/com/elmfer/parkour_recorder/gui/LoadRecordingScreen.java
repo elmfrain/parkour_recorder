@@ -28,6 +28,7 @@ public class LoadRecordingScreen extends GuiScreen {
 	@Override
 	protected void initGui()
 	{
+		super.initGui();
 		records = Recording.loadSaves();
 		int buttonMargin = 5;
 		int buttonHeight = 20;
@@ -38,6 +39,7 @@ public class LoadRecordingScreen extends GuiScreen {
 		addWidget(new GuiButton(0, 0, I18n.format("gui.save_selection.open"), this::actionPerformed));
 		addWidget(new GuiButton(0, (buttonHeight + buttonMargin), I18n.format("gui.save_selection.delete"), this::actionPerformed));
 		addWidget(new GuiButton(0, (buttonHeight + buttonMargin) * 2, I18n.format("gui.save_selection.rename"), this::actionPerformed));
+		addWidget(new GuiTextField(mc.fontRenderer, 0, 0));
 		
 		if(alertBox != null)
 			alertBox.initGui();
@@ -45,7 +47,6 @@ public class LoadRecordingScreen extends GuiScreen {
 	
 	protected void actionPerformed(Button button)
 	{
-		if(alertBox != null) return;
 		int buttonId = widgetList.indexOf(button);
 		switch(buttonId)
 		{
@@ -59,12 +60,17 @@ public class LoadRecordingScreen extends GuiScreen {
 			alertBox = deleteBox;
 			alertBox.initGui();
 			break;
+		case 2:
+			GuiNamerBox renameBox = new GuiNamerBox("Rename Recording", this, (String s) -> { return s.length() > 0; } , this::rename);
+			renameBox.textField.setText(currentSelection.getName());
+			alertBox = renameBox;
+			alertBox.initGui();
+			break;
 		}
 	}
 	
 	protected void buttonListCallback(Button button)
 	{
-		if(alertBox != null) return;
 		currentSelection = records[recordList.getIndex((GuiButton) button)];
 	}
 	
@@ -102,7 +108,7 @@ public class LoadRecordingScreen extends GuiScreen {
 		aside.left = listMargin;
 		aside.right -= listMargin;
 		aside.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
-		aside.bottom = aside.top + (buttonHeight + buttonMargin) * widgetList.size();
+		aside.bottom = aside.top + (buttonHeight + buttonMargin) * 3;
 		GuiViewport desc = new GuiViewport(asideBody);
 		desc.left = listMargin;
 		desc.right -= listMargin;
@@ -152,7 +158,7 @@ public class LoadRecordingScreen extends GuiScreen {
 			
 			aside.pushMatrix(true);
 			{				
-				for(int i = 0; i < widgetList.size(); i++)
+				for(int i = 0; i < 3; i++)
 				{
 					GuiButton button = (GuiButton) widgetList.get(i);
 					button.setWidth(aside.getWidth());
@@ -185,6 +191,17 @@ public class LoadRecordingScreen extends GuiScreen {
 			alertBox.drawScreen(stack, mouseX, mouseY, partialTicks);
 			if(alertBox.shouldClose()) alertBox = null;
 		}
+	}
+	
+	private void rename(String newName)
+	{
+		alertBox.setShouldClose(true);
+		alertBox = null;
+		currentSelection.rename(newName);
+		currentSelection.save();
+		widgetList.clear();
+		eventListeners.clear();
+		initGui();
 	}
 	
 	private void delete()
