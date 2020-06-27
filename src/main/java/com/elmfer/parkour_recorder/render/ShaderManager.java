@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.util.Scanner;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL45;
@@ -90,8 +89,8 @@ public class ShaderManager {
 	public static void importMatricies(int shader)
 	{
 		Minecraft mc = Minecraft.getInstance();
-		FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
-		FloatBuffer modelViewMatrix = BufferUtils.createFloatBuffer(16);
+		float[] projectionMatrix = new float[16];
+		float[] modelViewMatrix = new float[16];
 		MainWindow res = mc.getMainWindow();
 		
 		GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projectionMatrix);

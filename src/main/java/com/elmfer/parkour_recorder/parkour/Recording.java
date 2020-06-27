@@ -222,13 +222,21 @@ public class Recording implements List<ParkourFrame>
 	
 	public static String getCurrentWorldName(Minecraft mc)
 	{
-		if(mc.getIntegratedServer() != null) return mc.getIntegratedServer().getName();
+		if(mc.getIntegratedServer() != null) 
+		{
+			/**mc.getIntegratedServer().getServerConfiguration().getWorldSettings().getWorldFolder()**/
+			return mc.getIntegratedServer().func_240793_aU_().func_230408_H_().func_234947_a_();
+		}
 		else return mc.getCurrentServerData().serverName + ": " + mc.getCurrentServerData().serverIP;
 	}
 	
 	private static String getWorldPath(Minecraft mc)
 	{
-		if(mc.getIntegratedServer() != null) return "local/" + mc.getIntegratedServer().getName();
+		if(mc.getIntegratedServer() != null) 
+		{
+			/**mc.getIntegratedServer().getServerConfiguration().getWorldSettings().getWorldFolder()**/
+			return "local/" + mc.getIntegratedServer().func_240793_aU_().func_230408_H_().func_234947_a_();
+		}
 		else return "servers/" + mc.getCurrentServerData().serverIP.replace('.', '-').replace(':', '_');
 	}
 	

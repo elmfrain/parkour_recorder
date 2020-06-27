@@ -1,5 +1,7 @@
 package com.elmfer.parkour_recorder;
 
+import com.elmfer.parkour_recorder.gui.GuiButtonList;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -23,6 +25,7 @@ public class ParkourRecorderMod
 	private void onSetup(FMLClientSetupEvent event)
 	{
 		MinecraftForge.EVENT_BUS.register(EventHandler.class);
+		MinecraftForge.EVENT_BUS.register(GuiButtonList.class);
 		Settings.getSettings();
 	}
 }

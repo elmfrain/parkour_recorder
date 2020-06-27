@@ -1,7 +1,6 @@
 package com.elmfer.parkour_recorder.parkour;
 
 import com.elmfer.parkour_recorder.ControlledMovementInput;
-import com.elmfer.parkour_recorder.parkour.ParkourFrame.Flags;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
@@ -97,11 +96,10 @@ public class PlaybackSession implements IParkourSession {
 					mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
 					if(arrow.isAlive()) arrow.setExpired();
 				}
-				frameNumber++;
 				currentFrame = recording.get(frameNumber);
-				System.out.println(mc.player.getMotion());
 				
 				currentFrame.setInput(mc.player.movementInput, mc.player);
+				frameNumber++;
 			}
 			else 
 				stop();
@@ -116,7 +114,7 @@ public class PlaybackSession implements IParkourSession {
 			mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 			
 			float partialTicks = mc.getRenderPartialTicks();
-			ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 1));
+			ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 			
 			mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
 			mc.player.rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);

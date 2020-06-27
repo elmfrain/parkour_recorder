@@ -59,9 +59,9 @@ public class SessionHUD extends AbstractGui
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
 		/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-		func_238467_a_(new MatrixStack(), res.getScaledWidth() - stringWidth - border - lip, border - lip, res.getScaledWidth() - border + lip, border + stringHeight + lip, c1);
+		func_238467_a_(new MatrixStack(), width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
 		
 		/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-		func_238476_c_(new MatrixStack(), mc.fontRenderer, s, res.getScaledWidth() - stringWidth - border, border, c);
+		func_238476_c_(new MatrixStack(), mc.fontRenderer, s, width - stringWidth - border, border, c);
 	}
 }

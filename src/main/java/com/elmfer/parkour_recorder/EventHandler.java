@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elmfer.parkour_recorder.gui.LoadRecordingScreen;
 import com.elmfer.parkour_recorder.parkour.IParkourSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
@@ -58,6 +59,9 @@ public class EventHandler {
 			
 			if(settings.keybindReloadShaders.isPressed())
 				reloadResources();
+			
+			if(settings.keybindLoad.isPressed())
+				Minecraft.getInstance().displayGuiScreen(new LoadRecordingScreen());
 		}
 	}
 	
