@@ -13,7 +13,7 @@ public class ParkourRecorderMod
 {
 	public static final String MOD_ID = "parkour_recorder";
 	public static final String MOD_NAME = "Parkour Recorder Mod";
-	public static final String MOD_VERSION = "0.0.4.6-1.16.1";
+	public static final String MOD_VERSION = "0.0.4.9-1.16.1";
 	
 	public ParkourRecorderMod()
 	{

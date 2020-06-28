@@ -24,7 +24,7 @@ public class EventHandler {
 	
 	public static final int MAX_HISTORY_SIZE = 16;
 	static Minecraft mc = Minecraft.getInstance();
-	static SessionHUD hud = new SessionHUD();
+	public static SessionHUD hud = new SessionHUD();
 	public static IParkourSession session = new RecordingSession();
 	public static List<Recording> recordHistory = new ArrayList<>();
 	
@@ -45,6 +45,8 @@ public class EventHandler {
 	{	
 		if(event.phase == Phase.START && mc.player != null)
 		{
+			hud.fadedness += hud.increaseOpacity ? 25 : 0;
+			hud.fadedness = Math.max(0, hud.fadedness - 5);
 			session.onClientTick();
 			
 			Settings settings = Settings.getSettings();

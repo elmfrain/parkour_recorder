@@ -13,6 +13,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
 
 public class SaveRecordingScreen extends GuiScreen
@@ -67,6 +68,7 @@ public class SaveRecordingScreen extends GuiScreen
 		case 4:
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(currentSelection);
+			EventHandler.hud.fadedness = 200;
 			mc.displayGuiScreen(null);
 			break;
 		default:
@@ -216,9 +218,8 @@ public class SaveRecordingScreen extends GuiScreen
 				boolean flag = EventHandler.session.isSessionActive();
 				open.setEnabled(!flag && open.enabled());
 				
-				//String warning = I18n.format("gui.save_session.warn.cannot_open_while_recording_or_playing");
-				//if(open.isMouseOver() && flag && currentSelection != null) drawHoveringText(warning, mouseX, mouseY);
-				//RenderHelper.disableStandardItemLighting();
+				String warning = I18n.format("gui.save_session.warn.cannot_open_while_recording_or_playing");
+				if(open.hovered() && flag && currentSelection != null) func_238652_a_(stack, ITextProperties.func_240652_a_(warning), mouseX, mouseY);
 			}
 			all.popMatrix();
 			

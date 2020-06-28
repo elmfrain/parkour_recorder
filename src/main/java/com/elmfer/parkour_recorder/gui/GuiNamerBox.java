@@ -7,6 +7,10 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent.ClientTickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class GuiNamerBox extends GuiAlertBox
 {
@@ -19,6 +23,14 @@ public class GuiNamerBox extends GuiAlertBox
 		super(titleIn, parent);
 		textValidator = textPredicate;
 		this.callback = callback;
+		MinecraftForge.EVENT_BUS.register(this);
+	}
+	
+	@SubscribeEvent
+	public void onClientTick(ClientTickEvent event)
+	{
+		if(event.phase == Phase.START)
+		textField.tick();
 	}
 	
 	@Override
@@ -54,6 +66,14 @@ public class GuiNamerBox extends GuiAlertBox
 			cancel.drawButton(stack, mouseX, mouseY, partialTicks);
 		}
 		viewport.popMatrix();
+	}
+	
+	@Override
+	public void setShouldClose(boolean shouldClose)
+	{
+		super.setShouldClose(shouldClose);
+		if(shouldClose)
+			MinecraftForge.EVENT_BUS.unregister(this);
 	}
 	
 	private void name(Button button)

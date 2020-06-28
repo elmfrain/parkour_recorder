@@ -12,6 +12,7 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class LoadRecordingScreen extends GuiScreen {
@@ -53,6 +54,7 @@ public class LoadRecordingScreen extends GuiScreen {
 		case 0:
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(currentSelection);
+			EventHandler.hud.fadedness = 200;
 			mc.displayGuiScreen(null);
 			break;
 		case 1:
@@ -169,6 +171,17 @@ public class LoadRecordingScreen extends GuiScreen {
 				}
 			}
 			aside.popMatrix();
+			
+			all.pushMatrix(false);
+			{
+				GuiButton open = (GuiButton) widgetList.get(0);
+				boolean flag = EventHandler.session.isSessionActive();
+				open.setEnabled(!flag && open.enabled());
+				
+				String warning = I18n.format("gui.save_session.warn.cannot_open_while_recording_or_playing");
+				if(open.hovered() && flag && currentSelection != null) func_238652_a_(stack, ITextProperties.func_240652_a_(warning), mouseX, mouseY);
+			}
+			all.popMatrix();
 			
 			if(currentSelection != null)
 			{

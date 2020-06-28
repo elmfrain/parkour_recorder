@@ -65,7 +65,7 @@ public class GuiButton extends Button {
 	public boolean visible() { return field_230694_p_; }
 	public void setVisible(boolean visible) { field_230694_p_ = visible; }
 	
-	protected boolean hovered() { return field_230692_n_; }
+	public boolean hovered() { return field_230692_n_; }
 	protected void setHovered(boolean hovered) { field_230692_n_ = hovered; }
 	
 	public void drawButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
