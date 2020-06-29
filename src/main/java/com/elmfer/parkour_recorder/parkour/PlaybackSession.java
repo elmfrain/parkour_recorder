@@ -47,7 +47,12 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public IParkourSession onPlay()
 	{
-		if(!isPlaying && !waitingForPlayer)
+		if(waitingForPlayer)
+		{
+			waitingForPlayer = false;
+			stop();
+		}
+		else if(!isPlaying && !waitingForPlayer)
 		{
 			waitingForPlayer = true;
 			spawnParticles();

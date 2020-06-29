@@ -4,6 +4,7 @@
     "gui.load_recording.information": "Information",
     "gui.load_recording.open": "Open",
     "gui.load_recording.delete": "Delete",
+    "gui.load_recording.rename": "Rename",
     "gui.load_recording.warn.cannot_open_while_recording_or_playing": "Cannot open while recording or during playback.",
     "gui.load_recording.rename_recording": "Rename Recording",
     "gui.load_recording.should_delete_?": "Should Delete?",
@@ -20,7 +21,7 @@
     "gui.save_recording.warn.cannot_open_while_recording_or_playing": "Cannot open while recording or during playback.",
     "gui.save_recording.clear_history_?": "Clear History?",
     "gui.save_recording.should_remove_?": "Should Remove?",
-    "gui.save_recording.name_recording": "Rename Recording",
+    "gui.save_recording.name_recording": "Name Recording",
     
     "gui.confirmation_box.yes": "Yes",
     "gui.confirmation_box.cancel": "Cancel",

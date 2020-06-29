@@ -22,7 +22,7 @@ public class Settings {
 		keybindRecord = new KeyBinding("keybind.record", GLFW.GLFW_KEY_R, ParkourRecorderMod.MOD_NAME);
 		keybindPlay = new KeyBinding("keybind.play", GLFW.GLFW_KEY_P, ParkourRecorderMod.MOD_NAME);
 		keybindOverride = new KeyBinding("keybind.override", Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_5, ParkourRecorderMod.MOD_NAME);
-		//keybindReloadShaders = new KeyBinding("Reload Resources", 24, "Parkour Mod");
+		keybindReloadShaders = new KeyBinding("Reload Resources", 24, "Parkour Mod");
 		keybindSave = new KeyBinding("keybind.save_recording", GLFW.GLFW_KEY_M, ParkourRecorderMod.MOD_NAME);
 		keybindLoad = new KeyBinding("keybind.load_recording", GLFW.GLFW_KEY_N, ParkourRecorderMod.MOD_NAME);
 		

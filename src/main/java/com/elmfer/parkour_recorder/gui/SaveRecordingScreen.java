@@ -75,7 +75,7 @@ public class SaveRecordingScreen extends Screen
 			if(buttonId == 0 || buttonId == 2) 
 			{
 				if(buttonId == 0) currentSelection = EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1);
-				GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.rename_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
+				GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.name_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
 				namerBox.textField.setText(currentSelection.getName());
 				alertBox = namerBox;
 				alertBox.init();
@@ -230,14 +230,14 @@ public class SaveRecordingScreen extends Screen
 				}
 				desc.popMatrix();
 			}
+			
+			if(alertBox != null)
+			{
+				alertBox.render(mouseX, mouseY, partialTicks);
+				if(alertBox.shouldClose()) alertBox = null;
+			}
 		}
 		RenderSystem.popMatrix();
-		
-		if(alertBox != null)
-		{
-			alertBox.render(mouseX, mouseY, partialTicks);
-			if(alertBox.shouldClose()) alertBox = null;
-		}
 	 }
 	
 	private void save(String newName)
