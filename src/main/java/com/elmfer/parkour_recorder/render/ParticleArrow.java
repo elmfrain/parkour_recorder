@@ -17,7 +17,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleArrow extends Particle{
 
@@ -39,10 +39,10 @@ public class ParticleArrow extends Particle{
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
 		RenderSystem.disableTexture();
-		Vector3d vector3d = renderInfo.getProjectedView();
-		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vector3d.getX());
-	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vector3d.getY());
-	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vector3d.getZ());
+		Vec3d vec3d = renderInfo.getProjectedView();
+		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
+	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
+	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
         float ticks = age + partialTicks;
         float angle = (float) ((60.0f * Math.log(2 * ticks + 1) + ticks) * 2);
         
@@ -92,7 +92,7 @@ public class ParticleArrow extends Particle{
         GL11.glPopMatrix();
         GL11.glPushMatrix();
         {
-        	double distance = (new Vector3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getInstance().player.getPositionVec());
+        	double distance = (new Vec3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getInstance().player.getPositionVec());
         	distance *= Math.min(ticks / 20.0f, 1);
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	GL11.glTranslated(x, y, z);

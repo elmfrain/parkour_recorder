@@ -7,7 +7,7 @@ import com.elmfer.parkour_recorder.render.ParticleFinish;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
 
 public class PlaybackSession implements IParkourSession {
 
@@ -126,7 +126,7 @@ public class PlaybackSession implements IParkourSession {
 		despawnParticles();
 		isPlaying = false;
 		
-		Vector3d playerPos = mc.player.getPositionVec();
+		Vec3d playerPos = mc.player.getPositionVec();
 		double motionX = playerPos.x - mc.player.prevPosX;
 		double motionY = playerPos.y - mc.player.prevPosY;
 		double motionZ = playerPos.z - mc.player.prevPosZ;

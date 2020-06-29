@@ -16,7 +16,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleFinish extends Particle{
 	
@@ -48,10 +48,10 @@ public class ParticleFinish extends Particle{
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
 		RenderSystem.disableTexture();
-		Vector3d vector3d = renderInfo.getProjectedView();
-		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vector3d.getX());
-	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vector3d.getY());
-	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vector3d.getZ());
+		Vec3d vec3d = renderInfo.getProjectedView();
+		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
+	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
+	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
         float ticks = age + partialTicks;
         float angle = (float) Math.sin(ticks * Math.PI / 20.0) * 10.0f;
         
@@ -80,7 +80,7 @@ public class ParticleFinish extends Particle{
         GL30.glUseProgram(shader);
         GL11.glPushMatrix();
         {
-        	double distance = (new Vector3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().player.getPositionVec());
+        	double distance = (new Vec3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().player.getPositionVec());
         	double expiredAmount = 1.0 - (expiredAge + (isExpired ? partialTicks : 0)) / expireDuration;
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	distance *= expiredAmount;

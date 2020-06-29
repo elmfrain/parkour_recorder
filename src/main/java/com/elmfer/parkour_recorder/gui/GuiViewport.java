@@ -109,7 +109,6 @@ public class GuiViewport extends AbstractGui
 			
 			int left = getAbsoluteLeft();
 			int top = getAbsoluteTop();
-			int right = left + getWidth();
 			int bottom = top + getHeight();
 			double factor = res.getGuiScaleFactor();
 			int x = (int) (left * factor);
@@ -117,10 +116,10 @@ public class GuiViewport extends AbstractGui
 			int	width = (int) (getWidth() * factor);
 			int	height = (int) (getHeight() * factor);
 			GlStateManager.viewport(x, y, width, height);
-			GlStateManager.matrixMode(GL11.GL_PROJECTION);
-			GlStateManager.loadIdentity();
-			GlStateManager.ortho(0, getWidth(), getHeight(), 0, 1000.0D, 3000.0D);
-			GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+			RenderSystem.matrixMode(GL11.GL_PROJECTION);
+			RenderSystem.loadIdentity();
+			RenderSystem.ortho(0, getWidth(), getHeight(), 0, 1000.0D, 3000.0D);
+			RenderSystem.matrixMode(GL11.GL_MODELVIEW);
 			
 			GL11.glLoadMatrixf(getGuiMatrix());
 		}

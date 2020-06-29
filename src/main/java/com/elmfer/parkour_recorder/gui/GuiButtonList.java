@@ -4,22 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class GuiButtonList extends AbstractGui
 {
 	protected List<GuiButton> buttonList = new ArrayList<GuiButton>();
-	private GuiScreen parentScreen;
+	private Screen parentScreen;
 	private float scrollPos = 0.0f;
 	private float scrollSpeed = 0.0f;
 	private static double scrollAmount = 0.0;
 	
-	public GuiButtonList(GuiScreen parent)
+	public GuiButtonList(Screen parent)
 	{
 		parentScreen = parent;
 	}
@@ -38,12 +39,14 @@ public class GuiButtonList extends AbstractGui
 	public void addButton(GuiButton button)
 	{
 		buttonList.add(button);
-		parentScreen.eventListeners.add(button);
+		@SuppressWarnings("unchecked")
+		List<IGuiEventListener> pChildren = (List<IGuiEventListener>) parentScreen.children();
+		pChildren.add(button);
 	}
 	
 	public void clearButtons()
 	{
-		buttonList.forEach((GuiButton b) -> {parentScreen.eventListeners.remove(b);});
+		buttonList.forEach((GuiButton b) -> {parentScreen.children().remove(b);});
 		buttonList.clear();
 	}
 	
@@ -63,26 +66,26 @@ public class GuiButtonList extends AbstractGui
 		
 		viewport.pushMatrix(true);
 		{
-			GlStateManager.pushMatrix();
+			RenderSystem.pushMatrix();
 			{
-				GlStateManager.translatef(0, scrollPos, 0);
+				RenderSystem.translatef(0, scrollPos, 0);
 				for(int i = 0; i < buttonList.size(); i++)
 				{
 					buttonList.get(i).setWidth(viewport.getWidth() - scrollerWidth);;
 					buttonList.get(i).setHeight(buttonHeight);
-					buttonList.get(i).setY((buttonHeight + buttonMargin) * i);;
-					buttonList.get(i).drawButton(new MatrixStack(), mouseX, mouseY, partialTicks);
+					buttonList.get(i).y = (buttonHeight + buttonMargin) * i;;
+					buttonList.get(i).renderButton(mouseX, mouseY, partialTicks);
 				}
 			}
-			GlStateManager.popMatrix();
+			RenderSystem.popMatrix();
 			
 			int tabHeight = (int) (((float) viewport.getHeight() / listHeight) * viewport.getHeight());
 			int tabTravel = (int) (((float) -scrollPos / scrollMovement) * (viewport.getHeight() - tabHeight));
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), viewport.getWidth() - scrollerWidth, 0, viewport.getWidth(), viewport.getHeight(), 
+
+			fill(viewport.getWidth() - scrollerWidth, 0, viewport.getWidth(), viewport.getHeight(), 
 					GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.5f));
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), viewport.getWidth() - scrollerWidth, tabTravel, viewport.getWidth(), 
+
+			fill(viewport.getWidth() - scrollerWidth, tabTravel, viewport.getWidth(), 
 					tabHeight + tabTravel, 
 					GraphicsHelper.getIntColor(0.4f, 0.4f, 0.4f, 0.3f));
 		}

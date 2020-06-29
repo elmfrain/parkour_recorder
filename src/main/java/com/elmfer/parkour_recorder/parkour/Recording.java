@@ -17,7 +17,7 @@ import java.util.ListIterator;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
 
 public class Recording implements List<ParkourFrame>
 {
@@ -34,22 +34,22 @@ public class Recording implements List<ParkourFrame>
 	};
 	
 	private final List<ParkourFrame> frames = new ArrayList<ParkourFrame>();
-	public final Vector3d initPos;
-	public final Vector3d initVel;
-	public Vector3d lastPos = new Vector3d(0, 0, 0);
-	public Vector3d lastVel = new Vector3d(0, 0, 0);
+	public final Vec3d initPos;
+	public final Vec3d initVel;
+	public Vec3d lastPos = new Vec3d(0, 0, 0);
+	public Vec3d lastVel = new Vec3d(0, 0, 0);
 	private String name;
 	protected String originalName = null;
 	protected File recordFile = null;
 	
-	public Recording(Vector3d startingPos, Vector3d staringVel) {
+	public Recording(Vec3d startingPos, Vec3d staringVel) {
 		initPos = startingPos;
 		initVel = staringVel;
 		this.name = null;
 	}
 	public Recording() {
-		initPos = new Vector3d(0, 0, 0);
-		initVel = new Vector3d(0, 0, 0);
+		initPos = new Vec3d(0, 0, 0);
+		initVel = new Vec3d(0, 0, 0);
 		name = null;
 	}
 	
@@ -68,8 +68,8 @@ public class Recording implements List<ParkourFrame>
 	@Override
 	public String toString()
 	{
-		Vector3d initPos = new Vector3d((int) this.initPos.x, (int) this.initPos.y, (int) this.initPos.z);
-		Vector3d lastPos = new Vector3d((int) this.lastPos.x, (int) this.lastPos.y, (int) this.lastPos.z);
+		Vec3d initPos = new Vec3d((int) this.initPos.x, (int) this.initPos.y, (int) this.initPos.z);
+		Vec3d lastPos = new Vec3d((int) this.lastPos.x, (int) this.lastPos.y, (int) this.lastPos.z);
 		String s = name + "\n\n";
 		String tab = ":\n   ";
 		if(recordFile != null) s += I18n.format("recording.file") + tab + (recordFile != null ? recordFile.getName() : "[" + I18n.format("recording.unsaved") + "]") + "\n\n";
@@ -199,10 +199,10 @@ public class Recording implements List<ParkourFrame>
 		
 		String name = new String(namedata, StandardCharsets.UTF_8);
 		int recordingSize = buffer.getInt();
-		Vector3d initPos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-		Vector3d initVel = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-		Vector3d lastPos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-		Vector3d lastVel = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vec3d initPos = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vec3d initVel = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vec3d lastPos = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+		Vec3d lastVel = new Vec3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
 		Recording newRecording = new Recording(initPos, initVel);
 		newRecording.name = name.length() == 0 ? null : name;
 		newRecording.originalName = name;
@@ -224,8 +224,7 @@ public class Recording implements List<ParkourFrame>
 	{
 		if(mc.getIntegratedServer() != null) 
 		{
-			/**mc.getIntegratedServer().getServerConfiguration().getWorldSettings().getWorldFolder()**/
-			return mc.getIntegratedServer().func_240793_aU_().func_230408_H_().func_234947_a_();
+			return mc.getIntegratedServer().getFolderName();
 		}
 		else return mc.getCurrentServerData().serverName + ": " + mc.getCurrentServerData().serverIP;
 	}
@@ -234,8 +233,7 @@ public class Recording implements List<ParkourFrame>
 	{
 		if(mc.getIntegratedServer() != null) 
 		{
-			/**mc.getIntegratedServer().getServerConfiguration().getWorldSettings().getWorldFolder()**/
-			return "local/" + mc.getIntegratedServer().func_240793_aU_().func_230408_H_().func_234947_a_();
+			return "local/" + mc.getIntegratedServer().getFolderName();
 		}
 		else return "servers/" + mc.getCurrentServerData().serverIP.replace('.', '-').replace(':', '_');
 	}

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.MovementInput;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
 
 public class ParkourFrame {
 	
@@ -21,7 +21,7 @@ public class ParkourFrame {
 	{
 		headYaw = playerIn.getRotationYawHead();
 		headPitch = playerIn.rotationPitch;
-		Vector3d playerPos = playerIn.getPositionVec();
+		Vec3d playerPos = playerIn.getPositionVec();
 		posX = playerPos.x;
 		posY = playerPos.y;
 		posZ = playerPos.z;

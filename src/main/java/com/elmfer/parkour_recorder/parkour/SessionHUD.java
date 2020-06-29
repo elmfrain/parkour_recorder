@@ -4,7 +4,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.MainWindow;
@@ -71,11 +70,8 @@ public class SessionHUD extends AbstractGui
 			GlStateManager.enableBlend();
 			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
-			
-			/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-			func_238476_c_(new MatrixStack(), mc.fontRenderer, s, width - stringWidth - border, border, c);
+			fill(width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
+			drawString(mc.fontRenderer, s, width - stringWidth - border, border, c);
 		}
 	}
 }

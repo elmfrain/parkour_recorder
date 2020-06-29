@@ -2,9 +2,8 @@ package com.elmfer.parkour_recorder.gui;
 
 import java.util.function.Predicate;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,7 +17,7 @@ public class GuiNamerBox extends GuiAlertBox
 	private Predicate<String> textValidator;
 	private INamedCallback callback;
 	
-	public GuiNamerBox(String titleIn, GuiScreen parent, Predicate<String> textPredicate, INamedCallback callback)
+	public GuiNamerBox(String titleIn, Screen parent, Predicate<String> textPredicate, INamedCallback callback)
 	{
 		super(titleIn, parent);
 		textValidator = textPredicate;
@@ -34,15 +33,16 @@ public class GuiNamerBox extends GuiAlertBox
 	}
 	
 	@Override
-	public void initGui()
+	public void init()
 	{
-		super.initGui();
+		super.init();
+		Minecraft mc = Minecraft.getInstance();
 		int margins = (int) (20 / mc.getMainWindow().getGuiScaleFactor());
 		textField.setMaxStringLength(128);
 		textField.setCursorPositionZero();
-		addWidget(new GuiButton(0, 0, I18n.format("Name"), this::name));
-		addWidget(new GuiButton(0, 0, "Cancel", this::close));
-		addWidget(textField);
+		addButton(new GuiButton(0, 0, I18n.format("gui.naming_box.name"), this::name));
+		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.cancel"), this::close));
+		addButton(textField);
 		height = 40 + margins;
 	}
 
@@ -51,19 +51,18 @@ public class GuiNamerBox extends GuiAlertBox
 	{
 		viewport.pushMatrix(false);
 		{
-			MatrixStack stack = new MatrixStack();
 			int margins = (int) (20 / Minecraft.getInstance().getMainWindow().getGuiScaleFactor());
 			textField.setWidth(viewport.getWidth());
-			textField.drawTextBox(stack, mouseX, mouseY, partialTicks);
-			GuiButton rename = (GuiButton) widgetList.get(1);
-			GuiButton cancel = (GuiButton) widgetList.get(2);
+			textField.renderButton(mouseX, mouseY, partialTicks);
+			GuiButton rename = (GuiButton) buttons.get(1);
+			GuiButton cancel = (GuiButton) buttons.get(2);
 			rename.setWidth(viewport.getWidth() / 2 - margins);
-			cancel.setWidth(rename.width());
-			rename.setY(textField.height() + margins);
-			cancel.setY(rename.y());
-			cancel.setX(viewport.getWidth() - cancel.width());
-			rename.drawButton(stack, mouseX, mouseY, partialTicks);
-			cancel.drawButton(stack, mouseX, mouseY, partialTicks);
+			cancel.setWidth(rename.getWidth());
+			rename.y = textField.getHeight() + margins;
+			cancel.y = rename.y;
+			cancel.x = viewport.getWidth() - cancel.getWidth();
+			rename.renderButton(mouseX, mouseY, partialTicks);
+			cancel.renderButton(mouseX, mouseY, partialTicks);
 		}
 		viewport.popMatrix();
 	}

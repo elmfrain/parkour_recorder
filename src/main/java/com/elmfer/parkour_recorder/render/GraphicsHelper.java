@@ -21,7 +21,6 @@ public class GraphicsHelper {
 		return value;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static void gradientRectToRight(int left, int top, int right, int bottom, int startColor, int endColor)
 	{
 		float f = (float)(startColor >> 24 & 255) / 255.0F;
