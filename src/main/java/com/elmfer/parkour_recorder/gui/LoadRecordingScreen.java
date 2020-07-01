@@ -203,6 +203,8 @@ public class LoadRecordingScreen extends Screen {
 			alertBox.render(mouseX, mouseY, partialTicks);
 			if(alertBox.shouldClose()) alertBox = null;
 		}
+		
+		all.pushMatrix(false);
 	}
 	
 	private void rename(String newName)

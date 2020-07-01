@@ -69,6 +69,11 @@ public class EventHandler {
 			if(settings.keybindSave.isPressed())
 				Minecraft.getInstance().displayGuiScreen(new SaveRecordingScreen());
 		}
+		else if(mc.player == null)
+		{
+			recordHistory.clear();
+			session = new RecordingSession();
+		}
 	}
 	
 	public static void addToHistory(Recording recording)

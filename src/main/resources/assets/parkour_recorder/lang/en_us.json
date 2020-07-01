@@ -33,6 +33,8 @@
     "recording.recording_length": "Recording Length",
     "recording.starting_position": "Starting Position",
     "recording.ending_position": "Ending Position",
+    
+    "warn.playback_failed": "Playback Failed",
 	
     "hud.session.stopped": "Stopped",
     "hud.session.overriding": "Overriding",

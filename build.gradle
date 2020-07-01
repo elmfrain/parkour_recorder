@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = "0.0.4.12-1.15.2"
+version = "0.0.4.15-1.15.2"
 group = 'com.elmfer.parkour_recorder' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'parkour_recorder'
 

@@ -8,6 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class PlaybackSession implements IParkourSession {
 
@@ -85,14 +87,26 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVec()) < 0.25)
+		if(mc.isGamePaused()) return;
+		double distance = recording.initPos.distanceTo(mc.player.getPositionVec());
+		if(waitingForPlayer && distance < 1.0)
 		{
-			isPlaying = true;
-			mc.player.movementInput = new ControlledMovementInput();
-			frameNumber = 0;
-			waitingForPlayer = false;
+			double speed = (1.0 - distance) * 0.2;
+			Vec3d prevMotion = mc.player.getMotion();
+			mc.player.setMotion(prevMotion.x, prevMotion.y * 0.8, prevMotion.z);
+			
+			Vec3d pushVel = recording.initPos.subtract(mc.player.getPositionVec()).mul(speed, speed, speed);
+			mc.player.addVelocity(pushVel.x, pushVel.y, pushVel.z);
+			
+			if(waitingForPlayer && distance < 0.075)
+			{
+				isPlaying = true;
+				mc.player.movementInput = new ControlledMovementInput();
+				frameNumber = 0;
+				waitingForPlayer = false;
+			}
 		}
-		if(isPlaying && !mc.isGamePaused())
+		if(isPlaying)
 		{
 			if(frameNumber < recording.size())
 			{
@@ -102,6 +116,13 @@ public class PlaybackSession implements IParkourSession {
 					if(arrow.isAlive()) arrow.setExpired();
 				}
 				currentFrame = recording.get(frameNumber);
+				if(mc.player.getPositionVec().distanceTo(new Vec3d(currentFrame.posX, currentFrame.posY, currentFrame.posZ)) > 1.0)
+				{
+					mc.player.sendMessage(new TranslationTextComponent("warn.playback_failed").applyTextStyles(TextFormatting.DARK_RED, TextFormatting.BOLD));
+					stop();
+					frameNumber = 0;
+				}
+				mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 				
 				currentFrame.setInput(mc.player.movementInput, mc.player);
 				frameNumber++;
@@ -114,11 +135,24 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onRenderTick()
 	{
-		if(isPlaying && !mc.isGamePaused())
+		double distance = recording.initPos.distanceTo(mc.player.getPositionVec());
+		float partialTicks = mc.getRenderPartialTicks();
+		
+		if(waitingForPlayer && !mc.isGamePaused() && distance < 0.5)
 		{
-			mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+			Vec3d playerPos = mc.player.getPositionVec();
+			double lerpedX = MathHelper.lerp(partialTicks, mc.player.prevPosX, playerPos.x);
+			double lerpedY = MathHelper.lerp(partialTicks, mc.player.prevPosY, playerPos.y);
+			double lerpedZ = MathHelper.lerp(partialTicks, mc.player.prevPosZ, playerPos.z);
+			Vec3d lerpedPos = new Vec3d(lerpedX, lerpedY, lerpedZ);
+			double lerpedDist = recording.initPos.distanceTo(lerpedPos);
+			double amount = Math.pow(0.5 - lerpedDist, 2.0);
 			
-			float partialTicks = mc.getRenderPartialTicks();
+			mc.player.rotationYaw = (float) MathHelper.lerp(amount, mc.player.rotationYaw, recording.get(0).headYaw);
+			mc.player.rotationPitch = (float) MathHelper.lerp(amount, mc.player.rotationPitch, recording.get(0).headPitch);
+		}
+		else if(isPlaying && !mc.isGamePaused())
+		{	
 			ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 			
 			mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);

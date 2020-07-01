@@ -238,6 +238,8 @@ public class SaveRecordingScreen extends Screen
 			}
 		}
 		RenderSystem.popMatrix();
+		
+		all.pushMatrix(false);
 	 }
 	
 	private void save(String newName)
