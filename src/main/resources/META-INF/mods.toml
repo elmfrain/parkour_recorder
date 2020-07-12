@@ -12,7 +12,7 @@ loaderVersion="[31,)" #mandatory (26 is current forge version)
 # The modid of the mod
 modId="parkour_recorder" #mandatory
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
-version="0.0.4.16-1.15.2"
+version="0.0.4.16-1.15.2-rc9"
 # A display name for the mod
 displayName="Parkour Recorder" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification <here>

@@ -212,7 +212,7 @@ public class SaveRecordingScreen extends Screen
 				
 				if(open.isHovered() && flag && currentSelection != null) 
 				{	
-					String warning = I18n.format("gui.save_session.warn.cannot_open_while_recording_or_playing");
+					String warning = I18n.format("gui.save_recording.warn.cannot_open_while_recording_or_playing");
 					renderTooltip(warning, mouseX, mouseY);
 				}
 			}
