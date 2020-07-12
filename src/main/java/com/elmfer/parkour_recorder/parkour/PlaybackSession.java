@@ -1,6 +1,5 @@
 package com.elmfer.parkour_recorder.parkour;
 
-import com.elmfer.parkour_recorder.ControlledMovementInput;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
@@ -8,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -21,6 +21,7 @@ public class PlaybackSession implements IParkourSession {
 	private boolean waitingForPlayer = false;
 	private int frameNumber = 0;
 	private ParkourFrame currentFrame = null;
+	private int playbackCountdown = 0;
 	
 	public PlaybackSession(Recording recording)
 	{
@@ -49,12 +50,7 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public IParkourSession onPlay()
 	{
-		if(waitingForPlayer)
-		{
-			waitingForPlayer = false;
-			stop();
-		}
-		else if(!isPlaying && !waitingForPlayer)
+		if(!isPlaying && !waitingForPlayer)
 		{
 			waitingForPlayer = true;
 			spawnParticles();
@@ -87,76 +83,79 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(mc.isGamePaused()) return;
-		double distance = recording.initPos.distanceTo(mc.player.getPositionVec());
-		if(waitingForPlayer && distance < 1.0)
+		if(!mc.isGamePaused())
 		{
-			double speed = (1.0 - distance) * 0.2;
-			Vec3d prevMotion = mc.player.getMotion();
-			mc.player.setMotion(prevMotion.x, prevMotion.y * 0.8, prevMotion.z);
-			
-			Vec3d pushVel = recording.initPos.subtract(mc.player.getPositionVec()).mul(speed, speed, speed);
-			mc.player.addVelocity(pushVel.x, pushVel.y, pushVel.z);
-			
-			if(waitingForPlayer && distance < 0.075)
+			playbackCountdown = Math.max(0, playbackCountdown - 1);
+			if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVec()) < 0.25)
 			{
 				isPlaying = true;
+				playbackCountdown = 10;
 				mc.player.movementInput = new ControlledMovementInput();
+				mc.player.setMotion(0.0, 0.0, 0.0);
 				frameNumber = 0;
 				waitingForPlayer = false;
 			}
-		}
-		if(isPlaying)
-		{
-			if(frameNumber < recording.size())
+			if(isPlaying && playbackCountdown == 0)
 			{
-				if(frameNumber == 0)
+				if(frameNumber < recording.size())
 				{
-					mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
-					if(arrow.isAlive()) arrow.setExpired();
+					if(frameNumber == 0)
+					{
+						mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
+						if(arrow.isAlive()) arrow.setExpired();
+					}
+					currentFrame = recording.get(frameNumber);
+					
+					currentFrame.setInput(mc.player.movementInput, mc.player);
+					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+					frameNumber++;
 				}
-				currentFrame = recording.get(frameNumber);
-				if(mc.player.getPositionVec().distanceTo(new Vec3d(currentFrame.posX, currentFrame.posY, currentFrame.posZ)) > 1.0)
-				{
-					mc.player.sendMessage(new TranslationTextComponent("warn.playback_failed").applyTextStyles(TextFormatting.DARK_RED, TextFormatting.BOLD));
+				else 
 					stop();
-					frameNumber = 0;
-				}
-				mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-				
-				currentFrame.setInput(mc.player.movementInput, mc.player);
-				frameNumber++;
 			}
-			else 
-				stop();
 		}
 	}
 
 	@Override
 	public void onRenderTick()
 	{
-		double distance = recording.initPos.distanceTo(mc.player.getPositionVec());
-		float partialTicks = mc.getRenderPartialTicks();
-		
-		if(waitingForPlayer && !mc.isGamePaused() && distance < 0.5)
-		{
-			Vec3d playerPos = mc.player.getPositionVec();
-			double lerpedX = MathHelper.lerp(partialTicks, mc.player.prevPosX, playerPos.x);
-			double lerpedY = MathHelper.lerp(partialTicks, mc.player.prevPosY, playerPos.y);
-			double lerpedZ = MathHelper.lerp(partialTicks, mc.player.prevPosZ, playerPos.z);
-			Vec3d lerpedPos = new Vec3d(lerpedX, lerpedY, lerpedZ);
-			double lerpedDist = recording.initPos.distanceTo(lerpedPos);
-			double amount = Math.pow(0.5 - lerpedDist, 2.0);
-			
-			mc.player.rotationYaw = (float) MathHelper.lerp(amount, mc.player.rotationYaw, recording.get(0).headYaw);
-			mc.player.rotationPitch = (float) MathHelper.lerp(amount, mc.player.rotationPitch, recording.get(0).headPitch);
-		}
-		else if(isPlaying && !mc.isGamePaused())
+		if(!mc.isGamePaused())
 		{	
-			ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
-			
-			mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-			mc.player.rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+			float partialTicks = mc.getRenderPartialTicks();
+			if(playbackCountdown > 0)
+			{
+				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
+				ParkourFrame firstFrame = recording.get(0);
+				
+				mc.player.rotationYaw = MathHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
+				mc.player.rotationPitch = MathHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
+				
+				Vec3d pos = mc.player.getPositionVec();
+				double posX = MathHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
+				double posY = MathHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
+				double posZ = MathHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
+				
+				mc.player.setPosition(posX, posY, posZ);
+			}
+			else if(isPlaying)
+			{
+				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
+				
+				mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+				
+				Vec3d playerPos = mc.player.getPositionVec();
+				Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
+				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 40.0)
+				{
+					ITextComponent errorMessage = new TranslationTextComponent("warn.playback_failed");
+					errorMessage.applyTextStyle(TextFormatting.RED);
+					mc.player.sendMessage(errorMessage);
+					stop();
+				}
+				else
+					mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+			}
 		}
 	}
 	
@@ -164,12 +163,12 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		isPlaying = false;
-		
-		Vec3d playerPos = mc.player.getPositionVec();
-		double motionX = playerPos.x - mc.player.prevPosX;
-		double motionY = playerPos.y - mc.player.prevPosY;
-		double motionZ = playerPos.z - mc.player.prevPosZ;
-		mc.player.setVelocity(motionX, motionY, motionZ);
+
+		//Vec3d playerPos = mc.player.getPositionVec();
+		//double motionX = playerPos.x - mc.player.prevPosX;
+		//double motionY = playerPos.y - mc.player.prevPosY;
+		//double motionZ = playerPos.z - mc.player.prevPosZ;
+		//mc.player.setVelocity(motionX, motionY, motionZ);
 		
 		mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
 	}
