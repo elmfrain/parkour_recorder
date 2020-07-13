@@ -2,11 +2,14 @@ package com.elmfer.parkour_recorder.gui;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
-import org.lwjgl.glfw.GLFW;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
 
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
+import com.elmfer.parkour_recorder.util.Vec3f;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MainWindow;
@@ -19,9 +22,9 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class LoadRecordingScreen extends Screen {
 
-	private Recording[] records = null;
-	private Recording currentSelection = null;
-	private GuiButtonList recordList = new GuiButtonList(this);
+	private List<Recording> records = null;
+	private Stack<Recording> selections = new Stack<Recording>();
+	private GuiButtonList listViewport = new GuiButtonList(this);
 	private GuiAlertBox alertBox = null;
 	
 	public LoadRecordingScreen()
@@ -34,17 +37,32 @@ public class LoadRecordingScreen extends Screen {
 	{
 		GuiButton.currentZLevel = 0;
 		Minecraft mc = Minecraft.getInstance();
-		records = Recording.loadSaves();
+		if(records == null) records = Arrays.asList(Recording.loadSaves());
+		
 		int buttonMargin = 5;
 		int buttonHeight = 20;
 		buttons.clear();
 		children.clear();
-		recordList.clearButtons();
-		for(int i = 0; i < records.length; i++)
-			recordList.addButton(new GuiButton(0, 0, records[i].getName(), this::buttonListCallback));
+		listViewport.clearButtons();
+		
+		
+		for(int i = 0; i < records.size(); i++)
+		{
+			GuiButton b = new GuiButton(0, 0, records.get(i).getName(), this::buttonListCallback);
+			b.highlighed = selections.contains(records.get(i)); 
+			b.highlightTint = new Vec3f(0.0f, 0.3f, 0.0f);
+			listViewport.addButton(b);
+		}
+		if(!selections.isEmpty())
+		{
+			int latestSelection = records.indexOf(selections.lastElement());
+			listViewport.buttonList.get(latestSelection).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+		}
 
 		addButton(new GuiButton(0, 0, I18n.format("gui.load_recording.open"), this::actionPerformed));
 		addButton(new GuiButton(0, (buttonHeight + buttonMargin), I18n.format("gui.load_recording.delete"), this::actionPerformed));
+			if(selections.size() > 1) buttons.get(1).setMessage(I18n.format("gui.load_recording.delete_all"));
+			else buttons.get(1).setMessage(I18n.format("gui.load_recording.delete"));
 		addButton(new GuiButton(0, (buttonHeight + buttonMargin) * 2, I18n.format("gui.load_recording.rename"), this::actionPerformed));
 		addButton(new GuiTextField(mc.fontRenderer, 0, 0));
 		
@@ -59,18 +77,19 @@ public class LoadRecordingScreen extends Screen {
 		{
 		case 0:
 			EventHandler.session.cleanUp();
-			EventHandler.session = new PlaybackSession(currentSelection);
+			EventHandler.session = new PlaybackSession(selections.lastElement());
 			EventHandler.hud.fadedness = 200;
 			Minecraft.getInstance().displayGuiScreen(null);
 			break;
 		case 1:
-			GuiAlertBox deleteBox = new GuiConfirmationBox(I18n.format("gui.load_recording.should_delete_?"), this::delete, this);
+			String title = selections.size() > 1 ? I18n.format("gui.load_recording.delete_all_?") : I18n.format("gui.load_recording.should_delete_?");
+			GuiAlertBox deleteBox = new GuiConfirmationBox(title, this::delete, this);
 			alertBox = deleteBox;
 			alertBox.init();
 			break;
 		case 2:
 			GuiNamerBox renameBox = new GuiNamerBox(I18n.format("gui.load_recording.rename_recording"), this, (String s) -> { return s.length() > 0; } , this::rename);
-			renameBox.textField.setText(currentSelection.getName());
+			renameBox.textField.setText(selections.lastElement().getName());
 			alertBox = renameBox;
 			alertBox.init();
 			break;
@@ -80,20 +99,35 @@ public class LoadRecordingScreen extends Screen {
 	protected void buttonListCallback(Button button)
 	{
 		GuiButton guiButton = (GuiButton) button;
-		recordList.buttonList.forEach((GuiButton b) -> { b.highlighed = false; });
-		currentSelection = records[recordList.getIndex(guiButton)];
-		guiButton.highlighed = true;
+		
+		if(!hasControlDown()) selections.clear();
+		
+		for(int i = 0; i < listViewport.buttonList.size(); i++)
+		{
+			GuiButton b = listViewport.buttonList.get(i);
+			b.highlighed = selections.contains(records.get(i)); 
+			b.highlightTint = new Vec3f(0.0f, 0.3f, 0.0f);
+		}
+		
+		if(selections.contains(records.get(listViewport.getIndex(guiButton))))
+		{
+			selections.remove(records.get(listViewport.getIndex(guiButton)));
+			guiButton.highlighed = false;
+			listViewport.buttonList.get(records.indexOf(selections.lastElement())).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+		}
+		else
+		{
+			guiButton.highlighed = true;
+			guiButton.highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+			selections.push(records.get(listViewport.getIndex(guiButton)));
+		}
 	}
 	
 	@Override
 	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
-		if(alertBox != null) 
-		{
-			return alertBox.keyPressed(keyID, scancode, mods);
-		}
-		else
-			return super.keyPressed(keyID, scancode, mods);
+		if(alertBox != null) alertBox.keyPressed(keyID, scancode, mods);
+		return super.keyPressed(keyID, scancode, mods);
 	}
 	
 	@Override
@@ -155,19 +189,22 @@ public class LoadRecordingScreen extends Screen {
 			}
 			body.popMatrix();
 			
-			listBody.pushMatrix(false);
+			listBody.pushMatrix(true);
 			{
 				fillGradient(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
 				drawString(mc.fontRenderer, I18n.format("gui.load_recording.list") + worldName, listMargin, listMargin, 0xFFFFFFFF);
 			}
 			listBody.popMatrix();
 			
-			recordList.drawScreen(mouseX, mouseY, partialTicks, list);
+			listViewport.drawScreen(mouseX, mouseY, partialTicks, list);
 			
 			asideBody.pushMatrix(true);
 			{
 				fillGradient(0, 0, asideBody.getWidth(), asideBody.getHeight() / 6, fade1, fade2);
-				drawString(mc.fontRenderer, I18n.format("gui.load_recording.information"), listMargin, listMargin, 0xFFFFFFFF);
+				
+				String subTitle = I18n.format("gui.load_recording.information");
+				subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
+				drawString(mc.fontRenderer, subTitle, listMargin, listMargin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 			
@@ -180,8 +217,10 @@ public class LoadRecordingScreen extends Screen {
 					button.setHeight(buttonHeight);
 					button.y = (buttonHeight + buttonMargin) * i;
 					button.renderButton(mouseX, mouseY, partialTicks);
-					button.active = currentSelection != null;
+					button.active = !selections.isEmpty();
 				}
+				if(selections.size() > 1) buttons.get(1).setMessage(I18n.format("gui.load_recording.delete_all"));
+				else buttons.get(1).setMessage(I18n.format("gui.load_recording.delete"));
 			}
 			aside.popMatrix();
 			
@@ -191,7 +230,7 @@ public class LoadRecordingScreen extends Screen {
 				boolean flag = EventHandler.session.isSessionActive();
 				open.active = !flag && open.active;
 				
-				if(open.isHovered() && flag && currentSelection != null) 
+				if(open.isHovered() && flag && !selections.isEmpty()) 
 				{	
 					String warning = I18n.format("gui.load_recording.warn.cannot_open_while_recording_or_playing");
 					renderTooltip(warning, mouseX, mouseY);
@@ -199,11 +238,11 @@ public class LoadRecordingScreen extends Screen {
 			}
 			all.popMatrix();
 			
-			if(currentSelection != null)
+			if(selections.size() > 0)
 			{
 				desc.pushMatrix(true);
 				{
-					String[] lines = currentSelection.toString().split("\n");
+					String[] lines = selections.lastElement().toString().split("\n");
 					for(int i = 0; i < lines.length; i++)
 					{
 						drawString(mc.fontRenderer, lines[i], 0, fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
@@ -227,8 +266,8 @@ public class LoadRecordingScreen extends Screen {
 	{
 		alertBox.setShouldClose(true);
 		alertBox = null;
-		currentSelection.rename(newName);
-		currentSelection.save();
+		selections.lastElement().rename(newName);
+		selections.lastElement().save();
 		buttons.clear();
 		children.clear();
 		init();
@@ -238,10 +277,15 @@ public class LoadRecordingScreen extends Screen {
 	{
 		alertBox.setShouldClose(true);
 		alertBox = null;
-		Recording.deleteSave(currentSelection);
+		
+		for(int i = 0; i < selections.size(); i++)
+			Recording.deleteSave(selections.get(i));
+		records = Arrays.asList(Recording.loadSaves());
+		selections.clear();
+		
+		selections.clear();
 		buttons.clear();
 		children.clear();
-		currentSelection = null;
 		init();
 	}
 }

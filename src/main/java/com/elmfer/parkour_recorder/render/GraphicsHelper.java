@@ -1,5 +1,6 @@
 package com.elmfer.parkour_recorder.render;
 
+import com.elmfer.parkour_recorder.util.Vec3f;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -18,6 +19,16 @@ public class GraphicsHelper {
 		value |= (floatToByte(red) << 16);
 		value |= (floatToByte(green) << 8);
 		value |= floatToByte(blue);
+		return value;
+	}
+	
+	public static int getIntColor(Vec3f color, float alpha)
+	{
+		int value = 0;
+		value |= (floatToByte(alpha) << 24);
+		value |= (floatToByte(color.x) << 16);
+		value |= (floatToByte(color.y) << 8);
+		value |= floatToByte(color.z);
 		return value;
 	}
 	

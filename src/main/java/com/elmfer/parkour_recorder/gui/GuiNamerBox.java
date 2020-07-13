@@ -75,12 +75,8 @@ public class GuiNamerBox extends GuiAlertBox
 	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
 		if(keyID == GLFW.GLFW_KEY_ENTER)
-		{
 			name(null);
-			return true;
-		}
-		else
-			return false;
+		return false;
 	}
 	
 	@Override

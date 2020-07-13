@@ -59,17 +59,13 @@ public class GuiConfirmationBox extends GuiAlertBox {
 	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
 		if(keyID == GLFW.GLFW_KEY_ENTER)
-		{
 			confirmed(null);
-			return true;
-		}
-		else
-			return false;
+		return false;
 	}
 	
 	private void confirmed(@Nullable Button button)
 	{
-		setShouldClose(true);
 		callback.callBack();
+		setShouldClose(true);
 	}
 }

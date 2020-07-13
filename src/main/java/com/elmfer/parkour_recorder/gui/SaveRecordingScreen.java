@@ -2,11 +2,14 @@ package com.elmfer.parkour_recorder.gui;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
+import java.util.Stack;
+
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.elmfer.parkour_recorder.util.Vec3f;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MainWindow;
@@ -18,9 +21,9 @@ import net.minecraft.util.text.StringTextComponent;
 
 public class SaveRecordingScreen extends Screen
 {
-	private GuiButtonList theList = new GuiButtonList(this);
+	private GuiButtonList listViewport = new GuiButtonList(this);
 	private GuiAlertBox alertBox = null;
-	private Recording currentSelection = null;
+	private Stack<Recording> selections = new Stack<Recording>();
 	
 	public SaveRecordingScreen()
 	{
@@ -33,17 +36,26 @@ public class SaveRecordingScreen extends Screen
 		GuiButton.currentZLevel = 0;
 		buttons.clear();
 		children.clear();
-		theList.clearButtons();
+		listViewport.clearButtons();
 		for(int i = 0; i < EventHandler.recordHistory.size(); i++)
 		{
 			GuiButton button = new GuiButton(0, 0, EventHandler.recordHistory.get(i).getName(), this::buttonListCallback);
-			theList.addButton(button);
+			button.highlighed = selections.contains(EventHandler.recordHistory.get(i)); 
+			button.highlightTint = new Vec3f(0.0f, 0.3f, 0.0f);
+			listViewport.addButton(button);
+		}
+		if(!selections.isEmpty())
+		{
+			int latestSelection = EventHandler.recordHistory.indexOf(selections.lastElement());
+			listViewport.buttonList.get(latestSelection).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
 		}
 		
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.save_last"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.erase_history"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.save"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.remove"), this::actionPerformed));
+			if(selections.size() > 1) buttons.get(3).setMessage(I18n.format("gui.save_recording.remove_selected"));
+			else buttons.get(3).setMessage(I18n.format("gui.load_recording.remove"));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.open"), this::actionPerformed));
 		
 		if(alertBox != null)
@@ -61,22 +73,27 @@ public class SaveRecordingScreen extends Screen
 			alertBox.init();
 			break;
 		case 3:
-			GuiAlertBox removeBox = new GuiConfirmationBox(I18n.format("gui.save_recording.should_remove_?"), this::remove, this);
+			String title = 1 < selections.size() ? I18n.format("gui.save_recording.remove_selected_?") : I18n.format("gui.save_recording.should_remove_?");
+			GuiAlertBox removeBox = new GuiConfirmationBox(title, this::remove, this);
 			alertBox = removeBox;
 			alertBox.init();
 			break;
 		case 4:
 			EventHandler.session.cleanUp();
-			EventHandler.session = new PlaybackSession(currentSelection);
+			EventHandler.session = new PlaybackSession(selections.lastElement());
 			EventHandler.hud.fadedness = 200;
 			Minecraft.getInstance().displayGuiScreen(null);
 			break;
 		default:
 			if(buttonId == 0 || buttonId == 2) 
 			{
-				if(buttonId == 0) currentSelection = EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1);
+				if(buttonId == 0) 
+				{
+					selections.remove(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
+					selections.push(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
+				}
 				GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.name_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
-				namerBox.textField.setText(currentSelection.getName());
+				namerBox.textField.setText(selections.lastElement().getName());
 				alertBox = namerBox;
 				alertBox.init();
 			}
@@ -86,20 +103,35 @@ public class SaveRecordingScreen extends Screen
 	protected void buttonListCallback(Button button)
 	{
 		GuiButton guiButton = (GuiButton) button;
-		theList.buttonList.forEach((GuiButton b) -> { b.highlighed = false; });
-		currentSelection = EventHandler.recordHistory.get(theList.getIndex(guiButton));
-		guiButton.highlighed = true;
+		
+		if(!hasControlDown()) selections.clear();
+		
+		for(int i = 0; i < listViewport.buttonList.size(); i++)
+		{
+			GuiButton b = listViewport.buttonList.get(i);
+			b.highlighed = selections.contains(EventHandler.recordHistory.get(i)); 
+			b.highlightTint = new Vec3f(0.0f, 0.3f, 0.0f);
+		}
+		
+		if(selections.contains(EventHandler.recordHistory.get(listViewport.getIndex(guiButton))))
+		{
+			selections.remove(EventHandler.recordHistory.get(listViewport.getIndex(guiButton)));
+			guiButton.highlighed = false;
+			listViewport.buttonList.get(EventHandler.recordHistory.indexOf(selections.lastElement())).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+		}
+		else
+		{
+			guiButton.highlighed = true;
+			guiButton.highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+			selections.push(EventHandler.recordHistory.get(listViewport.getIndex(guiButton)));
+		}
 	}
 	
 	@Override
 	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
-		if(alertBox != null) 
-		{
-			return alertBox.keyPressed(keyID, scancode, mods);
-		}
-		else
-			return super.keyPressed(keyID, scancode, mods);
+		if(alertBox != null) alertBox.keyPressed(keyID, scancode, mods);
+		return super.keyPressed(keyID, scancode, mods);
 	}
 	
 	@Override
@@ -174,7 +206,7 @@ public class SaveRecordingScreen extends Screen
 			}
 			listBody.popMatrix();
 			
-			theList.drawScreen(mouseX, mouseY, partialTicks, list);
+			listViewport.drawScreen(mouseX, mouseY, partialTicks, list);
 			
 			actionsBody.pushMatrix(true);
 			{
@@ -200,7 +232,10 @@ public class SaveRecordingScreen extends Screen
 			asideBody.pushMatrix(true);
 			{
 				fillGradient(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				drawString(mc.fontRenderer, I18n.format("gui.save_recording.information"), listMargin, listMargin, 0xFFFFFFFF);
+				
+				String subTitle = I18n.format("gui.load_recording.information");
+				subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
+				drawString(mc.fontRenderer, subTitle, listMargin, listMargin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 			
@@ -213,8 +248,10 @@ public class SaveRecordingScreen extends Screen
 					button.setHeight(buttonHeight);
 					button.y = (buttonHeight + buttonMargin) * (i - 2);
 					button.renderButton( mouseX, mouseY, partialTicks);
-					button.active = currentSelection != null;
+					button.active = !selections.isEmpty();
 				}
+				if(selections.size() > 1) buttons.get(3).setMessage(I18n.format("gui.save_recording.remove_selected"));
+				else buttons.get(3).setMessage(I18n.format("gui.save_recording.remove"));
 			}
 			aside.popMatrix();
 			
@@ -224,7 +261,7 @@ public class SaveRecordingScreen extends Screen
 				boolean flag = EventHandler.session.isSessionActive();
 				open.active = !flag && open.active;
 				
-				if(open.isHovered() && flag && currentSelection != null) 
+				if(open.isHovered() && flag && !selections.isEmpty()) 
 				{	
 					String warning = I18n.format("gui.save_recording.warn.cannot_open_while_recording_or_playing");
 					renderTooltip(warning, mouseX, mouseY);
@@ -232,11 +269,11 @@ public class SaveRecordingScreen extends Screen
 			}
 			all.popMatrix();
 			
-			if(currentSelection != null && desc.getHeight() > 0)
+			if(!selections.isEmpty() && desc.getHeight() > 0)
 			{
 				desc.pushMatrix(true);
 				{
-					String[] lines = currentSelection.toString().split("\n");
+					String[] lines = selections.lastElement().toString().split("\n");
 					for(int i = 0; i < lines.length; i++)
 					{
 						drawString(mc.fontRenderer, lines[i], 0, mc.fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
@@ -258,15 +295,17 @@ public class SaveRecordingScreen extends Screen
 	
 	private void save(String newName)
 	{
-		currentSelection.rename(newName);
-		currentSelection.save();
-		remove();
+		selections.lastElement().rename(newName);
+		selections.lastElement().save();
+		EventHandler.recordHistory.remove(selections.lastElement());
+		selections.pop();
 	}
 	
 	private void remove()
 	{
-		EventHandler.recordHistory.remove(currentSelection);
-		currentSelection = null;
+		for(int i = 0; i < selections.size(); i++)
+			EventHandler.recordHistory.remove(selections.get(i));
+		selections.clear();
 		init();
 	}
 	
@@ -274,7 +313,7 @@ public class SaveRecordingScreen extends Screen
 	{
 		EventHandler.recordHistory.clear();
 		EventHandler.session.cleanUp();
-		currentSelection = null;
+		selections.clear();
 		if(!EventHandler.session.isSessionActive())
 			EventHandler.session = new RecordingSession();
 		init();

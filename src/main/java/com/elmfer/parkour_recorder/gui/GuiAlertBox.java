@@ -5,8 +5,6 @@ import static com.elmfer.parkour_recorder.render.GraphicsHelper.gradientRectToRi
 
 import java.util.List;
 
-import org.lwjgl.glfw.GLFW;
-
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
