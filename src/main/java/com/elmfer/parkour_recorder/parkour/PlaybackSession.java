@@ -146,7 +146,7 @@ public class PlaybackSession implements IParkourSession {
 				
 				Vec3d playerPos = mc.player.getPositionVec();
 				Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
-				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 40.0)
+				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
 				{
 					ITextComponent errorMessage = new TranslationTextComponent("warn.playback_failed");
 					errorMessage.applyTextStyle(TextFormatting.RED);

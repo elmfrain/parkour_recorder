@@ -89,8 +89,18 @@ public class SaveRecordingScreen extends Screen
 			{
 				if(buttonId == 0) 
 				{
-					selections.remove(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
+					selections.clear();
+					for(int i = 0; i < listViewport.buttonList.size(); i++)
+					{
+						GuiButton b = listViewport.buttonList.get(i);
+						b.highlighed = selections.contains(EventHandler.recordHistory.get(i)); 
+						b.highlightTint = new Vec3f(0.0f, 0.3f, 0.0f);
+					}
+					
 					selections.push(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
+					GuiButton guiButton = listViewport.buttonList.get(EventHandler.recordHistory.indexOf(selections.lastElement()));
+					guiButton.highlighed = true;
+					guiButton.highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
 				}
 				GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.name_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
 				namerBox.textField.setText(selections.lastElement().getName());
