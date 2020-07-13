@@ -92,6 +92,17 @@ public class SaveRecordingScreen extends Screen
 	}
 	
 	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(alertBox != null) 
+		{
+			return alertBox.keyPressed(keyID, scancode, mods);
+		}
+		else
+			return super.keyPressed(keyID, scancode, mods);
+	}
+	
+	@Override
 	 public void render(int mouseX, int mouseY, float partialTicks)
 	 {
 		Minecraft mc = Minecraft.getInstance();

@@ -2,6 +2,10 @@ package com.elmfer.parkour_recorder.gui;
 
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.lwjgl.glfw.GLFW;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -68,6 +72,18 @@ public class GuiNamerBox extends GuiAlertBox
 	}
 	
 	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(keyID == GLFW.GLFW_KEY_ENTER)
+		{
+			name(null);
+			return true;
+		}
+		else
+			return false;
+	}
+	
+	@Override
 	public void setShouldClose(boolean shouldClose)
 	{
 		super.setShouldClose(shouldClose);
@@ -75,7 +91,7 @@ public class GuiNamerBox extends GuiAlertBox
 			MinecraftForge.EVENT_BUS.unregister(this);
 	}
 	
-	private void name(Button button)
+	private void name(@Nullable Button button)
 	{
 		if(textValidator.test(textField.getText()))
 		{

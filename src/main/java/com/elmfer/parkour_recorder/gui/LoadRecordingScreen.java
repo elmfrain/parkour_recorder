@@ -2,6 +2,8 @@ package com.elmfer.parkour_recorder.gui;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
@@ -81,6 +83,17 @@ public class LoadRecordingScreen extends Screen {
 		recordList.buttonList.forEach((GuiButton b) -> { b.highlighed = false; });
 		currentSelection = records[recordList.getIndex(guiButton)];
 		guiButton.highlighed = true;
+	}
+	
+	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(alertBox != null) 
+		{
+			return alertBox.keyPressed(keyID, scancode, mods);
+		}
+		else
+			return super.keyPressed(keyID, scancode, mods);
 	}
 	
 	@Override

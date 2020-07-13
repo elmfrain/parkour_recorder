@@ -1,5 +1,9 @@
 package com.elmfer.parkour_recorder.gui;
 
+import javax.annotation.Nullable;
+
+import org.lwjgl.glfw.GLFW;
+
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -51,7 +55,19 @@ public class GuiConfirmationBox extends GuiAlertBox {
 		viewport.popMatrix();
 	}
 	
-	private void confirmed(Button button)
+	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(keyID == GLFW.GLFW_KEY_ENTER)
+		{
+			confirmed(null);
+			return true;
+		}
+		else
+			return false;
+	}
+	
+	private void confirmed(@Nullable Button button)
 	{
 		setShouldClose(true);
 		callback.callBack();
