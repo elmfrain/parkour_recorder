@@ -1,9 +1,15 @@
 package com.elmfer.parkour_recorder.gui;
 
+import javax.annotation.Nullable;
+
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.resources.I18n;
 
 public class GuiConfirmationBox extends GuiAlertBox {
 	
@@ -21,39 +27,46 @@ public class GuiConfirmationBox extends GuiAlertBox {
 	}
 	
 	@Override
-	public void initGui()
+	public void init()
 	{
-		super.initGui();
-		addWidget(new GuiButton(0, 0, "Yes", this::confirmed));
-		addWidget(new GuiButton(0, 0, "Cancel", this::close));
+		super.init();
+		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.yes"), this::confirmed));
+		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.cancel"), this::close));
 		height = 20;
 	}
 
 	@Override
-	protected void doDrawScreen(int mouseX, int mouseY, float partialTicks)
+	protected void doDrawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	{
-		MainWindow res = mc.getMainWindow();
+		MainWindow res = Minecraft.getInstance().getMainWindow();
 		viewport.pushMatrix(false);
 		{
 			int margins = (int) (20 / res.getGuiScaleFactor());
 			
-			GuiButton yes = (GuiButton) widgetList.get(1);
-			GuiButton cancel = (GuiButton) widgetList.get(2);
+			GuiButton yes = (GuiButton) buttons.get(1);
+			GuiButton cancel = (GuiButton) buttons.get(2);
 			yes.setWidth(viewport.getWidth() / 2 - margins);
 			cancel.setWidth(yes.width());
-			yes.setY(viewport.getHeight() / 2 - yes.height() / 2);
-			cancel.setY(yes.y());
+			yes.setY(viewport.getHeight() / 2 - yes.getHeight() / 2);
+			cancel.setY(yes.y());;
 			cancel.setX(viewport.getWidth() - cancel.width());
-			MatrixStack stack = new MatrixStack();
-			yes.drawButton(stack, mouseX, mouseY, partialTicks);
-			cancel.drawButton(stack, mouseX, mouseY, partialTicks);
+			yes.renderButton(stack, mouseX, mouseY, partialTicks);
+			cancel.renderButton(stack, mouseX, mouseY, partialTicks);
 		}
 		viewport.popMatrix();
 	}
 	
-	private void confirmed(Button button)
+	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
-		setShouldClose(true);
+		if(keyID == GLFW.GLFW_KEY_ENTER)
+			confirmed(null);
+		return false;
+	}
+	
+	private void confirmed(@Nullable Button button)
+	{
 		callback.callBack();
+		setShouldClose(true);
 	}
 }

@@ -2,6 +2,10 @@ package com.elmfer.parkour_recorder.gui;
 
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;
@@ -34,38 +38,46 @@ public class GuiNamerBox extends GuiAlertBox
 	}
 	
 	@Override
-	public void initGui()
+	public void init()
 	{
-		super.initGui();
+		super.init();
+		Minecraft mc = Minecraft.getInstance();
 		int margins = (int) (20 / mc.getMainWindow().getGuiScaleFactor());
 		textField.setMaxStringLength(128);
 		textField.setCursorPositionZero();
-		addWidget(new GuiButton(0, 0, I18n.format("Name"), this::name));
-		addWidget(new GuiButton(0, 0, "Cancel", this::close));
-		addWidget(textField);
+		addButton(new GuiButton(0, 0, I18n.format("gui.naming_box.name"), this::name));
+		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.cancel"), this::close));
+		addButton(textField);
 		height = 40 + margins;
 	}
 
 	@Override
-	protected void doDrawScreen(int mouseX, int mouseY, float partialTicks)
+	protected void doDrawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	{
 		viewport.pushMatrix(false);
 		{
-			MatrixStack stack = new MatrixStack();
 			int margins = (int) (20 / Minecraft.getInstance().getMainWindow().getGuiScaleFactor());
 			textField.setWidth(viewport.getWidth());
 			textField.drawTextBox(stack, mouseX, mouseY, partialTicks);
-			GuiButton rename = (GuiButton) widgetList.get(1);
-			GuiButton cancel = (GuiButton) widgetList.get(2);
+			GuiButton rename = (GuiButton) buttons.get(1);
+			GuiButton cancel = (GuiButton) buttons.get(2);
 			rename.setWidth(viewport.getWidth() / 2 - margins);
 			cancel.setWidth(rename.width());
-			rename.setY(textField.height() + margins);
+			rename.setY(textField.getHeight() + margins);
 			cancel.setY(rename.y());
 			cancel.setX(viewport.getWidth() - cancel.width());
-			rename.drawButton(stack, mouseX, mouseY, partialTicks);
-			cancel.drawButton(stack, mouseX, mouseY, partialTicks);
+			rename.renderButton(stack, mouseX, mouseY, partialTicks);
+			cancel.renderButton(stack, mouseX, mouseY, partialTicks);
 		}
 		viewport.popMatrix();
+	}
+	
+	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(keyID == GLFW.GLFW_KEY_ENTER)
+			name(null);
+		return false;
 	}
 	
 	@Override
@@ -76,7 +88,7 @@ public class GuiNamerBox extends GuiAlertBox
 			MinecraftForge.EVENT_BUS.unregister(this);
 	}
 	
-	private void name(Button button)
+	private void name(@Nullable Button button)
 	{
 		if(textValidator.test(textField.getText()))
 		{

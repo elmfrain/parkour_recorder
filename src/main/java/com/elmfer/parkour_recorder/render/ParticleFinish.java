@@ -48,10 +48,12 @@ public class ParticleFinish extends Particle{
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
 		RenderSystem.disableTexture();
-		Vector3d vector3d = renderInfo.getProjectedView();
-		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vector3d.getX());
-	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vector3d.getY());
-	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vector3d.getZ());
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		Vector3d vec3d = renderInfo.getProjectedView();
+		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
+	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
+	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
         float ticks = age + partialTicks;
         float angle = (float) Math.sin(ticks * Math.PI / 20.0) * 10.0f;
         

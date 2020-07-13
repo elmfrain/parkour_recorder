@@ -224,8 +224,7 @@ public class Recording implements List<ParkourFrame>
 	{
 		if(mc.getIntegratedServer() != null) 
 		{
-			/**mc.getIntegratedServer().getServerConfiguration().getWorldSettings().getWorldFolder()**/
-			return mc.getIntegratedServer().func_240793_aU_().func_230408_H_().func_234947_a_();
+			return mc.getIntegratedServer().func_240793_aU_().getWorldName();
 		}
 		else return mc.getCurrentServerData().serverName + ": " + mc.getCurrentServerData().serverIP;
 	}
@@ -234,8 +233,7 @@ public class Recording implements List<ParkourFrame>
 	{
 		if(mc.getIntegratedServer() != null) 
 		{
-			/**mc.getIntegratedServer().getServerConfiguration().getWorldSettings().getWorldFolder()**/
-			return "local/" + mc.getIntegratedServer().func_240793_aU_().func_230408_H_().func_234947_a_();
+			return "local/" + mc.getIntegratedServer().func_240793_aU_().getWorldName();
 		}
 		else return "servers/" + mc.getCurrentServerData().serverIP.replace('.', '-').replace(':', '_');
 	}

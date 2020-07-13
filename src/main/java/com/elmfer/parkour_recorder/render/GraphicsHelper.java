@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class GraphicsHelper {
 	
@@ -21,7 +22,16 @@ public class GraphicsHelper {
 		return value;
 	}
 	
-	@SuppressWarnings("deprecation")
+	public static int getIntColor(Vector3f color, float alpha)
+	{
+		int value = 0;
+		value |= (floatToByte(alpha) << 24);
+		value |= (floatToByte(color.getX()) << 16);
+		value |= (floatToByte(color.getY()) << 8);
+		value |= floatToByte(color.getZ());
+		return value;
+	}
+	
 	public static void gradientRectToRight(int left, int top, int right, int bottom, int startColor, int endColor)
 	{
 		float f = (float)(startColor >> 24 & 255) / 255.0F;

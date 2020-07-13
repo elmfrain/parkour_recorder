@@ -26,8 +26,9 @@ public class ParkourFrame {
 		posY = playerPos.y;
 		posZ = playerPos.z;
 		short flags = 0;
-		if(gameSettingsIn.keyBindJump.isKeyDown()) flags |= 0x001;
-		if(gameSettingsIn.keyBindSneak.isKeyDown()) flags |= 0x002;
+		MovementInput playerInput = playerIn.movementInput;
+		if(playerInput.jump) flags |= 0x001;
+		if(playerInput.sneaking) flags |= 0x002;
 		if(gameSettingsIn.keyBindForward.isKeyDown()) flags |= 0x004;
 		if(gameSettingsIn.keyBindLeft.isKeyDown()) flags |= 0x008;
 		if(gameSettingsIn.keyBindRight.isKeyDown()) flags |= 0x010;

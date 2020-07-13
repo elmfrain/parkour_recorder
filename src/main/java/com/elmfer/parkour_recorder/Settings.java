@@ -1,6 +1,9 @@
 package com.elmfer.parkour_recorder;
 
+import org.lwjgl.glfw.GLFW;
+
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.util.InputMappings.Type;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 public class Settings {
@@ -16,12 +19,12 @@ public class Settings {
 	
 	private Settings()
 	{
-		keybindRecord = new KeyBinding("Record Parkour", 19, "Parkour Mod");
-		keybindPlay = new KeyBinding("Play Parkour", 25, "Parkour Mod");
-		keybindOverride = new KeyBinding("Override Session", -96, "Parkour Mod");
+		keybindRecord = new KeyBinding("keybind.record", GLFW.GLFW_KEY_R, ParkourRecorderMod.MOD_NAME);
+		keybindPlay = new KeyBinding("keybind.play", GLFW.GLFW_KEY_P, ParkourRecorderMod.MOD_NAME);
+		keybindOverride = new KeyBinding("keybind.override", Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_5, ParkourRecorderMod.MOD_NAME);
 		keybindReloadShaders = new KeyBinding("Reload Resources", 24, "Parkour Mod");
-		keybindSave = new KeyBinding("Save Recording", 50, "Parkour Mod");
-		keybindLoad = new KeyBinding("Load Recordings", 49, "Parkour Mod");
+		keybindSave = new KeyBinding("keybind.save_recording", GLFW.GLFW_KEY_M, ParkourRecorderMod.MOD_NAME);
+		keybindLoad = new KeyBinding("keybind.load_recording", GLFW.GLFW_KEY_N, ParkourRecorderMod.MOD_NAME);
 		
 		ClientRegistry.registerKeyBinding(keybindRecord);
 		ClientRegistry.registerKeyBinding(keybindPlay);

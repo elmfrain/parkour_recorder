@@ -29,6 +29,24 @@ public class GuiTextField extends TextFieldWidget {
 		super(fontRenderer, x, y, 100, 20, new StringTextComponent(""));
 	}
 	
+	@Override
+	public void func_230431_b_(MatrixStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_)
+	{
+		drawTextBox(p_230431_1_, p_230431_2_, p_230431_3_, p_230431_4_);
+	}
+	
+	@Override
+	public boolean func_231047_b_(double p_231047_1_, double p_231047_3_)
+	{
+		return isMouseOver(p_231047_1_, p_231047_3_);
+	}
+	
+	@Override
+	public boolean func_231044_a_(double mouseX, double mouseY, int mouseButton)
+	{
+		return mouseClicked(mouseX, mouseY, mouseButton);
+	}
+	
 	public int x() { return field_230690_l_; }
 	public void setX(int x) { field_230690_l_ = x; }
 	
@@ -40,45 +58,35 @@ public class GuiTextField extends TextFieldWidget {
 	
 	public int height() { return field_230689_k_; }
 	
+	public String text() { return func_230458_i_().getString(); }
+	
 	public boolean enabled() { return field_230693_o_; }
 	public void setEnabled(boolean enabled) { field_230693_o_ = enabled; }
 	
 	public boolean visible() { return field_230694_p_; }
 	public void setVisible(boolean visible) { field_230694_p_ = visible; }
 	
-	protected boolean hovered() { return field_230692_n_; }
+	public boolean hovered() { return field_230692_n_; }
 	protected void setHovered(boolean hovered) { field_230692_n_ = hovered; }
 	
-	@Override
-	public void func_230431_b_(MatrixStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_)
+	public boolean isMouseOver(double mouseX, double mouseY)
 	{
-		drawTextBox(p_230431_1_, p_230431_2_, p_230431_3_, p_230431_4_);
+		return enabled() && visible() && hovered();
 	}
 	
-	@Override
-	public boolean func_231047_b_(double p_231047_1_, double p_231047_3_)
-	{
-		return mousePressed(p_231047_1_, p_231047_3_);
-	}
-	
-	@Override
-	public boolean func_231044_a_(double mouseX, double mouseY, int mouseButton)
+	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton)
 	{
 		int mX = (int) (mouseX - xTranslate);
     	int mY = (int) (mouseY - yTranslate);
     	return super.func_231044_a_(mX, mY, mouseButton);
 	}
+	
 	public void drawTextBox(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	{
 		preRender(mouseX, mouseY, partialTicks);
 		int mX = (int) (mouseX - xTranslate);
     	int mY = (int) (mouseY - yTranslate);
-		super.func_230431_b_(stack, mX, mY, partialTicks);
-	}
-	
-	public boolean mousePressed(double mouseX, double mouseY)
-	{
-		return enabled() && visible() && hovered();
+		super.func_230431_b_(stack, mouseX, mouseY, partialTicks);
 	}
 	
 	private boolean mouseInViewport(double mouseX, double mouseY)
@@ -104,6 +112,6 @@ public class GuiTextField extends TextFieldWidget {
     	
     	int mX = (int) (mouseX - xTranslate);
     	int mY = (int) (mouseY - yTranslate);
-    	setHovered(mX >= x() && mY >= y() && mX < x() + width() && mY < y() + height() && mouseInViewport(mouseX, mouseY));
+    	setHovered(mX >= x() && mY >= y() && mX < x() + width() && mY < y() + height() && mouseInViewport(mouseX, mouseY));;
     }
 }

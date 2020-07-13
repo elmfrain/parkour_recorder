@@ -25,32 +25,33 @@ abstract public class GuiAlertBox extends GuiScreen {
 	}
 	
 	@Override
-	protected void initGui()
+	protected void init()
 	{
-		widgetList.clear();
+		buttons.clear();
 		GuiButton.currentZLevel = 1;
 		GuiButton closeButton = new GuiButton(0, 0, "", this::close) 
 		{
 			@Override
-			public void drawButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+			public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 			{
 				if(visible())
 				{
 					preRender(mouseX, mouseY, partialTicks);
 					int color = hovered() && enabled() ? getIntColor(0.8f, 0.0f, 0.0f, 0.9f) : getIntColor(0.5f, 0.0f, 0.0f, 0.8f);
+					
 					/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
 					func_238467_a_(new MatrixStack(), x(), y(), x() + width(), y() + height(), color);
 				}
 			}
 		};
-		addWidget(closeButton);
+		addButton(closeButton);
 	}
 	
 	@Override
-	protected <T extends Widget> T addWidget(T widget)
+	protected <T extends Widget> T addButton(T widget)
 	{
-		widgetList.add(widget);
-		parentScreen.eventListeners.add(widget);
+		super.addButton(widget);
+		parentScreen.children.add(widget);
 		return widget;
 	}
 	
@@ -59,7 +60,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 		this.shouldClose = shouldClose;
 		if(shouldClose)
 		{
-			parentScreen.eventListeners.removeAll(this.widgetList);
+			parentScreen.children.removeAll(children);
 			GuiButton.currentZLevel = 0;
 		}
 	}
@@ -69,11 +70,12 @@ abstract public class GuiAlertBox extends GuiScreen {
 		return shouldClose;
 	}
 	
-	abstract protected void doDrawScreen(int mouseX, int mouseY, float partialTicks);
+	abstract protected void doDrawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks);
 	
 	@Override
 	public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	{
+		Minecraft mc = Minecraft.getInstance();
 		MainWindow res = mc.getMainWindow();
 		
 		int boxSize = res.getScaledWidth() / 2;
@@ -111,19 +113,19 @@ abstract public class GuiAlertBox extends GuiScreen {
 		{
 			gradientRectToRight(0, 0, title.getWidth(), title.getHeight(), fade1, fade2);
 			
-			/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
+			/**drawString(MatrixStack, FontRenderer, string, int x, int, y, int color)**/
 			func_238476_c_(new MatrixStack(), mc.fontRenderer, field_230704_d_.getString(), margins, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 			
-			GuiButton closeButton = (GuiButton) widgetList.get(0);
+			GuiButton closeButton = (GuiButton) buttons.get(0);
 			closeButton.setHeight(title.getHeight() - closeMargin * 2);
-			closeButton.setWidth(closeButton.height());
+			closeButton.setWidth(closeButton.getHeight());
 			closeButton.setY(closeMargin);
-			closeButton.setX(title.getWidth() - closeMargin - closeButton.width());;
-			closeButton.drawButton(stack, mouseX, mouseY, partialTicks);
+			closeButton.setX(title.getWidth() - closeMargin - closeButton.width());
+			closeButton.renderButton(stack, mouseX, mouseY, partialTicks);
 		}
 		title.popMatrix();
 		
-		doDrawScreen(mouseX, mouseY, partialTicks);
+		doDrawScreen(stack, mouseX, mouseY, partialTicks);
 	}
 	
 	protected void close(Button button)

@@ -14,15 +14,15 @@ import net.minecraft.util.text.ITextComponent;
 public class GuiScreen extends Screen{
 
 	protected final Minecraft mc;
-	protected final List<Widget> widgetList;
-	protected final List<IGuiEventListener> eventListeners;
+	protected final List<Widget> buttons;
+	protected final List<IGuiEventListener> children;
 	protected GuiAlertBox alertBox = null;
 	
 	protected GuiScreen(ITextComponent titleIn)
 	{
 		super(titleIn);
-		widgetList = this.field_230710_m_;
-		eventListeners = this.field_230705_e_;
+		buttons = this.field_230710_m_;
+		children = this.field_230705_e_;
 		mc = Minecraft.getInstance();
 	}
 	@Override
@@ -40,7 +40,7 @@ public class GuiScreen extends Screen{
 	@Override
 	protected void func_231160_c_()
 	{
-		initGui();
+		init();
 	}
 	
 	@Override
@@ -52,13 +52,29 @@ public class GuiScreen extends Screen{
 	@Override
 	protected <T extends IGuiEventListener> T func_230481_d_(T p_230481_1_)
 	{
-		return addListener(p_230481_1_);
+		return addChild(p_230481_1_);
 	}
 	
 	@Override
 	protected <T extends Widget> T func_230480_a_(T p_230480_1_)
 	{
-		return addWidget(p_230480_1_);
+		return addButton(p_230480_1_);
+	}
+	
+	@Override
+	public boolean func_231046_a_(int p_231046_1_, int p_231046_2_, int p_231046_3_)
+	{
+		return keyPressed(p_231046_1_, p_231046_2_, p_231046_3_);
+	}
+	
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		return super.func_231046_a_(keyID, scancode, mods);
+	}
+	
+	public List<IGuiEventListener> children()
+	{
+		return children;
 	}
 	
 	public boolean onScrollCallback(double mouseX, double mouseY, double mouseW)
@@ -68,9 +84,9 @@ public class GuiScreen extends Screen{
 	
 	public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	{
-		for(int i = 0; i < widgetList.size(); i++)
+		for(int i = 0; i < buttons.size(); i++)
 		{
-			widgetList.get(i).func_230430_a_(stack, mouseX, mouseY, partialTicks);
+			buttons.get(i).func_230430_a_(stack, mouseX, mouseY, partialTicks);
 		}
 	}
 	
@@ -79,20 +95,20 @@ public class GuiScreen extends Screen{
 		return true;
 	}
 	
-	protected void initGui()
+	protected void init()
 	{
 		GuiButton.currentZLevel = 0;
 	}
 	
-	protected <T extends Widget> T addWidget(T widget)
+	protected <T extends Widget> T addButton(T widget)
 	{
-		widgetList.add(widget);
-		return addListener(widget);
+		buttons.add(widget);
+		return addChild(widget);
 	}
 	
-	protected <T extends IGuiEventListener> T addListener(T widget)
+	protected <T extends IGuiEventListener> T addChild(T widget)
 	{
-		eventListeners.add(widget);
+		children.add(widget);
 		return widget;
 	}
 }

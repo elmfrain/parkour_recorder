@@ -1,6 +1,7 @@
 package com.elmfer.parkour_recorder.parkour;
 
-import com.elmfer.parkour_recorder.ControlledMovementInput;
+import java.awt.TextComponent;
+
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
@@ -8,6 +9,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentUtils;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class PlaybackSession implements IParkourSession {
 
@@ -19,6 +25,7 @@ public class PlaybackSession implements IParkourSession {
 	private boolean waitingForPlayer = false;
 	private int frameNumber = 0;
 	private ParkourFrame currentFrame = null;
+	private int playbackCountdown = 0;
 	
 	public PlaybackSession(Recording recording)
 	{
@@ -68,7 +75,7 @@ public class PlaybackSession implements IParkourSession {
 			overridingSession.onOverride = true;
 			overridingSession.isRecording = true;
 			overridingSession.nbRecordPresses = 1;
-			overridingSession.overrideStart = frameNumber;
+			overridingSession.overrideStart = frameNumber - 1;
 			overridingSession.recording.rename(recording.getName());
 			stop();
 			
@@ -80,44 +87,79 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVec()) < 0.25)
+		if(!mc.isGamePaused())
 		{
-			isPlaying = true;
-			mc.player.movementInput = new ControlledMovementInput();
-			frameNumber = 0;
-			waitingForPlayer = false;
-		}
-		if(isPlaying && !mc.isGamePaused())
-		{
-			if(frameNumber < recording.size())
+			playbackCountdown = Math.max(0, playbackCountdown - 1);
+			if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVec()) < 0.25)
 			{
-				if(frameNumber == 0)
-				{
-					mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
-					if(arrow.isAlive()) arrow.setExpired();
-				}
-				currentFrame = recording.get(frameNumber);
-				
-				currentFrame.setInput(mc.player.movementInput, mc.player);
-				frameNumber++;
+				isPlaying = true;
+				playbackCountdown = 10;
+				mc.player.movementInput = new ControlledMovementInput();
+				mc.player.setMotion(0.0, 0.0, 0.0);
+				frameNumber = 0;
+				waitingForPlayer = false;
 			}
-			else 
-				stop();
+			if(isPlaying && playbackCountdown == 0)
+			{
+				if(frameNumber < recording.size())
+				{
+					if(frameNumber == 0)
+					{
+						mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
+						if(arrow.isAlive()) arrow.setExpired();
+					}
+					currentFrame = recording.get(frameNumber);
+					
+					currentFrame.setInput(mc.player.movementInput, mc.player);
+					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+					frameNumber++;
+				}
+				else 
+					stop();
+			}
 		}
 	}
 
 	@Override
 	public void onRenderTick()
 	{
-		if(isPlaying && !mc.isGamePaused())
-		{
-			mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-			
+		if(!mc.isGamePaused())
+		{	
 			float partialTicks = mc.getRenderPartialTicks();
-			ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
-			
-			mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-			mc.player.rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+			if(playbackCountdown > 0)
+			{
+				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
+				ParkourFrame firstFrame = recording.get(0);
+				
+				mc.player.rotationYaw = MathHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
+				mc.player.rotationPitch = MathHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
+				
+				Vector3d pos = mc.player.getPositionVec();
+				double posX = MathHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
+				double posY = MathHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
+				double posZ = MathHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
+				
+				mc.player.setPosition(posX, posY, posZ);
+			}
+			else if(isPlaying)
+			{
+				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
+				
+				mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+				
+				Vector3d playerPos = mc.player.getPositionVec();
+				Vector3d framePos = new Vector3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
+				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
+				{
+					IFormattableTextComponent errorMessage = TextComponentUtils.func_240647_a_(new TranslationTextComponent("warn.playback_failed"));
+					errorMessage.func_240699_a_(TextFormatting.RED);
+					mc.ingameGUI.getChatGUI().printChatMessage(errorMessage);
+					stop();
+				}
+				else
+					mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+			}
 		}
 	}
 	
@@ -125,12 +167,12 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		isPlaying = false;
-		
-		Vector3d playerPos = mc.player.getPositionVec();
-		double motionX = playerPos.x - mc.player.prevPosX;
-		double motionY = playerPos.y - mc.player.prevPosY;
-		double motionZ = playerPos.z - mc.player.prevPosZ;
-		mc.player.setVelocity(motionX, motionY, motionZ);
+
+		//Vector3d playerPos = mc.player.getPositionVec();
+		//double motionX = playerPos.x - mc.player.prevPosX;
+		//double motionY = playerPos.y - mc.player.prevPosY;
+		//double motionZ = playerPos.z - mc.player.prevPosZ;
+		//mc.player.setVelocity(motionX, motionY, motionZ);
 		
 		mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
 	}

@@ -10,12 +10,15 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.StringTextComponent;
 
 public class GuiButton extends Button {
 	
 	public static int currentZLevel = 0;
 	public int zLevel = 0;
+	public boolean highlighed = false;
+	public Vector3f highlightTint = new Vector3f(0.0f, 0.45f, 0.0f);
 	
 	private float xTranslate = 0.0f;
 	private float yTranslate = 0.0f;
@@ -38,7 +41,7 @@ public class GuiButton extends Button {
 	
 	public void func_230431_b_(MatrixStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_)
 	{
-		drawButton(p_230431_1_, p_230431_2_, p_230431_3_, p_230431_4_);
+		renderButton(p_230431_1_, p_230431_2_, p_230431_3_, p_230431_4_);
 	}
 	
 	protected boolean func_230992_c_(double p_230992_1_, double p_230992_3_)
@@ -68,13 +71,32 @@ public class GuiButton extends Button {
 	public boolean hovered() { return field_230692_n_; }
 	protected void setHovered(boolean hovered) { field_230692_n_ = hovered; }
 	
-	public void drawButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+	protected boolean mousePressed(double mouseX, double mouseY)
+	{
+		return enabled() && visible() && hovered();
+	}
+	
+	public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	{
 		if(visible())
 		{
 			preRender(mouseX, mouseY, partialTicks);
 			FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
-			int color = hovered() && enabled() ? getIntColor(0.3f, 0.3f, 0.3f, 0.3f) : getIntColor(0.0f, 0.0f, 0.0f, 0.3f);
+			int color = 0;
+			if(!highlighed)
+				color = hovered() && enabled() ? getIntColor(0.3f, 0.3f, 0.3f, 0.4f) : getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
+			else
+			{
+				if(hovered() && enabled())
+				{
+					Vector3f highlightColor = new Vector3f(highlightTint.getX(), highlightTint.getY(), highlightTint.getZ());
+					highlightColor.mul(0.5f);
+					highlightColor.add(0.3f, 0.3f, 0.3f);
+					color = getIntColor(highlightColor, 0.4f);
+				}
+				else
+					color = getIntColor(highlightTint, 0.4f);
+			}
 			
 			int j = 14737632;
 			if (!enabled())
@@ -90,10 +112,14 @@ public class GuiButton extends Button {
 		}
 	}
 	
-	protected boolean mousePressed(double mouseX, double mouseY)
+	public boolean isMouseOver(double mouseX, double mouseY)
 	{
 		return enabled() && visible() && hovered();
 	}
+	
+	protected boolean clicked(double mouseX, double mouseY) {
+	      return isMouseOver(mouseX, mouseY);
+	   }
 	
 	protected void preRender(int mouseX, int mouseY, float partialTicks)
 	{

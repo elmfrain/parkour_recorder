@@ -38,11 +38,11 @@ public class ParticleArrow extends Particle{
 	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks)
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
-		RenderSystem.disableTexture();
-		Vector3d vector3d = renderInfo.getProjectedView();
-		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vector3d.getX());
-	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vector3d.getY());
-	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vector3d.getZ());
+		RenderSystem.disableTexture();	
+		Vector3d vec3d = renderInfo.getProjectedView();
+		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
+	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
+	    float z = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
         float ticks = age + partialTicks;
         float angle = (float) ((60.0f * Math.log(2 * ticks + 1) + ticks) * 2);
         
@@ -67,6 +67,7 @@ public class ParticleArrow extends Particle{
 		
         int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         int shader = ShaderManager.getDefaultShader();
+        RenderSystem.disableAlphaTest();
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL20.glUseProgram(shader);
