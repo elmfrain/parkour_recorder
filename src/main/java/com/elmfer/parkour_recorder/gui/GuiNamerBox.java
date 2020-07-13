@@ -43,7 +43,7 @@ public class GuiNamerBox extends GuiAlertBox
 		Minecraft mc = Minecraft.getInstance();
 		int margins = (int) (20 / mc.getMainWindow().getGuiScaleFactor());
 		textField.setMaxStringLength(128);
-		textField.setCursorPositionEnd();
+		textField.setCursorPositionZero();
 		addButton(new GuiButton(0, 0, I18n.format("gui.naming_box.name"), this::name));
 		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.cancel"), this::close));
 		addButton(textField);

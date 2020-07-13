@@ -264,8 +264,6 @@ public class LoadRecordingScreen extends Screen {
 	
 	private void rename(String newName)
 	{
-		alertBox.setShouldClose(true);
-		alertBox = null;
 		selections.lastElement().rename(newName);
 		selections.lastElement().save();
 		buttons.clear();

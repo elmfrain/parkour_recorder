@@ -51,7 +51,7 @@ abstract public class GuiAlertBox extends Screen {
 	@Override
 	protected <T extends Widget> T addButton(T widget)
 	{
-		buttons.add(widget);
+		super.addButton(widget);
 		@SuppressWarnings("unchecked")
 		List<IGuiEventListener> pChildren = (List<IGuiEventListener>) parentScreen.children();
 		pChildren.add(widget);
