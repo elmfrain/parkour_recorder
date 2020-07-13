@@ -77,7 +77,10 @@ public class LoadRecordingScreen extends Screen {
 	
 	protected void buttonListCallback(Button button)
 	{
-		currentSelection = records[recordList.getIndex((GuiButton) button)];
+		GuiButton guiButton = (GuiButton) button;
+		recordList.buttonList.forEach((GuiButton b) -> { b.highlighed = false; });
+		currentSelection = records[recordList.getIndex(guiButton)];
+		guiButton.highlighed = true;
 	}
 	
 	@Override

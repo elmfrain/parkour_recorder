@@ -85,7 +85,10 @@ public class SaveRecordingScreen extends Screen
 	
 	protected void buttonListCallback(Button button)
 	{
-		currentSelection = EventHandler.recordHistory.get(theList.getIndex((GuiButton) button));
+		GuiButton guiButton = (GuiButton) button;
+		theList.buttonList.forEach((GuiButton b) -> { b.highlighed = false; });
+		currentSelection = EventHandler.recordHistory.get(theList.getIndex(guiButton));
+		guiButton.highlighed = true;
 	}
 	
 	@Override

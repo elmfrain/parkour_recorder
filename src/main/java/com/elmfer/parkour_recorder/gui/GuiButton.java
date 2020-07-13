@@ -13,6 +13,7 @@ public class GuiButton extends Button {
 	
 	public static int currentZLevel = 0;
 	public int zLevel = 0;
+	public boolean highlighed = false;
 	
 	private float xTranslate = 0.0f;
 	private float yTranslate = 0.0f;
@@ -40,7 +41,11 @@ public class GuiButton extends Button {
 		{
 			preRender(mouseX, mouseY, partialTicks);
 			FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
-			int color = isHovered && active ? getIntColor(0.3f, 0.3f, 0.3f, 0.3f) : getIntColor(0.0f, 0.0f, 0.0f, 0.3f);
+			int color = 0;
+			if(!highlighed)
+				color = isHovered && active ? getIntColor(0.3f, 0.3f, 0.3f, 0.3f) : getIntColor(0.0f, 0.0f, 0.0f, 0.3f);
+			else
+				color = isHovered && active ? getIntColor(0.3f, 0.4f, 0.3f, 0.3f) : getIntColor(0.0f, 0.4f, 0.0f, 0.3f);
 			
 			int j = 14737632;
 			if (!active)

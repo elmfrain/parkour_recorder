@@ -71,7 +71,7 @@ public class PlaybackSession implements IParkourSession {
 			overridingSession.onOverride = true;
 			overridingSession.isRecording = true;
 			overridingSession.nbRecordPresses = 1;
-			overridingSession.overrideStart = frameNumber;
+			overridingSession.overrideStart = frameNumber - 1;
 			overridingSession.recording.rename(recording.getName());
 			stop();
 			
