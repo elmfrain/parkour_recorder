@@ -55,7 +55,7 @@ public class PlaybackSession implements IParkourSession {
 			waitingForPlayer = true;
 			spawnParticles();
 		}
-		else if(isPlaying)
+		else if(isPlaying || waitingForPlayer)
 			stop();
 		return this;
 	}
@@ -163,6 +163,7 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		isPlaying = false;
+		waitingForPlayer = false;
 
 		//Vec3d playerPos = mc.player.getPositionVec();
 		//double motionX = playerPos.x - mc.player.prevPosX;

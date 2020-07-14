@@ -105,6 +105,8 @@ public class ParticleArrow extends Particle{
     		ModelManager.renderModel("arrow");
         }
         GL11.glPopMatrix();
+        
+        RenderSystem.enableAlphaTest();
 		if(tex2DEnabled)
 			RenderSystem.enableTexture();
 		GL30.glUseProgram(prevShader);
