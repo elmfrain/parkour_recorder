@@ -127,7 +127,8 @@ public class SaveRecordingScreen extends Screen
 		{
 			selections.remove(EventHandler.recordHistory.get(listViewport.getIndex(guiButton)));
 			guiButton.highlighed = false;
-			listViewport.buttonList.get(EventHandler.recordHistory.indexOf(selections.lastElement())).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+			if(!selections.isEmpty())
+				listViewport.buttonList.get(EventHandler.recordHistory.indexOf(selections.lastElement())).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
 		}
 		else
 		{

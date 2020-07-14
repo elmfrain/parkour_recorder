@@ -113,7 +113,8 @@ public class LoadRecordingScreen extends Screen {
 		{
 			selections.remove(records.get(listViewport.getIndex(guiButton)));
 			guiButton.highlighed = false;
-			listViewport.buttonList.get(records.indexOf(selections.lastElement())).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
+			if(!selections.isEmpty())
+				listViewport.buttonList.get(records.indexOf(selections.lastElement())).highlightTint = new Vec3f(0.0f, 0.5f, 0.0f);
 		}
 		else
 		{
