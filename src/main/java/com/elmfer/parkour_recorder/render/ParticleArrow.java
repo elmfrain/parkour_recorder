@@ -67,7 +67,7 @@ public class ParticleArrow extends Particle{
 		
         int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         int shader = ShaderManager.getDefaultShader();
-        RenderSystem.disableAlphaTest();
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL20.glUseProgram(shader);

@@ -4,19 +4,23 @@ import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
 import java.util.Stack;
 
+import org.lwjgl.opengl.GL11;
+
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class SaveRecordingScreen extends GuiScreen
 {
@@ -53,8 +57,9 @@ public class SaveRecordingScreen extends GuiScreen
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.erase_history"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.save"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.remove"), this::actionPerformed));
-			if(selections.size() > 1) buttons.get(3).setMessage(I18n.format("gui.save_recording.remove_selected"));
-			else buttons.get(3).setMessage(I18n.format("gui.load_recording.remove"));
+												  /**setMessage()**/
+			if(selections.size() > 1) buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove_selected"));
+			else buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.load_recording.remove"));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.open"), this::actionPerformed));
 		
 		if(alertBox != null)
@@ -113,7 +118,8 @@ public class SaveRecordingScreen extends GuiScreen
 	{
 		GuiButton guiButton = (GuiButton) button;
 		
-		if(!hasControlDown()) selections.clear();
+		/** hasControlDown() **/
+		if(!func_231172_r_()) selections.clear();
 		
 		for(int i = 0; i < listViewport.buttonList.size(); i++)
 		{
@@ -126,7 +132,8 @@ public class SaveRecordingScreen extends GuiScreen
 		{
 			selections.remove(EventHandler.recordHistory.get(listViewport.getIndex(guiButton)));
 			guiButton.highlighed = false;
-			listViewport.buttonList.get(EventHandler.recordHistory.indexOf(selections.lastElement())).highlightTint = new Vector3f(0.0f, 0.5f, 0.0f);
+			if(!selections.isEmpty())
+				listViewport.buttonList.get(EventHandler.recordHistory.indexOf(selections.lastElement())).highlightTint = new Vector3f(0.0f, 0.5f, 0.0f);
 		}
 		else
 		{
@@ -144,7 +151,7 @@ public class SaveRecordingScreen extends GuiScreen
 	}
 	
 	@Override
-	 public void render(int mouseX, int mouseY, float partialTicks)
+	 public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	 {
 		Minecraft mc = Minecraft.getInstance();
 		MainWindow res = mc.getMainWindow();
@@ -193,25 +200,30 @@ public class SaveRecordingScreen extends GuiScreen
 		desc.top = aside.bottom;
 		desc.bottom -= listMargin;
 		
-		RenderSystem.pushMatrix();
+		GL11.glPushMatrix();
 		{
 			all.pushMatrix(false);
 			{
-				renderBackground();
-				drawCenteredString(mc.fontRenderer, I18n.format("gui.save_recording"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
+				/**drawDefaultBackround(MatrixStack)**/
+				func_230446_a_(stack);
+				/**drawCenteredString(MatrixStack, FontRenderer, String, int x, int y, int color)**/
+				func_238471_a_(stack, mc.fontRenderer, I18n.format("gui.save_recording"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
 			}
 			all.popMatrix();
 			
 			body.pushMatrix(false);
 			{
-				fill(0, 0, body.getWidth(), body.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.3f));
+				/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
+				func_238467_a_(new MatrixStack(), 0, 0, body.getWidth(), body.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.3f));
 			}
 			body.popMatrix();
 			
 			listBody.pushMatrix(false);
 			{	
-				fillGradient(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				drawString(mc.fontRenderer, I18n.format("gui.save_recording.record_history") + worldName, listMargin, listMargin, 0xFFFFFFFF);
+				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
+				func_238468_a_(stack, 0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
+				func_238476_c_(new MatrixStack(), mc.fontRenderer, I18n.format("gui.save_recording.record_history") + worldName, listMargin, listMargin, 0xFFFFFFFF);
 			}
 			listBody.popMatrix();
 			
@@ -219,8 +231,10 @@ public class SaveRecordingScreen extends GuiScreen
 			
 			actionsBody.pushMatrix(true);
 			{
-				fillGradient(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				drawString(mc.fontRenderer, I18n.format("gui.save_recording.actions"), listMargin, listMargin, 0xFFFFFFFF);
+				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
+				func_238468_a_(stack, 0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
+				func_238476_c_(new MatrixStack(), mc.fontRenderer, I18n.format("gui.save_session.actions"), listMargin, listMargin, 0xFFFFFFFF);
 			}
 			actionsBody.popMatrix();
 			
@@ -231,20 +245,22 @@ public class SaveRecordingScreen extends GuiScreen
 					GuiButton button = (GuiButton) buttons.get(i);
 					button.setWidth(aside.getWidth());
 					button.setHeight(buttonHeight);
-					button.y = (buttonHeight + buttonMargin) * i;
-					button.renderButton(mouseX, mouseY, partialTicks);
-					button.active = !EventHandler.recordHistory.isEmpty();
+					button.setY((buttonHeight + buttonMargin) * i);
+					button.renderButton(stack, mouseX, mouseY, partialTicks);
+					button.setEnabled(!EventHandler.recordHistory.isEmpty());
 				}
 			}
 			actions.popMatrix();
 			
 			asideBody.pushMatrix(true);
 			{
-				fillGradient(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
+				func_238468_a_(stack, 0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
 				
 				String subTitle = I18n.format("gui.load_recording.information");
 				subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
-				drawString(mc.fontRenderer, subTitle, listMargin, listMargin, 0xFFFFFFFF);
+				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
+				func_238476_c_(new MatrixStack(), mc.fontRenderer, subTitle, listMargin, listMargin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 			
@@ -255,12 +271,13 @@ public class SaveRecordingScreen extends GuiScreen
 					GuiButton button = (GuiButton) buttons.get(i);
 					button.setWidth(aside.getWidth());
 					button.setHeight(buttonHeight);
-					button.y = (buttonHeight + buttonMargin) * (i - 2);
-					button.renderButton( mouseX, mouseY, partialTicks);
-					button.active = !selections.isEmpty();
+					button.setY((buttonHeight + buttonMargin) * (i - 2));
+					button.renderButton(stack, mouseX, mouseY, partialTicks);
+					button.setEnabled(!selections.isEmpty());
 				}
-				if(selections.size() > 1) buttons.get(3).setMessage(I18n.format("gui.save_recording.remove_selected"));
-				else buttons.get(3).setMessage(I18n.format("gui.save_recording.remove"));
+														/**setMessage()**/
+				if(selections.size() > 1) buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove_selected"));
+				else buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove"));
 			}
 			aside.popMatrix();
 			
@@ -268,12 +285,12 @@ public class SaveRecordingScreen extends GuiScreen
 			{
 				GuiButton open = (GuiButton) buttons.get(4);
 				boolean flag = EventHandler.session.isSessionActive();
-				open.active = !flag && open.active;
+				open.setEnabled(!flag && open.enabled());;
 				
-				if(open.isHovered() && flag && !selections.isEmpty()) 
+				if(open.hovered() && flag && !selections.isEmpty()) 
 				{	
 					String warning = I18n.format("gui.save_recording.warn.cannot_open_while_recording_or_playing");
-					renderTooltip(warning, mouseX, mouseY);
+					func_238652_a_(stack, ITextProperties.func_240652_a_(warning), mouseX, mouseY);
 				}
 			}
 			all.popMatrix();
@@ -285,7 +302,8 @@ public class SaveRecordingScreen extends GuiScreen
 					String[] lines = selections.lastElement().toString().split("\n");
 					for(int i = 0; i < lines.length; i++)
 					{
-						drawString(mc.fontRenderer, lines[i], 0, mc.fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
+						/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
+						func_238476_c_(new MatrixStack(), mc.fontRenderer, lines[i], 0, mc.fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
 					}
 				}
 				desc.popMatrix();
@@ -293,11 +311,11 @@ public class SaveRecordingScreen extends GuiScreen
 			
 			if(alertBox != null)
 			{
-				alertBox.render(mouseX, mouseY, partialTicks);
+				alertBox.drawScreen(stack, mouseX, mouseY, partialTicks);
 				if(alertBox.shouldClose()) alertBox = null;
 			}
 		}
-		RenderSystem.popMatrix();
+		GL11.glPopMatrix();
 		
 		all.pushMatrix(false);
 	 }

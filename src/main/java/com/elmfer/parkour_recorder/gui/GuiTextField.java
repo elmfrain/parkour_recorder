@@ -86,7 +86,7 @@ public class GuiTextField extends TextFieldWidget {
 		preRender(mouseX, mouseY, partialTicks);
 		int mX = (int) (mouseX - xTranslate);
     	int mY = (int) (mouseY - yTranslate);
-		super.func_230431_b_(stack, mouseX, mouseY, partialTicks);
+		super.func_230431_b_(stack, mX, mY, partialTicks);
 	}
 	
 	private boolean mouseInViewport(double mouseX, double mouseY)

@@ -116,10 +116,10 @@ public class GuiViewport extends AbstractGui
 			int	width = (int) (getWidth() * factor);
 			int	height = (int) (getHeight() * factor);
 			GlStateManager.viewport(x, y, width, height);
-			RenderSystem.matrixMode(GL11.GL_PROJECTION);
-			RenderSystem.loadIdentity();
-			RenderSystem.ortho(0, getWidth(), getHeight(), 0, 1000.0D, 3000.0D);
-			RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+			GL11.glMatrixMode(GL11.GL_PROJECTION);
+			GL11.glLoadIdentity();
+			GL11.glOrtho(0, getWidth(), getHeight(), 0, 1000.0D, 3000.0D);
+			GL11.glMatrixMode(GL11.GL_MODELVIEW);
 			
 			GL11.glLoadMatrixf(getGuiMatrix());
 		}
@@ -127,8 +127,8 @@ public class GuiViewport extends AbstractGui
 		{
 			prevViewport = null;
 			GL11.glLoadMatrixf(getGuiMatrix());
-			RenderSystem.translatef(left, top, 0.0f);
-			parents.forEach((GuiViewport v) -> {RenderSystem.translatef(v.left, v.top, 0.0f);});
+			GL11.glTranslatef(left, top, 0.0f);
+			parents.forEach((GuiViewport v) -> {GL11.glTranslatef(v.left, v.top, 0.0f);});
 		}
 	}
 	
@@ -146,11 +146,11 @@ public class GuiViewport extends AbstractGui
 	{
 		MainWindow mainwindow = Minecraft.getInstance().getMainWindow();
         RenderSystem.clear(256, Minecraft.IS_RUNNING_ON_MAC);
-        RenderSystem.matrixMode(GL11.GL_PROJECTION);
-        RenderSystem.loadIdentity();
-        RenderSystem.ortho(0.0D, (double)mainwindow.getFramebufferWidth() / mainwindow.getGuiScaleFactor(), (double)mainwindow.getFramebufferHeight() / mainwindow.getGuiScaleFactor(), 0.0D, 1000.0D, 3000.0D);
-        RenderSystem.matrixMode(GL11.GL_MODELVIEW);
-        RenderSystem.loadIdentity();
-        RenderSystem.translatef(0.0F, 0.0F, -2000.0F);
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        GL11.glOrtho(0.0D, (double)mainwindow.getFramebufferWidth() / mainwindow.getGuiScaleFactor(), (double)mainwindow.getFramebufferHeight() / mainwindow.getGuiScaleFactor(), 0.0D, 1000.0D, 3000.0D);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glLoadIdentity();
+        GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
 	}
 }

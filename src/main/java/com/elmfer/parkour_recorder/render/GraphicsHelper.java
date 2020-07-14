@@ -1,5 +1,7 @@
 package com.elmfer.parkour_recorder.render;
 
+import org.lwjgl.opengl.GL11;
+
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -44,9 +46,9 @@ public class GraphicsHelper {
         float f7 = (float)(endColor & 255) / 255.0F;
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
-        RenderSystem.disableAlphaTest();
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
         RenderSystem.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
-        RenderSystem.shadeModel(7425);
+        GL11.glShadeModel(7425);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
@@ -55,9 +57,9 @@ public class GraphicsHelper {
         bufferbuilder.pos((double)left, (double)bottom, 0.0f).color(f1, f2, f3, f).endVertex();
         bufferbuilder.pos((double)right, (double)bottom, 0.0f).color(f5, f6, f7, f4).endVertex();
         tessellator.draw();
-        RenderSystem.shadeModel(7424);
+        GL11.glShadeModel(7424);
         RenderSystem.disableBlend();
-        RenderSystem.enableAlphaTest();
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableTexture();
 	}
 	

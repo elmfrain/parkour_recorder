@@ -6,11 +6,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
+import org.lwjgl.opengl.GL11;
+
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
@@ -116,7 +117,8 @@ public class LoadRecordingScreen extends GuiScreen {
 		{
 			selections.remove(records.get(listViewport.getIndex(guiButton)));
 			guiButton.highlighed = false;
-			listViewport.buttonList.get(records.indexOf(selections.lastElement())).highlightTint = new Vector3f(0.0f, 0.5f, 0.0f);
+			if(!selections.isEmpty())
+				listViewport.buttonList.get(records.indexOf(selections.lastElement())).highlightTint = new Vector3f(0.0f, 0.5f, 0.0f);
 		}
 		else
 		{
@@ -174,7 +176,7 @@ public class LoadRecordingScreen extends GuiScreen {
 		desc.top = aside.bottom;
 		desc.bottom -= listMargin;
 		
-		RenderSystem.pushMatrix();
+		GL11.glPushMatrix();
 		{
 			int fade1 = getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
 			int fade2 = getIntColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -262,7 +264,7 @@ public class LoadRecordingScreen extends GuiScreen {
 				desc.popMatrix();
 			}
 		}
-		RenderSystem.popMatrix();
+		GL11.glPopMatrix();
 		
 		if(alertBox != null)
 		{

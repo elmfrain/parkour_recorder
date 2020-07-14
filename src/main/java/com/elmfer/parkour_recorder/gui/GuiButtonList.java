@@ -3,9 +3,10 @@ package com.elmfer.parkour_recorder.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.opengl.GL11;
+
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -64,9 +65,9 @@ public class GuiButtonList extends AbstractGui
 		
 		viewport.pushMatrix(true);
 		{
-			RenderSystem.pushMatrix();
+			GL11.glPushMatrix();
 			{
-				RenderSystem.translatef(0, scrollPos, 0);
+				GL11.glTranslatef(0, scrollPos, 0);
 				for(int i = 0; i < buttonList.size(); i++)
 				{
 					buttonList.get(i).setWidth(viewport.getWidth() - scrollerWidth);;
@@ -75,7 +76,7 @@ public class GuiButtonList extends AbstractGui
 					buttonList.get(i).renderButton(stack, mouseX, mouseY, partialTicks);
 				}
 			}
-			RenderSystem.popMatrix();
+			GL11.glPopMatrix();
 			
 			int tabHeight = (int) (((float) viewport.getHeight() / listHeight) * viewport.getHeight());
 			int tabTravel = (int) (((float) -scrollPos / scrollMovement) * (viewport.getHeight() - tabHeight));
