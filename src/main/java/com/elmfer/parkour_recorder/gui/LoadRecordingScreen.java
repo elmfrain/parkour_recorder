@@ -186,7 +186,7 @@ public class LoadRecordingScreen extends GuiScreen {
 				/**drawDefaultBackround(MatrixStack)**/
 				func_230446_a_(stack);
 				/**drawCenteredString(MatrixStack, FontRenderer, String, int x, int y, int color)**/
-				func_238471_a_(stack, fontRenderer, I18n.format("gui.load_recording.title"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
+				func_238471_a_(stack, fontRenderer, I18n.format("gui.load_recording"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
 			}
 			all.popMatrix();
 			

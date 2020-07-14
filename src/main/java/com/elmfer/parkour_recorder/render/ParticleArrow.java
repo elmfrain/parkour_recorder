@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
@@ -69,26 +68,26 @@ public class ParticleArrow extends Particle{
         int shader = ShaderManager.getDefaultShader();
         GL11.glDisable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableCull();
         GL20.glUseProgram(shader);
         GL11.glPushMatrix();
         {
-        	GlStateManager.enableCull();
         	int prevFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
         	GL11.glTranslated(x, y, z);
-        	ShaderManager.importMatricies(ShaderManager.getDefaultShader(), worldSpaceMatrix, normalSpaceMatrix);
+        	ShaderManager.importMatricies(shader, worldSpaceMatrix, normalSpaceMatrix);
         	
         	GL20.glUniform1i(GL20.glGetUniformLocation(shader, "enableWhiteScreen"), 1);
         	GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 2.0f);
-        	GlStateManager.depthFunc(GL11.GL_LEQUAL);
+        	RenderSystem.depthFunc(GL11.GL_LEQUAL);
     		ModelManager.renderModel("box");
     		
     		GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 1.0f);
-        	GlStateManager.depthFunc(GL11.GL_GREATER);
+        	RenderSystem.depthFunc(GL11.GL_GREATER);
     		ModelManager.renderModel("box");
     		GL20.glUniform1i(GL20.glGetUniformLocation(shader, "enableWhiteScreen"), 0);
     		
-    		GlStateManager.depthFunc(prevFunc);
+    		RenderSystem.depthFunc(prevFunc);
         }
         GL11.glPopMatrix();
         GL11.glPushMatrix();
@@ -105,6 +104,8 @@ public class ParticleArrow extends Particle{
     		ModelManager.renderModel("arrow");
         }
         GL11.glPopMatrix();
+        
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
 		if(tex2DEnabled)
 			RenderSystem.enableTexture();
 		GL30.glUseProgram(prevShader);
