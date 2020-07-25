@@ -81,30 +81,30 @@ abstract public class GuiAlertBox extends Screen {
 		Minecraft mc = Minecraft.getInstance();
 		MainWindow res = mc.getMainWindow();
 		
-		int boxSize = res.getScaledWidth() / 2;
-		int  titleHeight = mc.fontRenderer.FONT_HEIGHT * 2;
-		int margins = (int) (20 / res.getGuiScaleFactor());
-		int closeMargin = (int) (4.0f / res.getGuiScaleFactor());
+		int boxWidth = GuiStyle.AlertBox.boxWidth();
+		int  titleHeight = GuiStyle.AlertBox.titleHeight();
+		int margin = (int) GuiStyle.Gui.margin();
+		int smallMargin = GuiStyle.Gui.smallMargin();
 		
 		int fade1 = getIntColor(0.0f, 0.0f, 0.0f, 0.9f);
 		int fade2 = getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
 		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport box = new GuiViewport(all);
-		box.left = all.getWidth() / 2 - boxSize / 2;
-		box.top = (int) (all.getHeight() / 2.0f - (titleHeight + margins * 2.0f + height) / 2.0f);
-		box.right = all.getWidth() / 2 + boxSize / 2;
-		box.bottom = (int) (all.getHeight() / 2.0f + (titleHeight + margins * 2.0f + height) / 2.0f);
+		box.left = all.getWidth() / 2 - boxWidth / 2;
+		box.top = (int) (all.getHeight() / 2.0f - (titleHeight + margin * 2.0f + height) / 2.0f);
+		box.right = all.getWidth() / 2 + boxWidth / 2;
+		box.bottom = (int) (all.getHeight() / 2.0f + (titleHeight + margin * 2.0f + height) / 2.0f);
 		GuiViewport title = new GuiViewport(box);
 		title.bottom = mc.fontRenderer.FONT_HEIGHT * 2;
 		viewport = new GuiViewport(box);
-		viewport.left = margins; viewport.top = title.bottom + margins;
-		viewport.right -= margins;
-		viewport.bottom -= margins;
+		viewport.left = margin; viewport.top = title.bottom + margin;
+		viewport.right -= margin;
+		viewport.bottom -= margin;
 		
 		box.pushMatrix(false);
 		{
-			fill(-closeMargin, -closeMargin, box.getWidth() + closeMargin, box.getHeight() + closeMargin, getIntColor(0.0f, 0.0f, 0.0f, 1.0f));
+			fill(-smallMargin, -smallMargin, box.getWidth() + smallMargin, box.getHeight() + smallMargin, getIntColor(0.0f, 0.0f, 0.0f, 1.0f));
 			
 			fill(0, 0, box.getWidth(), box.getHeight(), getIntColor(0.15f, 0.15f, 0.15f, 1.0f));
 		}
@@ -114,13 +114,13 @@ abstract public class GuiAlertBox extends Screen {
 		{
 			gradientRectToRight(0, 0, title.getWidth(), title.getHeight(), fade1, fade2);
 			
-			drawString(mc.fontRenderer, getTitle().getString(), margins, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
+			drawString(mc.fontRenderer, getTitle().getString(), margin, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 			
 			GuiButton closeButton = (GuiButton) buttons.get(0);
-			closeButton.setHeight(title.getHeight() - closeMargin * 2);
+			closeButton.setHeight(title.getHeight() - smallMargin * 2);
 			closeButton.setWidth(closeButton.getHeight());
-			closeButton.y = closeMargin;
-			closeButton.x = title.getWidth() - closeMargin - closeButton.getWidth();
+			closeButton.y = smallMargin;
+			closeButton.x = title.getWidth() - smallMargin - closeButton.getWidth();
 			closeButton.renderButton(mouseX, mouseY, partialTicks);
 		}
 		title.popMatrix();

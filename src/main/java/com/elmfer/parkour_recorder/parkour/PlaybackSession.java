@@ -22,10 +22,16 @@ public class PlaybackSession implements IParkourSession {
 	private int frameNumber = 0;
 	private ParkourFrame currentFrame = null;
 	private int playbackCountdown = 0;
+	private Vec3d startingPos;
+	private boolean initiated = false;
 	
 	public PlaybackSession(Recording recording)
 	{
 		this.recording = recording;
+		ParkourFrame startingFrame = recording.get(recording.startingFrame);
+		startingPos = new Vec3d(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
+		frameNumber = recording.startingFrame;
+		
 	}
 	
 	public boolean isPlaying()
@@ -33,6 +39,25 @@ public class PlaybackSession implements IParkourSession {
 	
 	public boolean isWaitingForPlayer()
 	{ return waitingForPlayer; }
+	
+	public void startAt(int framePos)
+	{
+		boolean wasWaiting = waitingForPlayer;
+		stop();
+		
+		framePos = Math.max(Math.min(framePos, recording.size() - 2), 0);
+		ParkourFrame startingFrame = recording.get(framePos);
+		startingPos = new Vec3d(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
+		frameNumber = framePos;
+		recording.startingFrame = framePos;
+		initiated = false;
+		
+		if(wasWaiting)
+		{
+			spawnParticles();
+			waitingForPlayer = true;
+		}
+	}
 	
 	@Override
 	public IParkourSession onRecord()
@@ -86,23 +111,24 @@ public class PlaybackSession implements IParkourSession {
 		if(!mc.isGamePaused())
 		{
 			playbackCountdown = Math.max(0, playbackCountdown - 1);
-			if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPositionVec()) < 0.25)
+			if(waitingForPlayer && startingPos.distanceTo(mc.player.getPositionVec()) < 0.25)
 			{
 				isPlaying = true;
 				playbackCountdown = 10;
 				mc.player.movementInput = new ControlledMovementInput();
 				mc.player.setMotion(0.0, 0.0, 0.0);
-				frameNumber = 0;
+				frameNumber = recording.startingFrame;
 				waitingForPlayer = false;
 			}
 			if(isPlaying && playbackCountdown == 0)
 			{
 				if(frameNumber < recording.size())
 				{
-					if(frameNumber == 0)
+					if(!initiated)
 					{
 						mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
 						if(arrow.isAlive()) arrow.setExpired();
+						initiated = true;
 					}
 					currentFrame = recording.get(frameNumber);
 					
@@ -125,7 +151,7 @@ public class PlaybackSession implements IParkourSession {
 			if(playbackCountdown > 0)
 			{
 				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
-				ParkourFrame firstFrame = recording.get(0);
+				ParkourFrame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 				
 				mc.player.rotationYaw = MathHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
 				mc.player.rotationPitch = MathHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
@@ -178,11 +204,16 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		
-		arrow = new ParticleArrow(mc.world, recording.initPos.x, recording.initPos.y, recording.initPos.z);
+		arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
 		mc.particles.addEffect(arrow);
 		
 		finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
 		mc.particles.addEffect(finish);
+	}
+	
+	public int getFrameNumber()
+	{
+		return frameNumber;
 	}
 	
 	private void despawnParticles()

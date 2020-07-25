@@ -1,7 +1,6 @@
 package com.elmfer.parkour_recorder.render;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -101,7 +100,7 @@ public class ModelManager {
 			
 			scanner.close();
 			modelFile.close();
-		}catch(IOException e) {
+		}catch(Exception e) {
 			CrashReport report = new CrashReport("Invalid Model: ", e.getCause());
 			Minecraft.getInstance().crashed(report);
 		}
@@ -147,6 +146,15 @@ public class ModelManager {
 				GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 3);
 				GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 6);
 				GL20.glVertexAttribPointer(3, 3, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 8);
+				
+				GL15.glEnableClientState(GL15.GL_VERTEX_ARRAY);
+				GL15.glEnableClientState(GL15.GL_NORMAL_ARRAY);
+				GL15.glEnableClientState(GL15.GL_TEXTURE_COORD_ARRAY);
+				GL15.glEnableClientState(GL15.GL_COLOR_ARRAY);				
+				GL15.glVertexPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 0);
+				GL15.glNormalPointer(GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 3);
+				GL15.glTexCoordPointer(2, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 6);
+				GL15.glColorPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 8);
 			}
 			GL30.glBindVertexArray(0);
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);

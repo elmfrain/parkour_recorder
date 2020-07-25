@@ -3,8 +3,8 @@ package com.elmfer.parkour_recorder;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.elmfer.parkour_recorder.gui.LoadRecordingScreen;
 import com.elmfer.parkour_recorder.gui.SaveRecordingScreen;
+import com.elmfer.parkour_recorder.gui.TimelineScreen;
 import com.elmfer.parkour_recorder.parkour.IParkourSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
@@ -64,7 +64,7 @@ public class EventHandler {
 				reloadResources();
 			
 			if(settings.keybindLoad.isPressed())
-				Minecraft.getInstance().displayGuiScreen(new LoadRecordingScreen());
+				Minecraft.getInstance().displayGuiScreen(new TimelineScreen());
 			
 			if(settings.keybindSave.isPressed())
 				Minecraft.getInstance().displayGuiScreen(new SaveRecordingScreen());
@@ -91,5 +91,10 @@ public class EventHandler {
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/arrow.ply"));
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/box.ply"));
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/finish.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/play_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/rewind_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/pause_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/start_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/end_button.ply"));
 	}
 }

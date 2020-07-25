@@ -82,7 +82,7 @@ public class ParticleFinish extends Particle{
         GL30.glUseProgram(shader);
         GL11.glPushMatrix();
         {
-        	double distance = (new Vec3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().player.getPositionVec());
+        	double distance = (new Vec3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().renderViewEntity.getPositionVec());
         	double expiredAmount = 1.0 - (expiredAge + (isExpired ? partialTicks : 0)) / expireDuration;
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	distance *= expiredAmount;

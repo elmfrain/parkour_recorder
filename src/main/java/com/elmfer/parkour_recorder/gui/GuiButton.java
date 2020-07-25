@@ -4,19 +4,18 @@ import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
 import org.lwjgl.opengl.GL11;
 
-import com.elmfer.parkour_recorder.util.Vec3f;
-
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.renderer.Vector3f;
 
 public class GuiButton extends Button {
 	
 	public static int currentZLevel = 0;
 	public int zLevel = 0;
 	public boolean highlighed = false;
-	public Vec3f highlightTint = new Vec3f(0.0f, 0.45f, 0.0f);
+	public Vector3f highlightTint = new Vector3f(0.0f, 0.45f, 0.0f);
 	
 	private float xTranslate = 0.0f;
 	private float yTranslate = 0.0f;
@@ -33,7 +32,7 @@ public class GuiButton extends Button {
 	
 	public GuiButton(int x, int y, String text, IPressable pressedCallback)
 	{
-		super(x, y, 100, 20, text, pressedCallback);
+		super(x, y, 100, GuiStyle.Gui.buttonHeight(), text, pressedCallback);
 		zLevel = currentZLevel;
 	}
 	
@@ -51,7 +50,10 @@ public class GuiButton extends Button {
 			{
 				if(isHovered && active)
 				{
-					Vec3f highlightColor = highlightTint.mul(0.5f, 0.5f, 0.5f).add(0.3f, 0.3f, 0.3f);
+					Vector3f highlightColor = highlightTint.copy();
+					highlightColor.mul(0.5f);
+					highlightColor.add(0.3f, 0.3f, 0.3f);
+					
 					color = getIntColor(highlightColor, 0.4f);
 				}
 				else

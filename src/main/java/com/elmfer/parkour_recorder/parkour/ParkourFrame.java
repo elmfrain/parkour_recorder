@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder.parkour;
 import java.nio.ByteBuffer;
 
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.Vec3d;
 
@@ -60,7 +61,7 @@ public class ParkourFrame {
 		return new ParkourFrame(flags, headYaw, headPitch, posX, posY, posZ);
 	}
 	
-	public void setInput(MovementInput input, ClientPlayerEntity playerIn)
+	public void setInput(MovementInput input, PlayerEntity playerIn)
 	{
 		input.forwardKeyDown = getFlag(Flags.FORWARD);
 		input.backKeyDown = getFlag(Flags.BACKWARD);

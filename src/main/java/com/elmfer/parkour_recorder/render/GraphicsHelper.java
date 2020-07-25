@@ -1,12 +1,13 @@
 package com.elmfer.parkour_recorder.render;
 
-import com.elmfer.parkour_recorder.util.Vec3f;
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.Vector3f;
+import net.minecraft.client.renderer.Vector4f;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 public class GraphicsHelper {
@@ -22,14 +23,24 @@ public class GraphicsHelper {
 		return value;
 	}
 	
-	public static int getIntColor(Vec3f color, float alpha)
+	public static int getIntColor(Vector4f color)
 	{
-		int value = 0;
-		value |= (floatToByte(alpha) << 24);
-		value |= (floatToByte(color.x) << 16);
-		value |= (floatToByte(color.y) << 8);
-		value |= floatToByte(color.z);
-		return value;
+		return getIntColor(color.getX(), color.getY(), color.getZ(), color.getW());
+	}
+	
+	public static int getIntColor(Vector3f color, float alpha)
+	{
+		return getIntColor(color.getX(), color.getY(), color.getZ(), alpha);
+	}
+	
+	public static Vector4f getFloatColor(int color)
+	{
+		float f = (float)(color >> 24 & 255) / 255.0F;
+        float f1 = (float)(color >> 16 & 255) / 255.0F;
+        float f2 = (float)(color >> 8 & 255) / 255.0F;
+        float f3 = (float)(color & 255) / 255.0F;
+        
+        return new Vector4f(f1, f2, f3, f);
 	}
 	
 	public static void gradientRectToRight(int left, int top, int right, int bottom, int startColor, int endColor)

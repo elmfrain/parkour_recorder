@@ -93,7 +93,7 @@ public class ParticleArrow extends Particle{
         GL11.glPopMatrix();
         GL11.glPushMatrix();
         {
-        	double distance = (new Vec3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getInstance().player.getPositionVec());
+        	double distance = (new Vec3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getInstance().renderViewEntity.getPositionVec());
         	distance *= Math.min(ticks / 20.0f, 1);
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	GL11.glTranslated(x, y, z);

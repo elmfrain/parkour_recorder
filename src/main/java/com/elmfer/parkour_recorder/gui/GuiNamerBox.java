@@ -40,14 +40,14 @@ public class GuiNamerBox extends GuiAlertBox
 	public void init()
 	{
 		super.init();
-		Minecraft mc = Minecraft.getInstance();
-		int margins = (int) (20 / mc.getMainWindow().getGuiScaleFactor());
+		
+		int margin = GuiStyle.Gui.margin();
 		textField.setMaxStringLength(128);
 		textField.setCursorPositionZero();
 		addButton(new GuiButton(0, 0, I18n.format("gui.naming_box.name"), this::name));
 		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.cancel"), this::close));
 		addButton(textField);
-		height = 40 + margins;
+		height = 40 + margin;
 	}
 
 	@Override
@@ -55,14 +55,14 @@ public class GuiNamerBox extends GuiAlertBox
 	{
 		viewport.pushMatrix(false);
 		{
-			int margins = (int) (20 / Minecraft.getInstance().getMainWindow().getGuiScaleFactor());
+			int margin = GuiStyle.Gui.margin();
 			textField.setWidth(viewport.getWidth());
 			textField.renderButton(mouseX, mouseY, partialTicks);
 			GuiButton rename = (GuiButton) buttons.get(1);
 			GuiButton cancel = (GuiButton) buttons.get(2);
-			rename.setWidth(viewport.getWidth() / 2 - margins);
+			rename.setWidth(viewport.getWidth() / 2 - margin);
 			cancel.setWidth(rename.getWidth());
-			rename.y = textField.getHeight() + margins;
+			rename.y = textField.getHeight() + margin;
 			cancel.y = rename.y;
 			cancel.x = viewport.getWidth() - cancel.getWidth();
 			rename.renderButton(mouseX, mouseY, partialTicks);

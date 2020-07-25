@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elmfer.parkour_recorder.gui.GuiStyle.Gui;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -12,7 +13,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class GuiButtonList extends AbstractGui
+public class ButtonListViewport extends AbstractGui
 {
 	protected List<GuiButton> buttonList = new ArrayList<GuiButton>();
 	private Screen parentScreen;
@@ -20,7 +21,7 @@ public class GuiButtonList extends AbstractGui
 	private float scrollSpeed = 0.0f;
 	private static double scrollAmount = 0.0;
 	
-	public GuiButtonList(Screen parent)
+	public ButtonListViewport(Screen parent)
 	{
 		parentScreen = parent;
 	}
@@ -53,9 +54,9 @@ public class GuiButtonList extends AbstractGui
 	public void drawScreen(int mouseX, int mouseY, float partialTicks, GuiViewport viewport)
 	{
 		int scrollerWidth = 3;
-		int buttonMargin = 5;
-		int buttonHeight = 20;
-		int listHeight = (buttonHeight + buttonMargin) * buttonList.size() + 80;
+		int smallMargin = GuiStyle.Gui.smallMargin();
+		int buttonHeight = GuiStyle.Gui.buttonHeight();
+		int listHeight = (buttonHeight + smallMargin) * buttonList.size() + 80;
 		int scrollMovement = Math.max(0, listHeight - viewport.getHeight());
 		
 		if(viewport.isHovered(mouseX, mouseY) && scrollPos <= 0) scrollSpeed += scrollAmount * 2.0;
@@ -73,7 +74,7 @@ public class GuiButtonList extends AbstractGui
 				{
 					buttonList.get(i).setWidth(viewport.getWidth() - scrollerWidth);;
 					buttonList.get(i).setHeight(buttonHeight);
-					buttonList.get(i).y = (buttonHeight + buttonMargin) * i;;
+					buttonList.get(i).y = (buttonHeight + smallMargin) * i;;
 					buttonList.get(i).renderButton(mouseX, mouseY, partialTicks);
 				}
 			}
