@@ -3,7 +3,6 @@ package com.elmfer.parkour_recorder.parkour;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 public class PlaybackViewerEntity extends PlayerEntity
@@ -39,12 +38,17 @@ public class PlaybackViewerEntity extends PlayerEntity
         this.isJumping = this.movementInput.jump;
         super.tick();
 	}
-
+	
+	@Override
+	public boolean isSleeping() {
+		return false;
+	}
+	
 	@Override
 	public boolean isSpectator()
 	{
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

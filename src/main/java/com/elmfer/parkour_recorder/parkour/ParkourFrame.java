@@ -37,6 +37,7 @@ public class ParkourFrame {
 		if(playerIn.isSprinting()) flags |= 0x040;
 		if(gameSettingsIn.keyBindAttack.isKeyDown()) flags |= 0x080;
 		if(gameSettingsIn.keyBindUseItem.isKeyDown()) flags |= 0x100;
+		if(playerIn.onGround) flags |= 0x200;
 		this.flags = flags;
 	}
 	
@@ -120,7 +121,8 @@ public class ParkourFrame {
 		BACKWARD((short) 0x020),
 		SPRINTING((short) 0x040),
 		HITTING((short) 0x080),
-		USING((short) 0x100);
+		USING((short) 0x100),
+		ON_GROUND((short) 0x200);
 		
 		public final short value;
 		

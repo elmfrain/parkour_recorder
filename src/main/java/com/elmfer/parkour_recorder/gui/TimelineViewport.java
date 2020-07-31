@@ -56,7 +56,6 @@ public class TimelineViewport extends AbstractGui implements IGuiEventListener
 				mouseIsPressed = true;
 				break;
 			case GLFW.GLFW_RELEASE:
-				mouseIsPressed = false;
 				pointerIsDragging = false;
 			}
 		}
@@ -129,7 +128,7 @@ public class TimelineViewport extends AbstractGui implements IGuiEventListener
 			if(!parentScreen.session.isActive()) fill(0, 0, viewport.getWidth(), viewport.getHeight(), GraphicsHelper.getIntColor(GuiStyle.Gui.backroundColor()));
 		}
 		viewport.popMatrix();
+		
+		mouseIsPressed = false;
 	}
-	
-	
 }

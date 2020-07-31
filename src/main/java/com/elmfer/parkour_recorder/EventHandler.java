@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elmfer.parkour_recorder.gui.LoadRecordingScreen;
 import com.elmfer.parkour_recorder.gui.SaveRecordingScreen;
 import com.elmfer.parkour_recorder.gui.TimelineScreen;
 import com.elmfer.parkour_recorder.parkour.IParkourSession;
@@ -63,8 +64,11 @@ public class EventHandler {
 			if(settings.keybindReloadShaders.isPressed())
 				reloadResources();
 			
-			if(settings.keybindLoad.isPressed())
+			if(settings.keybindTimeline.isPressed())
 				Minecraft.getInstance().displayGuiScreen(new TimelineScreen());
+			
+			if(settings.keybindLoad.isPressed())
+				Minecraft.getInstance().displayGuiScreen(new LoadRecordingScreen());
 			
 			if(settings.keybindSave.isPressed())
 				Minecraft.getInstance().displayGuiScreen(new SaveRecordingScreen());
@@ -96,5 +100,6 @@ public class EventHandler {
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/pause_button.ply"));
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/start_button.ply"));
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/end_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/settings_button.ply"));
 	}
 }

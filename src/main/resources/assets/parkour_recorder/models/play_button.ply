@@ -1,6 +1,6 @@
 ply
 format ascii 1.0
-comment Created by Blender 2.80 (sub 75) - www.blender.org, source file: ''
+comment Created by Blender 2.80 (sub 75) - www.blender.org, source file: 'timeline_controls.blend'
 element vertex 12
 property float x
 property float y

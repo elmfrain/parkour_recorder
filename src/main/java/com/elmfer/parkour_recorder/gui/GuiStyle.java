@@ -19,12 +19,12 @@ public class GuiStyle
 		
 		public static int margin()
 		{
-			return (int) (20 / res.getGuiScaleFactor());
+			return 10;
 		}
 		
 		public static int smallMargin()
 		{
-			return (int) (4.0f / res.getGuiScaleFactor());
+			return 2;
 		}
 		
 		public static Vector4f backroundColor()

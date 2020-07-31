@@ -3,7 +3,6 @@ package com.elmfer.parkour_recorder.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.elmfer.parkour_recorder.gui.GuiStyle.Gui;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.systems.RenderSystem;
 

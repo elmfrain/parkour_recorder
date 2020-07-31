@@ -31,6 +31,7 @@
     "gui.timeline.no_recording_is_loaded": "No Recording is Loaded",
     "gui.timeline.start_here": "Start Here",
     "gui.timeline.load": "Load",
+    "gui.timeline.speed": "Speed",
     
     "gui.confirmation_box.yes": "Yes",
     "gui.confirmation_box.cancel": "Cancel",
@@ -55,5 +56,6 @@
     "keybind.play": "Play",
     "keybind.override": "Override",
     "keybind.load_recording": "Load Recording",
-    "keybind.save_recording": "Save Recording"
+    "keybind.save_recording": "Save Recording",
+    "keybind.timeline": "Timeline"
 }

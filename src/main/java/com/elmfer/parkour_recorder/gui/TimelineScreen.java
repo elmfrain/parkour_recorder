@@ -2,19 +2,30 @@ package com.elmfer.parkour_recorder.gui;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
-import com.elmfer.alasen.util.Property;
-import com.elmfer.alasen.util.Timeline;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
+
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.animation.Easing;
+import com.elmfer.parkour_recorder.animation.Property;
+import com.elmfer.parkour_recorder.animation.Timeline;
 import com.elmfer.parkour_recorder.parkour.ParkourFrame;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.PlaybackViewerEntity;
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.elmfer.parkour_recorder.render.ModelManager;
+import com.elmfer.parkour_recorder.render.ShaderManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.renderer.Vector3f;
+import net.minecraft.client.renderer.Vector4f;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.fml.client.gui.widget.Slider;
 
 public class TimelineScreen extends Screen
 {
@@ -23,6 +34,9 @@ public class TimelineScreen extends Screen
 	private State state = State.PAUSED;
 	protected Timeline timeline;
 	protected PlaybackViewerEntity viewer = null;
+	
+	protected GuiSettingsButton settingsButton = new GuiSettingsButton(0, 0, this::actionPerformed);
+	protected GuiSlider speedSlider = new GuiSlider(0, 0, I18n.format("gui.timeline.speed") + ": ", "x", 0.01, 4.0, 1.0, true, true, this::actionPerformed);
 	
 	public TimelineScreen()
 	{
@@ -61,6 +75,8 @@ public class TimelineScreen extends Screen
 		{
 			viewer = new PlaybackViewerEntity();
 			minecraft.setRenderViewEntity(viewer);
+			minecraft.player.prevRenderArmYaw = minecraft.player.renderArmYaw = minecraft.player.prevRotationYaw;
+			minecraft.player.prevRenderArmPitch = minecraft.player.renderArmPitch = minecraft.player.prevRotationPitch;
 		}
 		
 		addButton(new GuiButton(0, 0, I18n.format("gui.timeline.start_here"), this::actionPerformed));
@@ -71,6 +87,8 @@ public class TimelineScreen extends Screen
 		addButton(new GuiModeledButton(0, 0, this::actionPerformed, "pause_button"));
 		addButton(new GuiModeledButton(0, 0, this::actionPerformed, "start_button"));
 		addButton(new GuiModeledButton(0, 0, this::actionPerformed, "end_button"));
+		addButton(settingsButton);
+		addButton(speedSlider);
 	}
 	
 	protected void actionPerformed(Button button)
@@ -107,6 +125,11 @@ public class TimelineScreen extends Screen
 		case 6:
 			timeline.stop();
 			timeline.setFracTime(1.0);
+			break;
+		case 7:
+			GuiSettingsButton b = (GuiSettingsButton) button;
+			if(b.gear.getState() == Timeline.State.REVERSE) {b.gear.play(); b.highlighed = true; }
+			else {b.gear.rewind(); b.highlighed = false; }
 		}
 	}
 	
@@ -132,13 +155,16 @@ public class TimelineScreen extends Screen
 			viewer.setState(frame, prevFrame, partialFrame);
 		}
 		
+		int margin = GuiStyle.Gui.margin();
 		int smallMargin = GuiStyle.Gui.smallMargin();
-		int margin = (int) GuiStyle.Gui.margin();
 		int gradientHeight = 15;
 		int buttonHeight = GuiStyle.Gui.buttonHeight();
+		int backroundColor = getIntColor(GuiStyle.Gui.backroundColor());
 		
 		int fade1 = getIntColor(GuiStyle.Gui.fade1());
 		int fade2 = getIntColor(GuiStyle.Gui.fade2());
+		
+		GuiSettingsButton settingsButton = (GuiSettingsButton) buttons.get(7);
 		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport timelineBar = new GuiViewport(all);
@@ -149,15 +175,26 @@ public class TimelineScreen extends Screen
 		title.top = title.left = smallMargin;
 		title.bottom -= smallMargin;
 		title.right = title.left + mc.fontRenderer.getStringWidth(I18n.format("gui.timeline")) + title.getHeight() - mc.fontRenderer.FONT_HEIGHT;
-		GuiViewport controls = new GuiViewport(timelineBar);
-		controls.left = controls.top = smallMargin;
-		controls.bottom -= smallMargin;
-		controls.right = controls.left + controls.getHeight();
 		GuiViewport timeline = new GuiViewport(timelineBar);
 		timeline.top = smallMargin;
-		timeline.left = controls.right + margin;
+		timeline.left = smallMargin;
 		timeline.bottom -= smallMargin;
 		timeline.right -= smallMargin;
+		GuiViewport controls = new GuiViewport(all);
+		int controlsSize = (int) (timeline.getHeight() * 0.55f);
+		int controlsWidth = (controlsSize - 2 * smallMargin) * 5 + 5 * smallMargin + margin;
+		controls.top = timelineBar.top - controlsSize - smallMargin;
+		controls.bottom = controls.top + controlsSize;
+		controls.left = all.getWidth() / 2 - controlsWidth / 2;
+		controls.right = controls.left + controlsWidth;
+		GuiViewport settingsBody = new GuiViewport(all);
+		settingsBody.left = controls.right + smallMargin;
+		settingsBody.top = (int) (timelineBar.top - (GuiStyle.Gui.buttonHeight() + smallMargin * 3) * settingsButton.gear.getProperty("height_mult").getValue());
+		settingsBody.right -= smallMargin;
+		settingsBody.bottom = timelineBar.top - smallMargin;
+		GuiViewport settings = new GuiViewport(settingsBody);
+		settings.left = settings.top = smallMargin;
+		settings.right -= smallMargin;
 		
 		timelineBar.pushMatrix(false);
 		{
@@ -169,6 +206,24 @@ public class TimelineScreen extends Screen
 			renderTaskbar(title, taskBar, mouseX, mouseY, partialTicks);
 		}
 		timelineBar.popMatrix();
+		
+		if(settingsBody.getHeight() > smallMargin * 2)
+		{
+			settingsBody.pushMatrix(false);
+			{
+				fill(0, 0, settingsBody.getWidth(), settingsBody.getHeight(), backroundColor);
+				settings.pushMatrix(true);
+				{
+					Slider slider = (Slider) buttons.get(8);
+					slider.setWidth(settings.getWidth());
+					slider.setHeight(20);
+					slider.renderButton(mouseX, mouseY, partialTicks);
+					this.timeline.setSpeed(slider.getValue());
+				}
+				settings.popMatrix();
+			}
+			settingsBody.popMatrix();
+		}
 		
 		title.pushMatrix(false);
 		{
@@ -228,7 +283,7 @@ public class TimelineScreen extends Screen
 			load.x = start.x + buttonWidth + margin;
 			start.y = load.y = smallMargin;
 			start.active = session == SessionType.REPLAY;
-			load.active = !EventHandler.session.isSessionActive();
+			load.visible = false;
 			
 			start.renderButton(mouseX, mouseY, partialTicks);
 			load.renderButton(mouseX, mouseY, partialTicks);
@@ -238,6 +293,7 @@ public class TimelineScreen extends Screen
 	
 	private void renderControls(GuiViewport controls, int mouseX, int mouseY, float partialTicks)
 	{	
+		int margin = GuiStyle.Gui.margin();
 		int smallMargin = GuiStyle.Gui.smallMargin();
 		
 		controls.pushMatrix(false);
@@ -247,15 +303,21 @@ public class TimelineScreen extends Screen
 			GuiButton pause = (GuiButton) buttons.get(4);
 			GuiButton atBegginning = (GuiButton) buttons.get(5);
 			GuiButton atEnd = (GuiButton) buttons.get(6);
-			GuiButton[] buttonControls = {rewind, play, pause, atBegginning, atEnd};
+			GuiButton settings = (GuiButton) buttons.get(7);
+			GuiButton[] buttonControls = {atBegginning, rewind, play, atEnd, settings, pause};
 			
-			int size = controls.getWidth() / 2 - smallMargin / 2;
+			int size = controls.getHeight() - smallMargin * 2;
 			
+			int i = 0;
 			for(GuiButton control : buttonControls)
 			{
 				control.setWidth(size);
 				control.setHeight(size);
+				control.y = smallMargin;
+				control.x = i * (size + smallMargin) + smallMargin;
+				i++;
 			}
+			settings.setWidth(size); settings.setHeight(size);
 			
 			if(!(timeline.isPaused() || timeline.hasStopped()))
 			{
@@ -271,19 +333,93 @@ public class TimelineScreen extends Screen
 			}
 			else state = State.PAUSED;
 			
-			pause.setWidth(controls.getWidth());
+			pause.setWidth(size * 2 + smallMargin);
 			if(state.isActive()) { pause.visible = true; play.visible = rewind.visible = false; }
 			else { pause.visible = false; play.visible = rewind.visible = true; }
-			atBegginning.y = atEnd.y = controls.getHeight() - size;
-			play.x = atEnd.x = controls.getWidth() - size;
+			settings.x = atEnd.x + size + margin;
+			pause.x = atBegginning.x + size + smallMargin;
 			
 			if(session == SessionType.PLAYBACK || session == SessionType.NONE)
 				for(GuiButton control : buttonControls) control.active = false;
 			
+			fill(0, 0, controls.getWidth(), controls.getHeight(), getIntColor(GuiStyle.Gui.backroundColor()));
+			
 			for(GuiButton control : buttonControls)
 				control.renderButton(mouseX, mouseY, partialTicks);
+			
+			settings.renderButton(mouseX, mouseY, partialTicks);
 		}
 		controls.popMatrix();
+	}
+	
+	protected static class GuiSettingsButton extends GuiModeledButton
+	{
+		Timeline gear = new Timeline(0.2);
+		
+		public GuiSettingsButton(int x, int y, IPressable pressedCallback) {
+			super(x, y, pressedCallback, "settings_button");
+			gear.addProperties(new Property("rotation", 0.0, -180.0, Easing.INOUT_QUAD));
+			gear.addProperties(new Property("height_mult", 0.0, 1.0, Easing.INOUT_QUAD));
+			gear.rewind();
+			gear.stop();
+		}
+		
+		@Override
+		public void renderButton(int mouseX, int mouseY, float partialTicks)
+		{
+			if(visible)
+			{
+				animation.tick();
+				gear.tick();
+				if(isHovered) { animation.queue("hovered"); animation.play(); animation.apply();}
+				else { animation.queue("hovered"); animation.rewind(); animation.apply();}	
+				if(highlighed) { animation.queue("highlight"); animation.play(); animation.apply();}
+				else { animation.queue("highlight"); animation.rewind(); animation.apply();}
+				if(!active) {animation.queue("hovered", "highlight"); animation.rewind(); animation.apply();}
+				
+				preRender(mouseX, mouseY, partialTicks);
+				
+				Vector3f c = new Vector3f(0.0f, 0.0f, 0.0f);
+				Vector3f hoveredcolor = new Vector3f(0.3f, 0.3f, 0.3f);
+				hoveredcolor.mul((float) animation.getTimeline("hovered").getFracTime());
+				Vector3f highlightColor = highlightTint.copy();
+				highlightColor.mul((float) (animation.getTimeline("highlight").getFracTime() * 0.6));
+				c.add(hoveredcolor);
+				c.add(highlightColor);
+				int color = getIntColor(c, 0.2f);
+				
+				int j = 14737632;
+				if (!active)
+	                j = 10526880;
+	            else if (isHovered)
+	                j = 16777120;
+				
+				fill(x, y, x + width, y + height, color);
+				
+				int shader = ShaderManager.getGUIShader();
+				int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+				float smallMargin = GuiStyle.Gui.smallMargin() * 2;
+				float modelSize = height - smallMargin * 2;
+				Vector4f color1 = GraphicsHelper.getFloatColor(j);
+				color1.setW(1.0f);
+				RenderSystem.disableTexture();
+				RenderSystem.enableBlend();
+				RenderSystem.color3f(color1.getX(), color1.getY(), color1.getZ());
+				
+				RenderSystem.pushMatrix();
+				{
+					RenderSystem.translatef(x + width / 2, y + height / 2, 0.0f);
+					RenderSystem.scalef(modelSize, -modelSize, 1.0f);
+					RenderSystem.rotatef((float) gear.getProperty("rotation").getValue(), 0, 0, 1);
+					
+					GL20.glUseProgram(shader);
+					GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), color1.getX(), color1.getY(), color1.getZ(), color1.getW());
+					ModelManager.renderModel(modelName);
+					GL20.glUseProgram(prevShader);
+				}
+				RenderSystem.popMatrix();
+			}
+		}
 	}
 	
 	protected static enum SessionType

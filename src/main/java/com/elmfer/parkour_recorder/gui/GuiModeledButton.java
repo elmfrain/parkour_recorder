@@ -8,7 +8,6 @@ import com.elmfer.parkour_recorder.render.ModelManager;
 import com.elmfer.parkour_recorder.render.ShaderManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Vector4f;
 
 public class GuiModeledButton extends GuiButton
@@ -36,8 +35,8 @@ public class GuiModeledButton extends GuiButton
 			
 			int shader = ShaderManager.getGUIShader();
 			int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-			float sMargin = (float) (8.0f / Minecraft.getInstance().getMainWindow().getGuiScaleFactor());
-			float modelSize = height - sMargin * 2;
+			float smallMargin = GuiStyle.Gui.smallMargin() * 2;
+			float modelSize = height - smallMargin * 2;
 			Vector4f color = GraphicsHelper.getFloatColor(j);
 			color.setW(1.0f);
 			RenderSystem.disableTexture();
