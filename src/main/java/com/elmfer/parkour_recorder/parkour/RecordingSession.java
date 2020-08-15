@@ -47,6 +47,7 @@ public class RecordingSession implements IParkourSession {
 				record.addAll(recordingToOverride.subList(0, overrideStart));
 				record.addAll(recording);
 				record.rename(name + Recording.getFormattedTime());
+				record.startingFrame = recordingToOverride.startingFrame;
 				
 				EventHandler.addToHistory(record);
 			}
@@ -61,11 +62,8 @@ public class RecordingSession implements IParkourSession {
 			onOverride = false;
 			
 			nbRecordPresses++;
-			break;
-		case 2:
-			RecordingSession newSession = new RecordingSession();
-			newSession.onRecord();
-			return newSession;
+			
+			return new PlaybackSession(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
 		}
 		
 		return this;

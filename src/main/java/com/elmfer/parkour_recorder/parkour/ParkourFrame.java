@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder.parkour;
 import java.nio.ByteBuffer;
 
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.vector.Vector3d;
 
@@ -36,6 +37,7 @@ public class ParkourFrame {
 		if(playerIn.isSprinting()) flags |= 0x040;
 		if(gameSettingsIn.keyBindAttack.isKeyDown()) flags |= 0x080;
 		if(gameSettingsIn.keyBindUseItem.isKeyDown()) flags |= 0x100;
+		if(!playerIn.isAirBorne) flags |= 0x200;
 		this.flags = flags;
 	}
 	
@@ -60,7 +62,7 @@ public class ParkourFrame {
 		return new ParkourFrame(flags, headYaw, headPitch, posX, posY, posZ);
 	}
 	
-	public void setInput(MovementInput input, ClientPlayerEntity playerIn)
+	public void setInput(MovementInput input, PlayerEntity playerIn)
 	{
 		input.forwardKeyDown = getFlag(Flags.FORWARD);
 		input.backKeyDown = getFlag(Flags.BACKWARD);
@@ -119,7 +121,8 @@ public class ParkourFrame {
 		BACKWARD((short) 0x020),
 		SPRINTING((short) 0x040),
 		HITTING((short) 0x080),
-		USING((short) 0x100);
+		USING((short) 0x100),
+		ON_GROUND((short) 0x200);
 		
 		public final short value;
 		

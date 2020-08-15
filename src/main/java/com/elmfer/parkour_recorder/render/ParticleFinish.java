@@ -82,7 +82,7 @@ public class ParticleFinish extends Particle{
         GL30.glUseProgram(shader);
         GL11.glPushMatrix();
         {
-        	double distance = (new Vector3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().player.getPositionVec());
+        	double distance = (new Vector3d(posX, posY, posZ)).distanceTo(Minecraft.getInstance().renderViewEntity.getPositionVec());
         	double expiredAmount = 1.0 - (expiredAge + (isExpired ? partialTicks : 0)) / expireDuration;
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	distance *= expiredAmount;
@@ -92,7 +92,7 @@ public class ParticleFinish extends Particle{
         	GL11.glTranslated(0, Math.pow(1.0 - expiredAmount, 2.0) * 5.0, 0);
         	GL11.glScaled(scale, scale, scale);
         	GL11.glRotated((60.0 * Math.log(2 * ticks + 1) + ticks / 3) * 2, 0, 1, 0);
-        	GL11.glRotated(-Math.pow(expiredAmount, 2.0) * 720.0, 0, 1, 0);
+        	GL11.glRotated(Math.pow(expiredAmount, 2.0) * 720.0, 0, 1, 0);
         	GL11.glRotatef(angle, 0, 0, 1);
         	GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, (float) ((distance - 0.5) / 3.0));
         	ShaderManager.importMatricies(ShaderManager.getDefaultShader(), worldSpaceMatrix, normalSpaceMatrix);

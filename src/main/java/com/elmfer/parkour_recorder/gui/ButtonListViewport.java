@@ -6,13 +6,12 @@ import java.util.List;
 import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
-import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class GuiButtonList extends AbstractGui
+public class ButtonListViewport extends AbstractGui
 {
 	protected List<GuiButton> buttonList = new ArrayList<GuiButton>();
 	private GuiScreen parentScreen;
@@ -20,7 +19,7 @@ public class GuiButtonList extends AbstractGui
 	private float scrollSpeed = 0.0f;
 	private static double scrollAmount = 0.0;
 	
-	public GuiButtonList(GuiScreen parent)
+	public ButtonListViewport(GuiScreen parent)
 	{
 		parentScreen = parent;
 	}
@@ -50,11 +49,10 @@ public class GuiButtonList extends AbstractGui
 	
 	public void drawScreen(int mouseX, int mouseY, float partialTicks, GuiViewport viewport)
 	{
-		MatrixStack stack = new MatrixStack();
 		int scrollerWidth = 3;
-		int buttonMargin = 5;
-		int buttonHeight = 20;
-		int listHeight = (buttonHeight + buttonMargin) * buttonList.size() + 80;
+		int smallMargin = GuiStyle.Gui.smallMargin();
+		int buttonHeight = GuiStyle.Gui.buttonHeight();
+		int listHeight = (buttonHeight + smallMargin) * buttonList.size() + 80;
 		int scrollMovement = Math.max(0, listHeight - viewport.getHeight());
 		
 		if(viewport.isHovered(mouseX, mouseY) && scrollPos <= 0) scrollSpeed += scrollAmount * 2.0;
@@ -72,8 +70,8 @@ public class GuiButtonList extends AbstractGui
 				{
 					buttonList.get(i).setWidth(viewport.getWidth() - scrollerWidth);;
 					buttonList.get(i).setHeight(buttonHeight);
-					buttonList.get(i).setY((buttonHeight + buttonMargin) * i);
-					buttonList.get(i).renderButton(stack, mouseX, mouseY, partialTicks);
+					buttonList.get(i).setY((buttonHeight + smallMargin) * i);
+					buttonList.get(i).renderButton(mouseX, mouseY, partialTicks);
 				}
 			}
 			GL11.glPopMatrix();
@@ -81,11 +79,10 @@ public class GuiButtonList extends AbstractGui
 			int tabHeight = (int) (((float) viewport.getHeight() / listHeight) * viewport.getHeight());
 			int tabTravel = (int) (((float) -scrollPos / scrollMovement) * (viewport.getHeight() - tabHeight));
 
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), viewport.getWidth() - scrollerWidth, 0, viewport.getWidth(), viewport.getHeight(), 
+			GraphicsHelper.fill(viewport.getWidth() - scrollerWidth, 0, viewport.getWidth(), viewport.getHeight(), 
 					GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.5f));
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), viewport.getWidth() - scrollerWidth, tabTravel, viewport.getWidth(), 
+
+			GraphicsHelper.fill(viewport.getWidth() - scrollerWidth, tabTravel, viewport.getWidth(), 
 					tabHeight + tabTravel, 
 					GraphicsHelper.getIntColor(0.4f, 0.4f, 0.4f, 0.3f));
 		}

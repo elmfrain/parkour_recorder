@@ -15,16 +15,16 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class SaveRecordingScreen extends GuiScreen
 {
-	private GuiButtonList listViewport = new GuiButtonList(this);
+	private ButtonListViewport listViewport = new ButtonListViewport(this);
 	private GuiAlertBox alertBox = null;
 	private Stack<Recording> selections = new Stack<Recording>();
 	
@@ -57,9 +57,8 @@ public class SaveRecordingScreen extends GuiScreen
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.erase_history"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.save"), this::actionPerformed));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.remove"), this::actionPerformed));
-												  /**setMessage()**/
 			if(selections.size() > 1) buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove_selected"));
-			else buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.load_recording.remove"));
+			else buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove"));
 		addButton(new GuiButton(0, 0, I18n.format("gui.save_recording.open"), this::actionPerformed));
 		
 		if(alertBox != null)
@@ -154,76 +153,73 @@ public class SaveRecordingScreen extends GuiScreen
 	 public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	 {
 		Minecraft mc = Minecraft.getInstance();
+		FontRenderer fontRenderer = mc.fontRenderer;
 		MainWindow res = mc.getMainWindow();
-		int bodyMargin = (int) (80 / res.getGuiScaleFactor());
-		int listMargin = (int) (20 / res.getGuiScaleFactor());
-		int fontHeight_2 = mc.fontRenderer.FONT_HEIGHT / 2;
-		float listWidth = 0.7f;
-		String worldName = " - " + Recording.getCurrentWorldName(mc);
-		int buttonMargin = 5;
-		int buttonHeight = 14;
 		
-		int fade1 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
-		int fade2 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.0f);
+		//Styling
+		int bodyMargin = GuiStyle.Gui.bodyMargin();
+		int margin = GuiStyle.Gui.margin();
+		int smallMargin = GuiStyle.Gui.smallMargin();
+		int shortButtonHeight = GuiStyle.Gui.shortButtonHeight();
+		int fade1 = getIntColor(GuiStyle.Gui.fade1());
+		int fade2 = getIntColor(GuiStyle.Gui.fade2());
+		float listWidth = 0.7f;
+		
+		String worldName = " - " + Recording.getCurrentWorldName(mc);
 		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport body = new GuiViewport(all);
 		body.left = body.top = bodyMargin; body.right -= bodyMargin; body.bottom -= bodyMargin;
 		GuiViewport listBody = new GuiViewport(body);
-		listBody.left = listBody.top = listMargin; 
-		listBody.right = (int) ((listBody.getParent().getWidth() - listMargin * 2) * listWidth);
-		listBody.bottom -= listMargin;
+		listBody.left = listBody.top = margin; 
+		listBody.right = (int) ((listBody.getParent().getWidth() - margin * 2) * listWidth);
+		listBody.bottom -= margin;
 		GuiViewport list = new GuiViewport(listBody);
-		list.left = listMargin;
-		list.right -= listMargin;
-		list.top = listMargin + mc.fontRenderer.FONT_HEIGHT + listMargin;
-		list.bottom -= listMargin;
+		list.left = margin;
+		list.right -= margin;
+		list.top = margin + mc.fontRenderer.FONT_HEIGHT + margin;
+		list.bottom -= margin;
 		GuiViewport actionsBody = new GuiViewport(body);
-		actionsBody.left = listBody.right + listMargin; actionsBody.top = listMargin;
-		actionsBody.right -= listMargin;
+		actionsBody.left = listBody.right + margin; actionsBody.top = margin;
+		actionsBody.right -= margin;
 		GuiViewport actions = new GuiViewport(actionsBody);
-		actions.left = listMargin; actions.top = listMargin + mc.fontRenderer.FONT_HEIGHT + listMargin;
-		actions.right -= listMargin;
-		actions.bottom = actions.top + 2 * (buttonMargin + buttonHeight);
-		actionsBody.bottom = actions.bottom + listMargin;
+		actions.left = margin; actions.top = margin + mc.fontRenderer.FONT_HEIGHT + margin;
+		actions.right -= margin;
+		actions.bottom = actions.top + 2 * (smallMargin + shortButtonHeight);
+		actionsBody.bottom = actions.bottom + margin;
 		GuiViewport asideBody = new GuiViewport(body);
-		asideBody.left = listBody.right + listMargin; asideBody.top = actionsBody.bottom + listMargin;
-		asideBody.right -= listMargin;
-		asideBody.bottom -= listMargin;
+		asideBody.left = listBody.right + margin; asideBody.top = actionsBody.bottom + margin;
+		asideBody.right -= margin;
+		asideBody.bottom -= margin;
 		GuiViewport aside = new GuiViewport(asideBody);
-		aside.left = listMargin; aside.top = listMargin + mc.fontRenderer.FONT_HEIGHT + listMargin;
-		aside.right -= listMargin;
-		aside.bottom = aside.top + (buttonMargin + buttonHeight) * 3;
+		aside.left = margin; aside.top = margin + mc.fontRenderer.FONT_HEIGHT + margin;
+		aside.right -= margin;
+		aside.bottom = aside.top + (smallMargin + shortButtonHeight) * 3;
 		GuiViewport desc = new GuiViewport(asideBody);
-		desc.left = listMargin;
-		desc.right -= listMargin;
+		desc.left = margin;
+		desc.right -= margin;
 		desc.top = aside.bottom;
-		desc.bottom -= listMargin;
+		desc.bottom -= margin;
 		
 		GL11.glPushMatrix();
 		{
 			all.pushMatrix(false);
 			{
-				/**drawDefaultBackround(MatrixStack)**/
-				func_230446_a_(stack);
-				/**drawCenteredString(MatrixStack, FontRenderer, String, int x, int y, int color)**/
-				func_238471_a_(stack, mc.fontRenderer, I18n.format("gui.save_recording"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
+				GraphicsHelper.renderBackground();
+				GraphicsHelper.drawCenteredString(mc.fontRenderer, I18n.format("gui.save_recording"), all.getWidth() / 2, bodyMargin / 2 - fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 			}
 			all.popMatrix();
 			
 			body.pushMatrix(false);
 			{
-				/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-				func_238467_a_(new MatrixStack(), 0, 0, body.getWidth(), body.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.3f));
+				GraphicsHelper.fill(0, 0, body.getWidth(), body.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.3f));
 			}
 			body.popMatrix();
 			
 			listBody.pushMatrix(false);
 			{	
-				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
-				func_238468_a_(stack, 0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-				func_238476_c_(new MatrixStack(), mc.fontRenderer, I18n.format("gui.save_recording.record_history") + worldName, listMargin, listMargin, 0xFFFFFFFF);
+				GraphicsHelper.fillGradient(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				GraphicsHelper.drawString(mc.fontRenderer, I18n.format("gui.save_recording.record_history") + worldName, margin, margin, 0xFFFFFFFF);
 			}
 			listBody.popMatrix();
 			
@@ -231,10 +227,8 @@ public class SaveRecordingScreen extends GuiScreen
 			
 			actionsBody.pushMatrix(true);
 			{
-				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
-				func_238468_a_(stack, 0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-				func_238476_c_(new MatrixStack(), mc.fontRenderer, I18n.format("gui.save_session.actions"), listMargin, listMargin, 0xFFFFFFFF);
+				GraphicsHelper.fillGradient(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				GraphicsHelper.drawString(mc.fontRenderer, I18n.format("gui.save_recording.actions"), margin, margin, 0xFFFFFFFF);
 			}
 			actionsBody.popMatrix();
 			
@@ -244,23 +238,21 @@ public class SaveRecordingScreen extends GuiScreen
 				{
 					GuiButton button = (GuiButton) buttons.get(i);
 					button.setWidth(aside.getWidth());
-					button.setHeight(buttonHeight);
-					button.setY((buttonHeight + buttonMargin) * i);
-					button.renderButton(stack, mouseX, mouseY, partialTicks);
-					button.setEnabled(!EventHandler.recordHistory.isEmpty());
+					button.setHeight(shortButtonHeight);
+					button.setY((shortButtonHeight + smallMargin) * i);
+					button.renderButton(mouseX, mouseY, partialTicks);
+					button.setActive(!EventHandler.recordHistory.isEmpty());
 				}
 			}
 			actions.popMatrix();
 			
 			asideBody.pushMatrix(true);
 			{
-				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
-				func_238468_a_(stack, 0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				GraphicsHelper.fillGradient(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
 				
 				String subTitle = I18n.format("gui.load_recording.information");
 				subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
-				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-				func_238476_c_(new MatrixStack(), mc.fontRenderer, subTitle, listMargin, listMargin, 0xFFFFFFFF);
+				GraphicsHelper.drawString(mc.fontRenderer, subTitle, margin, margin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 			
@@ -270,12 +262,11 @@ public class SaveRecordingScreen extends GuiScreen
 				{
 					GuiButton button = (GuiButton) buttons.get(i);
 					button.setWidth(aside.getWidth());
-					button.setHeight(buttonHeight);
-					button.setY((buttonHeight + buttonMargin) * (i - 2));
-					button.renderButton(stack, mouseX, mouseY, partialTicks);
-					button.setEnabled(!selections.isEmpty());
+					button.setHeight(shortButtonHeight);
+					button.setY((shortButtonHeight + smallMargin) * (i - 2));
+					button.renderButton( mouseX, mouseY, partialTicks);
+					button.setActive(!selections.isEmpty());
 				}
-														/**setMessage()**/
 				if(selections.size() > 1) buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove_selected"));
 				else buttons.get(3).func_238482_a_(new TranslationTextComponent("gui.save_recording.remove"));
 			}
@@ -285,12 +276,12 @@ public class SaveRecordingScreen extends GuiScreen
 			{
 				GuiButton open = (GuiButton) buttons.get(4);
 				boolean flag = EventHandler.session.isSessionActive();
-				open.setEnabled(!flag && open.enabled());;
+				open.setActive(!flag && open.active());
 				
-				if(open.hovered() && flag && !selections.isEmpty()) 
+				if(open.isHovered() && flag && !selections.isEmpty()) 
 				{	
 					String warning = I18n.format("gui.save_recording.warn.cannot_open_while_recording_or_playing");
-					func_238652_a_(stack, ITextProperties.func_240652_a_(warning), mouseX, mouseY);
+					GraphicsHelper.renderToolTip(this, warning, mouseX, mouseY);
 				}
 			}
 			all.popMatrix();
@@ -302,8 +293,7 @@ public class SaveRecordingScreen extends GuiScreen
 					String[] lines = selections.lastElement().toString().split("\n");
 					for(int i = 0; i < lines.length; i++)
 					{
-						/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-						func_238476_c_(new MatrixStack(), mc.fontRenderer, lines[i], 0, mc.fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
+						GraphicsHelper.drawString(mc.fontRenderer, lines[i], 0, mc.fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
 					}
 				}
 				desc.popMatrix();
@@ -326,6 +316,7 @@ public class SaveRecordingScreen extends GuiScreen
 		selections.lastElement().save();
 		EventHandler.recordHistory.remove(selections.lastElement());
 		selections.pop();
+		init();
 	}
 	
 	private void remove()

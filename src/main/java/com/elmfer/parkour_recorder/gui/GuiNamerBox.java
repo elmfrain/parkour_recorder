@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
@@ -41,33 +41,33 @@ public class GuiNamerBox extends GuiAlertBox
 	public void init()
 	{
 		super.init();
-		Minecraft mc = Minecraft.getInstance();
-		int margins = (int) (20 / mc.getMainWindow().getGuiScaleFactor());
+		
+		int margin = GuiStyle.Gui.margin();
 		textField.setMaxStringLength(128);
 		textField.setCursorPositionZero();
 		addButton(new GuiButton(0, 0, I18n.format("gui.naming_box.name"), this::name));
 		addButton(new GuiButton(0, 0, I18n.format("gui.confirmation_box.cancel"), this::close));
 		addButton(textField);
-		height = 40 + margins;
+		height = 40 + margin;
 	}
 
 	@Override
-	protected void doDrawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+	protected void doDrawScreen(int mouseX, int mouseY, float partialTicks)
 	{
 		viewport.pushMatrix(false);
 		{
-			int margins = (int) (20 / Minecraft.getInstance().getMainWindow().getGuiScaleFactor());
+			int margin = GuiStyle.Gui.margin();
 			textField.setWidth(viewport.getWidth());
-			textField.drawTextBox(stack, mouseX, mouseY, partialTicks);
+			textField.renderTextBox(GraphicsHelper.identity, mouseX, mouseY, partialTicks);
 			GuiButton rename = (GuiButton) buttons.get(1);
 			GuiButton cancel = (GuiButton) buttons.get(2);
-			rename.setWidth(viewport.getWidth() / 2 - margins);
-			cancel.setWidth(rename.width());
-			rename.setY(textField.getHeight() + margins);
+			rename.setWidth(viewport.getWidth() / 2 - margin);
+			cancel.setWidth(rename.getWidth());
+			rename.setY(textField.getHeight() + margin);
 			cancel.setY(rename.y());
-			cancel.setX(viewport.getWidth() - cancel.width());
-			rename.renderButton(stack, mouseX, mouseY, partialTicks);
-			cancel.renderButton(stack, mouseX, mouseY, partialTicks);
+			cancel.setX(viewport.getWidth() - cancel.getWidth());
+			rename.renderButton(mouseX, mouseY, partialTicks);
+			cancel.renderButton(mouseX, mouseY, partialTicks);
 		}
 		viewport.popMatrix();
 	}

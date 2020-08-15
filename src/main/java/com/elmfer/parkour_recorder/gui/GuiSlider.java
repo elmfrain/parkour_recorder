@@ -1,29 +1,18 @@
 package com.elmfer.parkour_recorder.gui;
 
-import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
-
 import org.lwjgl.opengl.GL11;
 
-import com.elmfer.parkour_recorder.animation.Timeline;
-import com.elmfer.parkour_recorder.animation.compositon.Composition;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.fml.client.gui.widget.Slider;
 
-public class GuiButton extends Button {
-	
-	public static int currentZLevel = 0;
+public class GuiSlider extends Slider
+{
 	public int zLevel = 0;
-	public boolean highlighed = false;
-	public Vector3f highlightTint = new Vector3f(0.0f, 0.45f, 0.0f);
-	
-	protected Composition animation = new Composition();
 	private float xTranslate = 0.0f;
 	private float yTranslate = 0.0f;
 	private int viewportX = 0;
@@ -31,18 +20,10 @@ public class GuiButton extends Button {
 	private int viewportWidth = 0;
 	private int viewportHeight = 0;
 	
-	public GuiButton(int x, int y, int width, int height, String text, IPressable pressedCallback)
+	public GuiSlider(int xPos, int yPos, String prefix, String suf, double minVal, double maxVal, double currentVal, boolean showDec, boolean drawStr, IPressable handler)
 	{
-		super(x, y, width, height, new StringTextComponent(text), pressedCallback);
-		zLevel = currentZLevel;
-		animation.addTimelines(new Timeline("hovered", 0.04), new Timeline("highlight", 0.04));
-	}
-	
-	public GuiButton(int x, int y, String text, IPressable pressedCallback)
-	{
-		super(x, y, 100, 20, new StringTextComponent(text), pressedCallback);
-		zLevel = currentZLevel;
-		animation.addTimelines(new Timeline("hovered", 0.04), new Timeline("highlight", 0.04));
+		super(xPos, yPos, 100, GuiStyle.Gui.buttonHeight(), new StringTextComponent(prefix), new StringTextComponent(suf), minVal, maxVal, currentVal, showDec, drawStr, handler);
+		zLevel = GuiButton.currentZLevel;
 	}
 	
 	public void func_230431_b_(MatrixStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_)
@@ -76,51 +57,69 @@ public class GuiButton extends Button {
 	
 	public boolean isHovered() { return field_230692_n_; }
 	protected void setHovered(boolean hovered) { field_230692_n_ = hovered; }
-	
+
 	public void renderButton(int mouseX, int mouseY, float partialTicks)
 	{
+		Minecraft mc = Minecraft.getInstance();
 		if(visible())
 		{
-			animation.tick();
-			if(isHovered()) { animation.queue("hovered"); animation.play(); animation.apply();}
-			else { animation.queue("hovered"); animation.rewind(); animation.apply();}	
-			if(highlighed) { animation.queue("highlight"); animation.play(); animation.apply();}
-			else { animation.queue("highlight"); animation.rewind(); animation.apply();}
-			if(!active()) {animation.queue("hovered", "highlight"); animation.rewind(); animation.apply();}
+			float trackFracHeight = 0.8f;
+			int trackMargin = (int) (height() - height() * trackFracHeight);
+			int backgroundColor = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.5f);
+			int knobColor = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.7f);
+			
+			int knobWidth = GuiStyle.Gui.margin();
+			int knobX = (int) ((getWidth() - knobWidth) * sliderValue - knobWidth / 2) + knobWidth / 2;
 			
 			preRender(mouseX, mouseY, partialTicks);
-			FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
 			
-			Vector3f c = new Vector3f(0.0f, 0.0f, 0.0f);
-			Vector3f hoveredcolor = new Vector3f(0.3f, 0.3f, 0.3f);
-			hoveredcolor.mul((float) animation.getTimeline("hovered").getFracTime());
-			Vector3f highlightColor = highlightTint.copy();
-			highlightColor.mul((float) (animation.getTimeline("highlight").getFracTime() * 0.6));
-			c.add(hoveredcolor);
-			c.add(highlightColor);
-			int color = getIntColor(c, 0.4f);
+			renderBg(mc, mouseX, mouseY);
 			
-			int j = 14737632;
-			if (!active())
-                j = 10526880;
-            else if (isHovered())
-                j = 16777120;
-			
-			GraphicsHelper.fill(x(), y(), x() + getWidth(), y() + height(), color);
-			
-			GraphicsHelper.drawCenteredString(fontRenderer, getMessage(), x() + getWidth() / 2, y() + (height() - 8) / 2, j);
+			GraphicsHelper.fill(x(), y() + trackMargin, x() + getWidth(), y() + height() - trackMargin, backgroundColor);
+			GraphicsHelper.fill(knobX, y(), knobX + knobWidth, height(), knobColor);
+			if(drawString)
+				GraphicsHelper.drawCenteredString(mc.fontRenderer, getMessage(), getWidth() / 2, height() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 		}
 	}
 	
 	public boolean isMouseOver(double mouseX, double mouseY)
 	{
-		return active() && visible() && isHovered();
+		return (active() && visible() && isHovered()) || dragging;
 	}
 	
-	protected boolean clicked(double mouseX, double mouseY)
+	/**
+     * Returns true if the mouse has been pressed on this control. Equivalent of MouseListener.mousePressed(MouseEvent
+     * e).
+     */
+	@Override
+    public void func_230982_a_(double mouseX, double mouseY)
+    {
+		int mX = (int) (mouseX - xTranslate);
+		
+		this.sliderValue = (mX - (this.x() + 4)) / (float)(this.getWidth() - 8);
+        updateSlider();
+        this.dragging = true;
+    }
+	
+	@Override
+	public boolean func_231047_b_(double mouseX, double mouseY)
 	{
-		return isMouseOver(mouseX, mouseY);
+	      return isMouseOver(mouseX, mouseY);
 	}
+	
+    protected void renderBg(Minecraft minecraft, int mouseX, int mouseY)
+    {
+		int mX = (int) (mouseX - xTranslate);
+		
+        if (this.visible())
+        {
+            if (this.dragging)
+            {
+                this.sliderValue = (mX - (this.x() + 4)) / (float)(this.getWidth() - 8);
+                updateSlider();
+            }
+        }
+    }
 	
 	protected void preRender(int mouseX, int mouseY, float partialTicks)
 	{
@@ -140,7 +139,7 @@ public class GuiButton extends Button {
     	viewportHeight = (int) (viewport[3] / factor);
     	int mX = (int) (mouseX - xTranslate);
     	int mY = (int) (mouseY - yTranslate);
-    	setHovered(zLevel == currentZLevel && mX >= x() && mY >= y() && mX < x() + getWidth() && mY < y() + height() && mouseInViewport(mouseX, mouseY));
+    	setHovered(zLevel == GuiButton.currentZLevel && mX >= x() && mY >= y() && mX < x() + getWidth() && mY < y() + height() && mouseInViewport(mouseX, mouseY));
 	}
 	
 	private boolean mouseInViewport(double mouseX, double mouseY)

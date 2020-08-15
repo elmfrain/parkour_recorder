@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
@@ -37,7 +38,7 @@ public class ParticleArrow extends Particle{
 	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks)
 	{
 		boolean tex2DEnabled = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
-		RenderSystem.disableTexture();	
+		RenderSystem.disableTexture();
 		Vector3d vec3d = renderInfo.getProjectedView();
 		float x = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
 	    float y = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
@@ -68,31 +69,31 @@ public class ParticleArrow extends Particle{
         int shader = ShaderManager.getDefaultShader();
         GL11.glDisable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableCull();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL20.glUseProgram(shader);
         GL11.glPushMatrix();
         {
+        	GlStateManager.enableCull();
         	int prevFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
         	GL11.glTranslated(x, y, z);
-        	ShaderManager.importMatricies(shader, worldSpaceMatrix, normalSpaceMatrix);
+        	ShaderManager.importMatricies(ShaderManager.getDefaultShader(), worldSpaceMatrix, normalSpaceMatrix);
         	
         	GL20.glUniform1i(GL20.glGetUniformLocation(shader, "enableWhiteScreen"), 1);
         	GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 2.0f);
-        	RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        	GlStateManager.depthFunc(GL11.GL_LEQUAL);
     		ModelManager.renderModel("box");
     		
     		GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), 1.0f, 1.0f, 1.0f, 1.0f);
-        	RenderSystem.depthFunc(GL11.GL_GREATER);
+        	GlStateManager.depthFunc(GL11.GL_GREATER);
     		ModelManager.renderModel("box");
     		GL20.glUniform1i(GL20.glGetUniformLocation(shader, "enableWhiteScreen"), 0);
     		
-    		RenderSystem.depthFunc(prevFunc);
+    		GlStateManager.depthFunc(prevFunc);
         }
         GL11.glPopMatrix();
         GL11.glPushMatrix();
         {
-        	double distance = (new Vector3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getInstance().player.getPositionVec());
+        	double distance = (new Vector3d(posX + 0.5, posY, posZ + 0.5)).distanceTo(Minecraft.getInstance().renderViewEntity.getPositionVec());
         	distance *= Math.min(ticks / 20.0f, 1);
         	double scale = -Math.pow(Math.min(ticks, 25) - 25, 3) / 15625 + 0.5;
         	GL11.glTranslated(x, y, z);

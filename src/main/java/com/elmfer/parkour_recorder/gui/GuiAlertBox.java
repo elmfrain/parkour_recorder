@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder.gui;
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.gradientRectToRight;
 
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
@@ -32,15 +33,14 @@ abstract public class GuiAlertBox extends GuiScreen {
 		GuiButton closeButton = new GuiButton(0, 0, "", this::close) 
 		{
 			@Override
-			public void renderButton(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+			public void renderButton(int mouseX, int mouseY, float partialTicks)
 			{
 				if(visible())
 				{
 					preRender(mouseX, mouseY, partialTicks);
-					int color = hovered() && enabled() ? getIntColor(0.8f, 0.0f, 0.0f, 0.9f) : getIntColor(0.5f, 0.0f, 0.0f, 0.8f);
+					int color = isHovered() && active() ? getIntColor(0.8f, 0.0f, 0.0f, 0.9f) : getIntColor(0.5f, 0.0f, 0.0f, 0.8f);
 					
-					/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-					func_238467_a_(new MatrixStack(), x(), y(), x() + width(), y() + height(), color);
+					GraphicsHelper.fill(x(), y(), x() + getWidth(), y() + height(), color);
 				}
 			}
 		};
@@ -60,7 +60,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 		this.shouldClose = shouldClose;
 		if(shouldClose)
 		{
-			parentScreen.children.removeAll(children);
+			parentScreen.children().removeAll(children);
 			GuiButton.currentZLevel = 0;
 		}
 	}
@@ -70,7 +70,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 		return shouldClose;
 	}
 	
-	abstract protected void doDrawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks);
+	abstract protected void doDrawScreen(int mouseX, int mouseY, float partialTicks);
 	
 	@Override
 	public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
@@ -78,34 +78,32 @@ abstract public class GuiAlertBox extends GuiScreen {
 		Minecraft mc = Minecraft.getInstance();
 		MainWindow res = mc.getMainWindow();
 		
-		int boxSize = res.getScaledWidth() / 2;
-		int  titleHeight = mc.fontRenderer.FONT_HEIGHT * 2;
-		int margins = (int) (20 / res.getGuiScaleFactor());
-		int closeMargin = (int) (4.0f / res.getGuiScaleFactor());
+		int boxWidth = GuiStyle.AlertBox.boxWidth();
+		int  titleHeight = GuiStyle.AlertBox.titleHeight();
+		int margin = (int) GuiStyle.Gui.margin();
+		int smallMargin = GuiStyle.Gui.smallMargin();
 		
 		int fade1 = getIntColor(0.0f, 0.0f, 0.0f, 0.9f);
 		int fade2 = getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
 		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport box = new GuiViewport(all);
-		box.left = all.getWidth() / 2 - boxSize / 2;
-		box.top = (int) (all.getHeight() / 2.0f - (titleHeight + margins * 2.0f + height) / 2.0f);
-		box.right = all.getWidth() / 2 + boxSize / 2;
-		box.bottom = (int) (all.getHeight() / 2.0f + (titleHeight + margins * 2.0f + height) / 2.0f);
+		box.left = all.getWidth() / 2 - boxWidth / 2;
+		box.top = (int) (all.getHeight() / 2.0f - (titleHeight + margin * 2.0f + height) / 2.0f);
+		box.right = all.getWidth() / 2 + boxWidth / 2;
+		box.bottom = (int) (all.getHeight() / 2.0f + (titleHeight + margin * 2.0f + height) / 2.0f);
 		GuiViewport title = new GuiViewport(box);
 		title.bottom = mc.fontRenderer.FONT_HEIGHT * 2;
 		viewport = new GuiViewport(box);
-		viewport.left = margins; viewport.top = title.bottom + margins;
-		viewport.right -= margins;
-		viewport.bottom -= margins;
+		viewport.left = margin; viewport.top = title.bottom + margin;
+		viewport.right -= margin;
+		viewport.bottom -= margin;
 		
 		box.pushMatrix(false);
 		{
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), -closeMargin, -closeMargin, box.getWidth() + closeMargin, box.getHeight() + closeMargin, getIntColor(0.0f, 0.0f, 0.0f, 1.0f));
+			GraphicsHelper.fill(-smallMargin, -smallMargin, box.getWidth() + smallMargin, box.getHeight() + smallMargin, getIntColor(0.0f, 0.0f, 0.0f, 1.0f));
 			
-			/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-			func_238467_a_(new MatrixStack(), 0, 0, box.getWidth(), box.getHeight(), getIntColor(0.15f, 0.15f, 0.15f, 1.0f));
+			GraphicsHelper.fill(0, 0, box.getWidth(), box.getHeight(), getIntColor(0.15f, 0.15f, 0.15f, 1.0f));
 		}
 		box.popMatrix();
 		
@@ -113,19 +111,18 @@ abstract public class GuiAlertBox extends GuiScreen {
 		{
 			gradientRectToRight(0, 0, title.getWidth(), title.getHeight(), fade1, fade2);
 			
-			/**drawString(MatrixStack, FontRenderer, string, int x, int, y, int color)**/
-			func_238476_c_(new MatrixStack(), mc.fontRenderer, field_230704_d_.getString(), margins, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
+			GraphicsHelper.drawString(mc.fontRenderer, field_230704_d_.getString(), margin, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 			
 			GuiButton closeButton = (GuiButton) buttons.get(0);
-			closeButton.setHeight(title.getHeight() - closeMargin * 2);
+			closeButton.setHeight(title.getHeight() - smallMargin * 2);
 			closeButton.setWidth(closeButton.getHeight());
-			closeButton.setY(closeMargin);
-			closeButton.setX(title.getWidth() - closeMargin - closeButton.width());
-			closeButton.renderButton(stack, mouseX, mouseY, partialTicks);
+			closeButton.setY(smallMargin);
+			closeButton.setX(title.getWidth() - smallMargin - closeButton.getWidth());
+			closeButton.renderButton(mouseX, mouseY, partialTicks);
 		}
 		title.popMatrix();
 		
-		doDrawScreen(stack, mouseX, mouseY, partialTicks);
+		doDrawScreen(mouseX, mouseY, partialTicks);
 	}
 	
 	protected void close(Button button)

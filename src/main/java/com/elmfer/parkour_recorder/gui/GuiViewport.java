@@ -125,10 +125,16 @@ public class GuiViewport extends AbstractGui
 		}
 		else 
 		{
-			prevViewport = null;
 			GL11.glLoadMatrixf(getGuiMatrix());
 			GL11.glTranslatef(left, top, 0.0f);
-			parents.forEach((GuiViewport v) -> {GL11.glTranslatef(v.left, v.top, 0.0f);});
+			for(int i = parents.size() - 1; i >= 0; i--)
+			{
+				GuiViewport v = parents.get(i);
+				if(v.prevViewport == null)
+					GL11.glTranslatef(v.left, v.top, 0.0f);
+				else
+					break;
+			}
 		}
 	}
 	
@@ -138,7 +144,7 @@ public class GuiViewport extends AbstractGui
 		{
 			GlStateManager.viewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
 			setupOverlayRendering();
-			//GL11.glLoadMatrix(getGuiMatrix());
+			prevViewport = null;
 		}
 	}
 	

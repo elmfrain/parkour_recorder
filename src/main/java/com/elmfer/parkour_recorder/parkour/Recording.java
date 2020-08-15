@@ -34,6 +34,7 @@ public class Recording implements List<ParkourFrame>
 	};
 	
 	private final List<ParkourFrame> frames = new ArrayList<ParkourFrame>();
+	public int startingFrame = 0;
 	public final Vector3d initPos;
 	public final Vector3d initVel;
 	public Vector3d lastPos = new Vector3d(0, 0, 0);
@@ -63,6 +64,7 @@ public class Recording implements List<ParkourFrame>
 		name = copy.name;
 		originalName = copy.originalName;
 		recordFile = copy.recordFile;
+		startingFrame = copy.startingFrame;
 	}
 	
 	@Override
@@ -335,8 +337,25 @@ public class Recording implements List<ParkourFrame>
 		return frames.set(index, element);
 	}
 	@Override
-	public List<ParkourFrame> subList(int fromIndex, int toIndex)
+	public Recording subList(int fromIndex, int toIndex)
 	{
-		return frames.subList(fromIndex, toIndex);
+		List<ParkourFrame> subList = frames.subList(fromIndex, toIndex);
+		int lastIndex = subList.size() - 1;
+		Vector3d initPos = new Vector3d(subList.get(0).posX, subList.get(0).posY, subList.get(0).posZ);
+		Vector3d scndPos = new Vector3d(subList.get(1).posX, subList.get(1).posY, subList.get(1).posZ);
+		Vector3d initVel = scndPos.subtract(initPos);
+		
+		Recording subedRecording = new Recording(initPos, initVel);
+		subedRecording.lastPos = new Vector3d(subList.get(lastIndex).posX, subList.get(lastIndex).posY, subList.get(lastIndex).posZ);
+		subedRecording.lastVel = subedRecording.lastPos.subtract
+								(subList.get(lastIndex - 1).posX, subList.get(lastIndex - 1).posY, subList.get(lastIndex - 1).posZ);
+		
+		subedRecording.frames.addAll(subList);
+		
+		subedRecording.name = name;
+		subedRecording.recordFile = recordFile;
+		subedRecording.originalName = originalName;
+		
+		return subedRecording;
 	}
 }

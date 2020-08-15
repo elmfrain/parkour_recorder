@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
@@ -19,14 +20,13 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class LoadRecordingScreen extends GuiScreen {
 
 	private List<Recording> records = null;
 	private Stack<Recording> selections = new Stack<Recording>();
-	private GuiButtonList listViewport = new GuiButtonList(this);
+	private ButtonListViewport listViewport = new ButtonListViewport(this);
 	private GuiAlertBox alertBox = null;
 	
 	public LoadRecordingScreen()
@@ -41,8 +41,8 @@ public class LoadRecordingScreen extends GuiScreen {
 		Minecraft mc = Minecraft.getInstance();
 		if(records == null) records = Arrays.asList(Recording.loadSaves());
 		
-		int buttonMargin = 5;
-		int buttonHeight = 20;
+		int smallMargin = GuiStyle.Gui.smallMargin();
+		int buttonHeight = GuiStyle.Gui.buttonHeight();
 		buttons.clear();
 		children.clear();
 		listViewport.clearButtons();
@@ -62,11 +62,10 @@ public class LoadRecordingScreen extends GuiScreen {
 		}
 
 		addButton(new GuiButton(0, 0, I18n.format("gui.load_recording.open"), this::actionPerformed));
-		addButton(new GuiButton(0, (buttonHeight + buttonMargin), I18n.format("gui.load_recording.delete"), this::actionPerformed));
-													/**setMessage()**/
+		addButton(new GuiButton(0, (buttonHeight + smallMargin), I18n.format("gui.load_recording.delete"), this::actionPerformed));
 			if(selections.size() > 1) buttons.get(1).func_238482_a_(new TranslationTextComponent("gui.load_recording.delete_all"));
 			else buttons.get(1).func_238482_a_(new TranslationTextComponent("gui.load_recording.delete"));
-		addButton(new GuiButton(0, (buttonHeight + buttonMargin) * 2, I18n.format("gui.load_recording.rename"), this::actionPerformed));
+		addButton(new GuiButton(0, (buttonHeight + smallMargin) * 2, I18n.format("gui.load_recording.rename"), this::actionPerformed));
 		addButton(new GuiTextField(mc.fontRenderer, 0, 0));
 		
 		if(alertBox != null)
@@ -141,40 +140,42 @@ public class LoadRecordingScreen extends GuiScreen {
 		Minecraft mc = Minecraft.getInstance();
 		MainWindow res = mc.getMainWindow();
 		FontRenderer fontRenderer = mc.fontRenderer;
-		int bodyMargin = (int) (80 / res.getGuiScaleFactor());
-		int listMargin = (int) (20 / res.getGuiScaleFactor());
-		int fontHeight_2 = fontRenderer.FONT_HEIGHT / 2;
+		
+		//Styling
+		int bodyMargin = GuiStyle.Gui.bodyMargin();
+		int margin = GuiStyle.Gui.margin();
+		int smallMargin = GuiStyle.Gui.smallMargin();
+		int shortButtonHeight = GuiStyle.Gui.shortButtonHeight();
 		float listWidth = 0.7f;
+		
 		String worldName = " - " + Recording.getCurrentWorldName(mc);
-		int buttonMargin = 5;
-		int buttonHeight = 14;
 		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport body = new GuiViewport(all);
 		body.left = body.top = bodyMargin; body.right -= bodyMargin; body.bottom -= bodyMargin;
 		GuiViewport listBody = new GuiViewport(body);
-		listBody.left = listBody.top = listMargin; 
-		listBody.right = (int) ((listBody.getParent().getWidth() - listMargin * 2) * listWidth);
-		listBody.bottom -= listMargin;
+		listBody.left = listBody.top = margin; 
+		listBody.right = (int) ((listBody.getParent().getWidth() - margin * 2) * listWidth);
+		listBody.bottom -= margin;
 		GuiViewport list = new GuiViewport(listBody);
-		list.left = listMargin;
-		list.right -= listMargin;
-		list.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
-		list.bottom -= listMargin;
+		list.left = margin;
+		list.right -= margin;
+		list.top = margin + fontRenderer.FONT_HEIGHT + margin;
+		list.bottom -= margin;
 		GuiViewport asideBody = new GuiViewport(body);
-		asideBody.top = listMargin; asideBody.bottom -= listMargin;
-		asideBody.left = listBody.right + listMargin;
-		asideBody.right -= listMargin;
+		asideBody.top = margin; asideBody.bottom -= margin;
+		asideBody.left = listBody.right + margin;
+		asideBody.right -= margin;
 		GuiViewport aside = new GuiViewport(asideBody);
-		aside.left = listMargin;
-		aside.right -= listMargin;
-		aside.top = listMargin + fontRenderer.FONT_HEIGHT + listMargin;
-		aside.bottom = aside.top + (buttonHeight + buttonMargin) * 3;
+		aside.left = margin;
+		aside.right -= margin;
+		aside.top = margin + fontRenderer.FONT_HEIGHT + margin;
+		aside.bottom = aside.top + (shortButtonHeight + smallMargin) * 3;
 		GuiViewport desc = new GuiViewport(asideBody);
-		desc.left = listMargin;
-		desc.right -= listMargin;
+		desc.left = margin;
+		desc.right -= margin;
 		desc.top = aside.bottom;
-		desc.bottom -= listMargin;
+		desc.bottom -= margin;
 		
 		GL11.glPushMatrix();
 		{
@@ -183,26 +184,21 @@ public class LoadRecordingScreen extends GuiScreen {
 			
 			all.pushMatrix(false);
 			{
-				/**drawDefaultBackround(MatrixStack)**/
-				func_230446_a_(stack);
-				/**drawCenteredString(MatrixStack, FontRenderer, String, int x, int y, int color)**/
-				func_238471_a_(stack, fontRenderer, I18n.format("gui.load_recording"), all.getWidth() / 2, bodyMargin / 2 - fontHeight_2, 0xFFFFFFFF);
+				GraphicsHelper.renderBackground();
+				GraphicsHelper.drawCenteredString(fontRenderer, I18n.format("gui.load_recording"), all.getWidth() / 2, bodyMargin / 2 - fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 			}
 			all.popMatrix();
 			
 			body.pushMatrix(false);
 			{
-				/**drawRect(MatrixStack, int left, int top, int right, int bottom)**/
-				func_238467_a_(stack, 0, 0, body.getWidth(), body.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.3f));
+				GraphicsHelper.fill(0, 0, body.getWidth(), body.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.3f));
 			}
 			body.popMatrix();
 			
 			listBody.pushMatrix(true);
 			{
-				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
-				func_238468_a_(stack, 0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-				func_238476_c_(stack, mc.fontRenderer, I18n.format("gui.load_recording.list") + worldName, listMargin, listMargin, 0xFFFFFFFF);
+				GraphicsHelper.fillGradient(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+				GraphicsHelper.drawString(mc.fontRenderer, I18n.format("gui.load_recording.list") + worldName, margin, margin, 0xFFFFFFFF);
 			}
 			listBody.popMatrix();
 			
@@ -210,13 +206,11 @@ public class LoadRecordingScreen extends GuiScreen {
 			
 			asideBody.pushMatrix(true);
 			{
-				/**drawGradientRect(MatrixStack, int left, int top, int right, int bottom, int color1, int color2)**/
-				func_238468_a_(stack, 0, 0, asideBody.getWidth(), asideBody.getHeight() / 6, fade1, fade2);
+				GraphicsHelper.fillGradient(0, 0, asideBody.getWidth(), asideBody.getHeight() / 6, fade1, fade2);
 				
 				String subTitle = I18n.format("gui.load_recording.information");
 				subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
-				/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-				func_238476_c_(stack, mc.fontRenderer, subTitle, listMargin, listMargin, 0xFFFFFFFF);
+				GraphicsHelper.drawString(mc.fontRenderer, subTitle, margin, margin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 			
@@ -226,13 +220,13 @@ public class LoadRecordingScreen extends GuiScreen {
 				{
 					GuiButton button = (GuiButton) buttons.get(i);
 					button.setWidth(aside.getWidth());
-					button.setHeight(buttonHeight);
-					button.setY((buttonHeight + buttonMargin) * i);
-					button.renderButton(stack, mouseX, mouseY, partialTicks);
-					button.setEnabled(!selections.isEmpty());;
+					button.setHeight(shortButtonHeight);
+					button.setY((shortButtonHeight + smallMargin) * i);
+					button.renderButton(mouseX, mouseY, partialTicks);
+					button.setActive(!selections.isEmpty());
 				}
 				if(selections.size() > 1) buttons.get(1).func_238482_a_(new TranslationTextComponent("gui.load_recording.delete_all"));
-				else buttons.get(1).func_238482_a_(new TranslationTextComponent("gui.load_recording.delete"));
+				else buttons.get(1).func_238482_a_(new TranslationTextComponent("gui.load_recording.delete"));;
 			}
 			aside.popMatrix();
 			
@@ -240,12 +234,12 @@ public class LoadRecordingScreen extends GuiScreen {
 			{
 				GuiButton open = (GuiButton) buttons.get(0);
 				boolean flag = EventHandler.session.isSessionActive();
-				open.setEnabled(!flag && open.enabled());
+				open.setActive(!flag && open.active());;
 				
-				if(open.hovered() && flag && !selections.isEmpty()) 
+				if(open.isHovered() && flag && !selections.isEmpty()) 
 				{	
 					String warning = I18n.format("gui.load_recording.warn.cannot_open_while_recording_or_playing");
-					func_238652_a_(stack, ITextProperties.func_240652_a_(warning), mouseX, mouseY);
+					GraphicsHelper.renderToolTip(this, warning, mouseX, mouseY);
 				}
 			}
 			all.popMatrix();
@@ -257,8 +251,7 @@ public class LoadRecordingScreen extends GuiScreen {
 					String[] lines = selections.lastElement().toString().split("\n");
 					for(int i = 0; i < lines.length; i++)
 					{
-						/**drawString(MatrixStack, FontRenderer, int x, int, y, int color)**/
-						func_238476_c_(stack, mc.fontRenderer, lines[i], 0, fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
+						GraphicsHelper.drawString(mc.fontRenderer, lines[i], 0, fontRenderer.FONT_HEIGHT * i, 0xFFFFFFFF);
 					}
 				}
 				desc.popMatrix();
