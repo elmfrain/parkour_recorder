@@ -1,0 +1,59 @@
+gui.load_recording=Load Recording
+gui.load_recording.list=List
+gui.load_recording.information=Information
+gui.load_recording.open=Open
+gui.load_recording.delete=Delete
+gui.load_recording.delete_all=Delete All
+gui.load_recording.rename=Rename
+gui.load_recording.warn.cannot_open_while_recording_or_playing=Cannot open while recording or during playback.
+gui.load_recording.rename_recording=Rename Recording
+gui.load_recording.should_delete_?=Should Delete?
+gui.load_recording.delete_all_?=Delete All?
+
+gui.save_recording=Save Recording
+gui.save_recording.record_history=Record History
+gui.save_recording.actions=Actions
+gui.save_recording.save_last=Save Last
+gui.save_recording.erase_history=Erase History
+gui.save_recording.information=Information
+gui.save_recording.save=Save
+gui.save_recording.remove=Remove
+gui.save_recording.remove_selected=Remove Selected
+gui.save_recording.open=Open
+gui.save_recording.warn.cannot_open_while_recording_or_playing=Cannot open while recording or during playback.
+gui.save_recording.clear_history_?=Clear History?
+gui.save_recording.should_remove_?=Should Remove?
+gui.save_recording.remove_selected_?=Remove Selected?
+gui.save_recording.name_recording=Name Recording
+
+gui.timeline=Timeline
+gui.timeline.no_recording_is_loaded=No Recording is Loaded
+gui.timeline.start_here=Start Here
+gui.timeline.load=Load
+gui.timeline.speed=Speed
+
+gui.confirmation_box.yes=Yes
+gui.confirmation_box.cancel=Cancel
+
+gui.naming_box.name=Name
+
+recording.unamed=Unamed
+recording.file=File
+recording.recording_length=Recording Length
+recording.starting_position=Starting Position
+recording.ending_position=Ending Position
+
+warn.playback_failed=Playback Failed
+
+hud.session.stopped=Stopped
+hud.session.overriding=Overriding
+hud.session.recording=Recording
+hud.session.playing=Playing
+hud.session.waiting_for_player=Waiting For Player
+
+keybind.record=Record
+keybind.play=Play
+keybind.override=Override
+keybind.load_recording=Load Recording
+keybind.save_recording=Save Recording
+keybind.timeline=Timeline

@@ -1,16 +1,16 @@
 [
 {
-  "modid": "parkourhelper",
-  "name": "Parkour Helper",
+  "modid": "parkour_recorder",
+  "name": "Parkour Recorder",
   "description": "A Minecraft mod that allows you to record and playback parkour sessions.",
-  "version": "0.0.4.6",
+  "version": "1.0.0.1",
   "mcversion": "1.12.2",
   "url": "",
   "updateUrl": "",
   "authorList": ["elmfer"],
   "credits": "",
-  "logoFile": "assets/parkourhelper/logo.png",
-  "screenshots": ["assets/parkourhelper/screenshots/screenshot-1.png", "assets/parkourhelper/screenshots/screenshot-2.png"],
+  "logoFile": "logo.png",
+  "screenshots": [],
   "dependencies": []
 }
 ]
