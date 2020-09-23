@@ -33,15 +33,20 @@ public class Recording implements List<ParkourFrame>
 		}
 	};
 	
-	private final List<ParkourFrame> frames = new ArrayList<ParkourFrame>();
-	public int startingFrame = 0;
 	public final Vec3d initPos;
 	public final Vec3d initVel;
+	public final List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+	
+	private final List<ParkourFrame> frames = new ArrayList<ParkourFrame>();
+	
+	public int startingFrame = 0;
 	public Vec3d lastPos = new Vec3d(0, 0, 0);
 	public Vec3d lastVel = new Vec3d(0, 0, 0);
-	private String name;
+	
 	protected String originalName = null;
 	protected File recordFile = null;
+	
+	private String name;
 	
 	public Recording(Vec3d startingPos, Vec3d staringVel) {
 		initPos = startingPos;

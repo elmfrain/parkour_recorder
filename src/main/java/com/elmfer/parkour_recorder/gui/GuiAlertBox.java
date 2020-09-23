@@ -117,14 +117,20 @@ abstract public class GuiAlertBox extends GuiScreen {
 		{
 			gradientRectToRight(0, 0, title.getWidth(), title.getHeight(), fade1, fade2);
 			
-			mc.fontRenderer.drawString(this.title, margin, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
-			
 			GuiButton closeButton = (GuiButton) buttonList.get(0);
+			
 			closeButton.height = title.getHeight() - smallMargin * 2;
 			closeButton.width = closeButton.height;
 			closeButton.y = smallMargin;
 			closeButton.x = title.getWidth() - smallMargin - closeButton.width;
 			closeButton.drawButton(mc, mouseX, mouseY, partialTicks);
+			
+			GuiViewport message = new GuiViewport(title);
+			message.right -= closeButton.width + smallMargin * 2;
+			
+			message.pushMatrix(true);
+				mc.fontRenderer.drawString(this.title, margin, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
+			message.popMatrix();
 		}
 		title.popMatrix();
 		

@@ -48,8 +48,8 @@ public class SaveRecordingScreen extends GuiScreen
 		addButton(new GuiButton(1, 0, 0, I18n.format("gui.save_recording.erase_history")));
 		addButton(new GuiButton(2, 0, 0, I18n.format("gui.save_recording.save")));
 		addButton(new GuiButton(3, 0, 0, I18n.format("gui.save_recording.remove")));
-			if(selections.size() > 1) buttonList.get(1).displayString = I18n.format("gui.save_recording.remove_selected");
-			else buttonList.get(1).displayString = I18n.format("gui.save_recording.remove");
+			if(selections.size() > 3) buttonList.get(1).displayString = I18n.format("gui.save_recording.remove_selected");
+			else buttonList.get(3).displayString = I18n.format("gui.save_recording.remove");
 		addButton(new GuiButton(4, 0, 0, I18n.format("gui.save_recording.open")));
 		
 		if(alertBox != null)
@@ -270,8 +270,8 @@ public class SaveRecordingScreen extends GuiScreen
 					button.drawButton(mc, mouseX, mouseY, partialTicks);
 					button.enabled = !selections.isEmpty();
 				}
-				if(selections.size() > 1) buttonList.get(1).displayString = I18n.format("gui.save_recording.remove_selected");
-				else buttonList.get(1).displayString = I18n.format("gui.save_recording.remove");
+				if(selections.size() > 3) buttonList.get(1).displayString = I18n.format("gui.save_recording.remove_selected");
+				else buttonList.get(3).displayString = I18n.format("gui.save_recording.remove");
 			}
 			aside.popMatrix();
 			

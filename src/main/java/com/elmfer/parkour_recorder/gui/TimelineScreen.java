@@ -2,6 +2,10 @@ package com.elmfer.parkour_recorder.gui;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.Random;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Vector3f;
@@ -11,9 +15,11 @@ import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.animation.Easing;
 import com.elmfer.parkour_recorder.animation.Property;
 import com.elmfer.parkour_recorder.animation.Timeline;
+import com.elmfer.parkour_recorder.parkour.Checkpoint;
 import com.elmfer.parkour_recorder.parkour.ParkourFrame;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.PlaybackViewerEntity;
+import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ModelManager;
 import com.elmfer.parkour_recorder.render.ShaderManager;
@@ -31,9 +37,11 @@ public class TimelineScreen extends GuiScreen
 	private State state = State.PAUSED;
 	protected Timeline timeline;
 	protected PlaybackViewerEntity viewer = null;
+	protected Checkpoint currentCheckpoint = null;
 	
 	protected GuiSettingsButton settingsButton = new GuiSettingsButton(-1, 0, 0);
 	protected GuiSlider speedSlider = new GuiSlider(-2, 0, 0, I18n.format("gui.timeline.speed") + ": ", "x", 0.01f, 4.0f, 1.0f);
+	private GuiAlertBox alertBox = null;
 	
 	public TimelineScreen()
 	{	
@@ -81,8 +89,19 @@ public class TimelineScreen extends GuiScreen
 		addButton(new GuiModeledButton(4, 0, 0, "pause_button"));
 		addButton(new GuiModeledButton(5, 0, 0, "start_button"));
 		addButton(new GuiModeledButton(6, 0, 0, "end_button"));
+		addButton(new GuiModeledButton(7, 0, 0, "prev_frame_button"));
+		addButton(new GuiModeledButton(8, 0, 0, "next_frame_button"));
+		
 		addButton(settingsButton);
 		addButton(speedSlider);
+		
+		addButton(new GuiModeledButton(9, 0, 0, "add_checkpoint_button"));
+		addButton(new GuiModeledButton(10, 0, 0, "remove_checkpoint_button"));
+		addButton(new GuiModeledButton(11, 0, 0, "prev_checkpoint_button"));
+		addButton(new GuiModeledButton(12, 0, 0, "next_checkpoint_button"));
+		
+		if(alertBox != null)
+			alertBox.initGui();
 	}
 	
 	@Override
@@ -122,6 +141,66 @@ public class TimelineScreen extends GuiScreen
 			timeline.stop();
 			timeline.setFracTime(1.0);
 			break;
+		case 7:
+		{
+			int framePos = (int) timeline.getProperty("framePos").getValue();
+			timeline.setFracTime(framePos / (timeline.getDuration() * 20.0) + 0.001);
+			
+			double oneTick = 1.0 / (timeline.getDuration() * 20.0);
+			timeline.setFracTime(timeline.getFracTime() - oneTick);
+			timeline.pause();
+			break;
+		}
+		case 8:
+		{
+			int framePos = (int) timeline.getProperty("framePos").getValue();
+			timeline.setFracTime(framePos / (timeline.getDuration() * 20.0) + 0.001);
+			
+			double oneTick = 1.0 / (timeline.getDuration() * 20.0);
+			timeline.setFracTime(timeline.getFracTime() + oneTick);
+			timeline.pause();
+			break;
+		}
+		case 9:
+			GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.timeline.add_checkpoint"), this, (String s) -> { return true; } , this::addCheckpoint);
+			namerBox.initGui();
+			namerBox.textField.setMaxStringLength(64);
+			alertBox = namerBox;
+			break;
+		case 10:
+			String message = I18n.format("gui.timeline.remove_checkpoint_?");
+			message += currentCheckpoint.name.isEmpty() ? "" : " - " + currentCheckpoint.name;
+			GuiConfirmationBox confirmBox = new GuiConfirmationBox(message, this::removeCheckpoint, this);
+			confirmBox.initGui();
+			alertBox = confirmBox;
+			break;
+		case 11:
+		{
+			PlaybackSession session = (PlaybackSession) EventHandler.session;
+			int framePos = (int) timeline.getProperty("framePos").getValue();
+			
+			if(currentCheckpoint.frameNumber < framePos) timeline.setTimePos(currentCheckpoint.frameNumber / 20.0 + 0.001);
+			else
+			{
+				int currentCheckptIndex = session.recording.checkpoints.indexOf(currentCheckpoint);
+				Checkpoint prevCheckpoint = session.recording.checkpoints.get(currentCheckptIndex - 1);
+				
+				timeline.setTimePos(prevCheckpoint.frameNumber / 20.0 + 0.001);
+			}
+			timeline.pause();
+			break;
+		}
+		case 12:
+		{
+			PlaybackSession session = (PlaybackSession) EventHandler.session;
+			
+			int currentCheckptIndex = session.recording.checkpoints.indexOf(currentCheckpoint);
+			Checkpoint nextCheckpoint = session.recording.checkpoints.get(currentCheckptIndex + 1);
+			
+			timeline.setTimePos(nextCheckpoint.frameNumber / 20.0 + 0.001);
+			timeline.pause();
+			break;
+		}
 		case -1:
 			GuiSettingsButton b = (GuiSettingsButton) button;
 			if(b.gear.getState() == Timeline.State.REVERSE) {b.gear.play(); b.highlighed = true; }
@@ -159,7 +238,7 @@ public class TimelineScreen extends GuiScreen
 		int fade1 = getIntColor(GuiStyle.Gui.fade1());
 		int fade2 = getIntColor(GuiStyle.Gui.fade2());
 		
-		GuiSettingsButton settingsButton = (GuiSettingsButton) buttonList.get(7);
+		GuiSettingsButton settingsButton = (GuiSettingsButton) buttonList.get(9);
 		
 		GuiViewport all = new GuiViewport(res);
 		GuiViewport timelineBar = new GuiViewport(all);
@@ -177,11 +256,17 @@ public class TimelineScreen extends GuiScreen
 		timeline.right -= smallMargin;
 		GuiViewport controls = new GuiViewport(all);
 		int controlsSize = (int) (timeline.getHeight() * 0.55f);
-		int controlsWidth = (controlsSize - 2 * smallMargin) * 5 + 5 * smallMargin + margin;
+		int controlsWidth = (controlsSize - 2 * smallMargin) * 7 + 7 * smallMargin + margin;
 		controls.top = timelineBar.top - controlsSize - smallMargin;
 		controls.bottom = controls.top + controlsSize;
 		controls.left = all.getWidth() / 2 - controlsWidth / 2;
 		controls.right = controls.left + controlsWidth;
+		GuiViewport checkpointControls = new GuiViewport(all);
+		int checkpointControlsWidth = (controlsSize - 2 * smallMargin) * 4 + 4 * smallMargin + margin;
+		checkpointControls.top = controls.top;
+		checkpointControls.bottom = controls.bottom;
+		checkpointControls.left = smallMargin;
+		checkpointControls.right = checkpointControls.left + checkpointControlsWidth;
 		GuiViewport settingsBody = new GuiViewport(all);
 		settingsBody.left = controls.right + smallMargin;
 		settingsBody.top = (int) (timelineBar.top - (GuiStyle.Gui.buttonHeight() + smallMargin * 3) * settingsButton.gear.getProperty("height_mult").getValue());
@@ -193,12 +278,14 @@ public class TimelineScreen extends GuiScreen
 		
 		timelineBar.pushMatrix(false);
 		{
-			drawGradientRect(0, 0, taskBar.getWidth(), -gradientHeight, fade1, fade2);
+			drawGradientRect(0, -gradientHeight, taskBar.getWidth(), 0, fade2, fade1);
 			drawRect(0, 0, timelineBar.getWidth(), timelineBar.getHeight(), getIntColor(0.0f, 0.0f, 0.0f, 0.7f));
 			
+			renderCheckpointControls(checkpointControls, mouseX, mouseY, partialTicks);
 			renderControls(controls, mouseX, mouseY, partialTicks);
 			timelineViewport.drawScreen(mouseX, mouseY, partialTicks, timeline);
 			renderTaskbar(title, taskBar, mouseX, mouseY, partialTicks);
+			renderCheckpointStatus(taskBar, mouseX, mouseY, partialTicks);
 		}
 		timelineBar.popMatrix();
 		
@@ -209,7 +296,7 @@ public class TimelineScreen extends GuiScreen
 				drawRect(0, 0, settingsBody.getWidth(), settingsBody.getHeight(), backroundColor);
 				settings.pushMatrix(true);
 				{
-					GuiSlider slider = (GuiSlider) buttonList.get(8);
+					GuiSlider slider = (GuiSlider) buttonList.get(10);
 					slider.setWidth(settings.getWidth());
 					slider.height = 20;
 					slider.drawButton(mc, mouseX, mouseY, partialTicks);
@@ -226,6 +313,12 @@ public class TimelineScreen extends GuiScreen
 			drawCenteredString(mc.fontRenderer, I18n.format("gui.timeline"), title.getWidth() / 2, title.getHeight() / 2 - mc.fontRenderer.FONT_HEIGHT / 2, 0xFFFFFFFF);
 		}
 		title.popMatrix();
+		
+		if(alertBox != null)
+		{
+			alertBox.drawScreen(mouseX, mouseY, partialTicks);
+			if(alertBox.shouldClose()) alertBox = null;
+		}
 	}
 	
 	@Override
@@ -237,9 +330,66 @@ public class TimelineScreen extends GuiScreen
 	}
 	
 	@Override
+	public void keyTyped(char keyTyped, int keyID)
+	{
+		if(alertBox != null) alertBox.keyTyped(keyTyped, keyID);
+		try { super.keyTyped(keyTyped, keyID); } catch (IOException e) {}
+	}
+	
+	@Override
+	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException 
+	{
+		if(alertBox != null)
+		{
+			alertBox.mouseClicked(mouseX, mouseY, mouseButton);
+			return;
+		}
+		
+		super.mouseClicked(mouseX, mouseY, mouseButton);
+	}
+	
+	@Override
 	public boolean doesGuiPauseGame()
 	{
 	      return false;
+	}
+	
+	private void renderCheckpointStatus(GuiViewport taskBar, int mouseX, int mouseY, float partialTicks)
+	{
+		if(currentCheckpoint != null)
+		{
+			int smallMargin = GuiStyle.Gui.smallMargin();
+			int backroundColor = getIntColor(0.0f, 0.0f, 0.0f, 0.4f);
+			int fade2 = GraphicsHelper.getIntColor(GuiStyle.Gui.fade2());
+			int fadeWidth = GuiStyle.Gui.fadeHeight();
+			int nameLength = currentCheckpoint.name != null ? fontRenderer.getStringWidth(currentCheckpoint.name) : 0;
+			float height = mc.fontRenderer.FONT_HEIGHT * 2;
+			
+			Vector4f color = GraphicsHelper.getFloatColor(currentCheckpoint.color);
+
+			int stringOffset = (int) (height * 0.6f + smallMargin);
+			drawRect(smallMargin, taskBar.bottom + smallMargin, nameLength + stringOffset, (int) (taskBar.bottom + smallMargin + height), backroundColor);
+			GraphicsHelper.gradientRectToRight(nameLength + stringOffset, taskBar.bottom + smallMargin, smallMargin + nameLength + fadeWidth + stringOffset, (int) (taskBar.bottom + smallMargin + height), backroundColor, fade2);
+			
+			int shader = ShaderManager.getGUIShader();
+			int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+			GlStateManager.enableBlend();
+			GlStateManager.color(color.getX(), color.getY(), color.getZ());
+			GlStateManager.pushMatrix();
+			{
+				GlStateManager.translate(smallMargin, taskBar.bottom + smallMargin, 0.0f);
+				GlStateManager.scale(height, -height, 1.0);
+				
+				GL20.glUseProgram(shader);
+				GL20.glUniform4f(GL20.glGetUniformLocation(shader, "masterColor"), color.getX(), color.getY(), color.getZ(), 1.0f);
+				ModelManager.renderModel("checkpoint_icon");
+				GL20.glUseProgram(prevShader);
+			}
+			GlStateManager.popMatrix();
+			
+			if(!currentCheckpoint.name.isEmpty())
+				drawString(fontRenderer, currentCheckpoint.name, stringOffset, (int) (taskBar.bottom + smallMargin + height / 2 - fontRenderer.FONT_HEIGHT / 2), 0xFFFFFFFF);
+		}
 	}
 	
 	private void renderTaskbar(GuiViewport title, GuiViewport taskBar, int mouseX, int mouseY, float partialTicks)
@@ -287,6 +437,66 @@ public class TimelineScreen extends GuiScreen
 		taskBar.popMatrix();
 	}
 	
+	private void renderCheckpointControls(GuiViewport checkpointControls, int mouseX, int mouseY, float partialTicks)
+	{
+		int framePos = (int) timeline.getProperty("framePos").getValue();
+		int smallMargin = GuiStyle.Gui.smallMargin();
+		int margin = GuiStyle.Gui.margin();
+		
+		checkpointControls.pushMatrix(false);
+		{
+			GuiButton addCheckpoint = (GuiButton) buttonList.get(11);
+			GuiButton removeCheckpoint = (GuiButton) buttonList.get(12);
+			GuiButton prevCheckpoint = (GuiButton) buttonList.get(13);
+			GuiButton nextCheckpoint = (GuiButton) buttonList.get(14);
+			GuiButton[] buttonControls = {addCheckpoint, removeCheckpoint, prevCheckpoint, nextCheckpoint};
+			
+			addCheckpoint.enabled = this.session.isActive();
+			removeCheckpoint.enabled = prevCheckpoint.enabled = nextCheckpoint.enabled = false;
+			currentCheckpoint = null;
+			if(EventHandler.session instanceof PlaybackSession)
+			{
+				PlaybackSession session = (PlaybackSession) EventHandler.session;
+				Recording recording = session.recording;
+				
+				for(Checkpoint c : session.recording.checkpoints)
+				{
+					if(framePos < c.frameNumber) break;
+					currentCheckpoint = c;
+				}
+				
+				if(currentCheckpoint != null) 
+					removeCheckpoint.enabled = true;
+				
+				if(!recording.checkpoints.isEmpty() && framePos < recording.checkpoints.get(recording.checkpoints.size() - 1).frameNumber)
+					nextCheckpoint.enabled = true;
+				if(!recording.checkpoints.isEmpty() && recording.checkpoints.get(0).frameNumber < framePos)
+					prevCheckpoint.enabled = true;
+			}
+			
+			int size = checkpointControls.getHeight() - smallMargin * 2;
+			
+			int i = 0;
+			for(GuiButton button : buttonControls)
+			{
+				button.setWidth(size);
+				button.height = size;
+				button.y = smallMargin;
+				button.x = smallMargin + (size + smallMargin) * i;
+				i++;
+			}
+			prevCheckpoint.x = removeCheckpoint.x + removeCheckpoint.width + margin;
+			nextCheckpoint.x = prevCheckpoint.x + prevCheckpoint.width + smallMargin;
+			
+			drawRect(0, 0, checkpointControls.getWidth(), checkpointControls.getHeight(), getIntColor(GuiStyle.Gui.backroundColor()));
+			addCheckpoint.drawButton(mc, mouseX, mouseY, partialTicks);
+			removeCheckpoint.drawButton(mc, mouseX, mouseY, partialTicks);
+			prevCheckpoint.drawButton(mc, mouseX, mouseY, partialTicks);
+			nextCheckpoint.drawButton(mc, mouseX, mouseY, partialTicks);
+		}
+		checkpointControls.popMatrix();
+	}
+	
 	private void renderControls(GuiViewport controls, int mouseX, int mouseY, float partialTicks)
 	{	
 		int margin = GuiStyle.Gui.margin();
@@ -299,8 +509,10 @@ public class TimelineScreen extends GuiScreen
 			GuiButton pause = (GuiButton) buttonList.get(4);
 			GuiButton atBegginning = (GuiButton) buttonList.get(5);
 			GuiButton atEnd = (GuiButton) buttonList.get(6);
-			GuiButton settings = (GuiButton) buttonList.get(7);
-			GuiButton[] buttonControls = {atBegginning, rewind, play, atEnd, settings, pause};
+			GuiButton settings = (GuiButton) buttonList.get(9);
+			GuiButton prevFrame = (GuiButton) buttonList.get(7);
+			GuiButton nextFrame = (GuiButton) buttonList.get(8);
+			GuiButton[] buttonControls = {atBegginning, prevFrame, rewind, play, nextFrame, atEnd, settings, pause};
 			
 			int size = controls.getHeight() - smallMargin * 2;
 			
@@ -313,7 +525,6 @@ public class TimelineScreen extends GuiScreen
 				control.x = i * (size + smallMargin) + smallMargin;
 				i++;
 			}
-			settings.setWidth(size); settings.height = size;
 			
 			if(!(timeline.isPaused() || timeline.hasStopped()))
 			{
@@ -330,10 +541,10 @@ public class TimelineScreen extends GuiScreen
 			else state = State.PAUSED;
 			
 			pause.setWidth(size * 2 + smallMargin);
-			if(state.isActive()) { pause.visible = true; play.visible = rewind.visible = false; }
+			if(state.isActive()) { pause.visible = true; play.visible = rewind.visible = false;}
 			else { pause.visible = false; play.visible = rewind.visible = true; }
-			settings.x = atEnd.x + size + margin;
-			pause.x = atBegginning.x + size + smallMargin;
+			settings.x = atEnd.x + atEnd.width + margin;
+			pause.x = rewind.x;
 			
 			if(session == SessionType.PLAYBACK || session == SessionType.NONE)
 				for(GuiButton control : buttonControls) control.enabled = false;
@@ -347,6 +558,47 @@ public class TimelineScreen extends GuiScreen
 			settings.drawButton(mc, mouseX, mouseY, partialTicks);
 		}
 		controls.popMatrix();
+	}
+
+	private void removeCheckpoint()
+	{
+		final Comparator<Checkpoint> SORTER = (Checkpoint c1, Checkpoint c2) -> 
+		{
+			if(c1.frameNumber < c2.frameNumber) return -1;
+			else if(c2.frameNumber < c1.frameNumber) return 1;
+			return 0;
+		};
+		
+		PlaybackSession session = (PlaybackSession) EventHandler.session;
+		session.recording.checkpoints.remove(currentCheckpoint);
+		session.recording.checkpoints.sort(SORTER);
+	}
+	
+	private void addCheckpoint(String checkpointName)
+	{
+		final Comparator<Checkpoint> SORTER = (Checkpoint c1, Checkpoint c2) -> 
+		{
+			if(c1.frameNumber < c2.frameNumber) return -1;
+			else if(c2.frameNumber < c1.frameNumber) return 1;
+			return 0;
+		};
+		
+		PlaybackSession session = (PlaybackSession) EventHandler.session;
+		int framePos = (int) timeline.getProperty("framePos").getValue();
+		
+		session.recording.checkpoints.removeIf((Checkpoint c) -> { return c.frameNumber == framePos; });
+		
+		Checkpoint checkpoint = new Checkpoint(checkpointName, framePos);
+		
+		Random rand = new Random();
+		float red = rand.nextFloat() * 0.5f + 0.3f;
+		float green = rand.nextFloat() * 0.5f + 0.3f;
+		float blue = rand.nextFloat() * 0.5f + 0.3f;
+		
+		checkpoint.color = GraphicsHelper.getIntColor(red, green, blue, 1.0f);
+		
+		session.recording.checkpoints.add(checkpoint);
+		session.recording.checkpoints.sort(SORTER);
 	}
 	
 	protected static class GuiSettingsButton extends GuiModeledButton
@@ -386,9 +638,9 @@ public class TimelineScreen extends GuiScreen
 				
 				int j = 14737632;
 				if (!enabled)
-	                j = 10526880;
-	            else if (hovered)
-	                j = 16777120;
+		            j = GraphicsHelper.getIntColor(0.45f, 0.45f, 0.45f, 1.0f);
+		        else if (hovered)
+		            j = 16777120;
 				
 				drawRect(x, y, x + width, y + height, color);
 				

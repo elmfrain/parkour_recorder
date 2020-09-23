@@ -30,7 +30,7 @@ public class GuiModeledButton extends GuiButton
 		{
 			int j = 14737632;
 			if (!enabled)
-	            j = 10526880;
+	            j = GraphicsHelper.getIntColor(0.45f, 0.45f, 0.45f, 1.0f);
 	        else if (hovered)
 	            j = 16777120;
 			

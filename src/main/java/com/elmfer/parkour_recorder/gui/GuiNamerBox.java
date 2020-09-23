@@ -90,6 +90,21 @@ public class GuiNamerBox extends GuiAlertBox
 	}
 	
 	@Override
+	public void actionPerformed(net.minecraft.client.gui.GuiButton button)
+	{
+		super.actionPerformed(button);
+		
+		if(button.id == 0)
+		{
+			if(textValidator.test(textField.getText()))
+			{
+				callback.name(textField.getText());
+				setShouldClose(true);
+			}
+		}
+	}
+	
+	@Override
 	public void setShouldClose(boolean shouldClose)
 	{
 		super.setShouldClose(shouldClose);

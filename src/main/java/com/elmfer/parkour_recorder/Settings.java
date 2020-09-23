@@ -28,7 +28,7 @@ public class Settings {
 		ClientRegistry.registerKeyBinding(keybindRecord);
 		ClientRegistry.registerKeyBinding(keybindPlay);
 		ClientRegistry.registerKeyBinding(keybindOverride);
-		//ClientRegistry.registerKeyBinding(keybindReloadShaders);//
+		ClientRegistry.registerKeyBinding(keybindReloadShaders);//
 		ClientRegistry.registerKeyBinding(keybindSave);
 		ClientRegistry.registerKeyBinding(keybindLoad);
 		ClientRegistry.registerKeyBinding(keybindTimeline);
