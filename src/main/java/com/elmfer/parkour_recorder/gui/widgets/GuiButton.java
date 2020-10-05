@@ -1,4 +1,4 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widgets;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
@@ -11,6 +11,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import com.elmfer.parkour_recorder.animation.Timeline;
 import com.elmfer.parkour_recorder.animation.compositon.Composition;
+import com.elmfer.parkour_recorder.gui.GuiStyle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;

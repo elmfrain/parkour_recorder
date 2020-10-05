@@ -1,4 +1,7 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
+
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -36,6 +39,7 @@ public class GuiConfirmationBox extends GuiAlertBox {
 			Minecraft mc = Minecraft.getMinecraft();
 			int margin = GuiStyle.Gui.margin();
 			
+			//Position the buttons
 			GuiButton yes = (GuiButton) buttonList.get(1);
 			GuiButton cancel = (GuiButton) buttonList.get(2);
 			yes.setWidth(viewport.getWidth() / 2 - margin);
@@ -43,6 +47,8 @@ public class GuiConfirmationBox extends GuiAlertBox {
 			yes.y = viewport.getHeight() / 2 - yes.height / 2;
 			cancel.y = yes.y;
 			cancel.x = viewport.getWidth() - cancel.width;
+			
+			//Render buttons
 			yes.drawButton(mc, mouseX, mouseY, partialTicks);
 			cancel.drawButton(mc, mouseX, mouseY, partialTicks);
 		}
@@ -64,6 +70,8 @@ public class GuiConfirmationBox extends GuiAlertBox {
 	@Override
 	public void keyTyped(char c, int keycode)
 	{
+		super.keyTyped(c, keycode);
+		
 		if(keycode == 28)
 			callback.callBack();
 			setShouldClose(true);

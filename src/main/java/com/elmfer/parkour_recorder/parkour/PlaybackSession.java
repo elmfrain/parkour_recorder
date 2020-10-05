@@ -92,7 +92,7 @@ public class PlaybackSession implements IParkourSession {
 		if(isPlaying)
 		{	
 			RecordingSession overridingSession = new RecordingSession();
-			overridingSession.recording = new Recording(recording.initPos, recording.initVel);
+			overridingSession.recording = new Recording(recording.initPos);
 			overridingSession.recordingToOverride = recording;
 			overridingSession.onOverride = true;
 			overridingSession.isRecording = true;
@@ -133,7 +133,7 @@ public class PlaybackSession implements IParkourSession {
 					}
 					currentFrame = recording.get(frameNumber);
 					
-					currentFrame.setInput(mc.player.movementInput, mc.player);
+					currentFrame.setMovementInput(mc.player.movementInput, mc.player);
 					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 					frameNumber++;
 				}

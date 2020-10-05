@@ -10,6 +10,10 @@ import java.util.Stack;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiAlertBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiConfirmationBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiNamerBox;
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 
@@ -82,9 +86,10 @@ public class LoadRecordingScreen extends GuiScreen {
 			break;
 		case 2:
 			GuiNamerBox renameBox = new GuiNamerBox(I18n.format("gui.load_recording.rename_recording"), this, (String s) -> { return s.length() > 0; } , this::rename);
-			renameBox.textField.setText(selections.lastElement().getName());
 			alertBox = renameBox;
 			alertBox.initGui();
+			renameBox.textField.setText(selections.lastElement().getName());
+			renameBox.textField.setCursorPositionZero();
 			break;
 		}
 	}
@@ -120,7 +125,7 @@ public class LoadRecordingScreen extends GuiScreen {
 	@Override
 	public void keyTyped(char keyTyped, int keyID)
 	{
-		if(alertBox != null) alertBox.keyTyped(keyTyped, keyID);
+		if(alertBox != null) { alertBox.keyTyped(keyTyped, keyID); return; }
 		try { super.keyTyped(keyTyped, keyID); } catch (IOException e) {}
 	}
 	
@@ -274,7 +279,7 @@ public class LoadRecordingScreen extends GuiScreen {
 	private void rename(String newName)
 	{
 		selections.lastElement().rename(newName);
-		selections.lastElement().save();
+		selections.lastElement().save(false, true, true);
 		buttonList.clear();
 		initGui();
 	}

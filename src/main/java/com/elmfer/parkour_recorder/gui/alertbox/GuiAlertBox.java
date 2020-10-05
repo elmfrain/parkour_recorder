@@ -1,9 +1,13 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.gradientRectToRight;
 
 import java.io.IOException;
+
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.GuiViewport;
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -61,7 +65,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 	}
 	
 	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+	public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		// TODO Auto-generated method stub
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 	}
@@ -69,12 +73,8 @@ abstract public class GuiAlertBox extends GuiScreen {
 	@Override
 	public void keyTyped(char charTyped, int keyCode)
 	{
-		try {
-			super.keyTyped(charTyped, keyCode);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//Close if escape is pressed
+		if(keyCode == 1) setShouldClose(true);
 	}
 	
 	abstract protected void doDrawScreen(int mouseX, int mouseY, float partialTicks);

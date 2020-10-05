@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.lwjgl.input.Mouse;
 
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 
 import net.minecraft.client.Minecraft;
@@ -49,7 +50,7 @@ public class ButtonListViewport extends Gui
 	
 	public void drawScreen(int mouseX, int mouseY, float partialTicks, GuiViewport viewport)
 	{
-		int scrollerWidth = 3;
+		int scrollerWidth = 5;
 		int smallMargin = GuiStyle.Gui.smallMargin();
 		int buttonHeight = GuiStyle.Gui.buttonHeight();
 		int listHeight = (buttonHeight + smallMargin) * buttonList.size() + 80;

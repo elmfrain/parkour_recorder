@@ -1,7 +1,11 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import java.io.IOException;
 import java.util.function.Predicate;
+
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
+import com.elmfer.parkour_recorder.gui.widgets.GuiTextField;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -69,7 +73,7 @@ public class GuiNamerBox extends GuiAlertBox
 	}
 	
 	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
+	public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
 	{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		textField.mouseClicked(mouseX, mouseY, mouseButton);
@@ -78,6 +82,9 @@ public class GuiNamerBox extends GuiAlertBox
 	@Override
 	public void keyTyped(char charTyped, int keyCode)
 	{
+		//Close if escape is pressed
+		if(keyCode == 1) setShouldClose(true);
+		
 		textField.textboxKeyTyped(charTyped, keyCode);
 		if(keyCode == 28)
 		{

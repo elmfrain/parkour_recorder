@@ -1,4 +1,4 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widgets;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

@@ -12,6 +12,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.gui.TimelineScreen.SessionType;
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
 import com.elmfer.parkour_recorder.parkour.Checkpoint;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
@@ -21,11 +22,13 @@ import com.elmfer.parkour_recorder.render.ShaderManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class TimelineViewport extends Gui
 {
+	/**Predicted width of a single digit.**/
+	private static final int NUM_CHAR_WIDTH = Minecraft.getMinecraft().fontRenderer.getStringWidth("5");
+	
 	public static double scrollAmount = 0.0;
 	
 	protected List<GuiButton> buttonList = new ArrayList<GuiButton>();
@@ -40,9 +43,9 @@ public class TimelineViewport extends Gui
 		parentScreen = parent;
 	}
 	
+	/**Render timeline.**/
 	public void drawScreen(int mouseX, int mouseY, float partialTicks, GuiViewport viewport)
 	{
-		Minecraft mc = Minecraft.getMinecraft();
 		FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 		
 		GuiViewport numberLine = new GuiViewport(viewport);
@@ -50,86 +53,130 @@ public class TimelineViewport extends Gui
 		GuiViewport pointer = new GuiViewport(numberLine);
 		
 		end = (float) parentScreen.timeline.getDuration();
+		
+		//Get timeline values
 		double duration = parentScreen.timeline.getDuration() * 20;
 		double framePos = parentScreen.timeline.getProperty("framePos").getValue();
 		
+		//Y pos for numbers on number line
 		int stringCenterY = numberLine.getHeight() / 2 - font.FONT_HEIGHT / 2;
-		int fadeHeight = GuiStyle.Gui.fadeHeight();
 		
-		int fade1 = getIntColor(GuiStyle.Gui.fade1());
-		int fade2 = getIntColor(GuiStyle.Gui.fade2());
+		//Styling constants
+		final int FADE_HEIGHT = GuiStyle.Gui.fadeHeight();
+		final int FADE_1 = getIntColor(GuiStyle.Gui.fade1());
+		final int FADE_2 = getIntColor(GuiStyle.Gui.fade2());
+		final int GRAD_1 = GraphicsHelper.getIntColor(0.15f, 0.15f, 0.15f, 0.9f);
+		final int GRAD_2 = GraphicsHelper.getIntColor(0.06f, 0.06f, 0.06f, 0.9f);
+		final int BLUE_1 = GraphicsHelper.getIntColor(0.0f, 0.55f, 1.0f, 1.0f);
+		final int BLUE_2 = GraphicsHelper.getIntColor(0.0f, 0.2f, 0.3f, 1.0f);
+		final int SMALL_MARGIN = GuiStyle.Gui.smallMargin();
+		final int MARGIN = GuiStyle.Gui.margin();
 		
 		viewport.pushMatrix(true);
-		{
-			int sMargin = (int) (4.0f / (new ScaledResolution(mc).getScaleFactor()));
+		{	
+			//Render timeline backround and numberline backround
+			drawGradientRect(0, 0, viewport.getWidth(), viewport.getHeight(), FADE_1, FADE_2);
+			drawGradientRect(0, 0, numberLine.getWidth(), numberLine.getHeight(), GRAD_1, GRAD_2);
 			
-			int grad1 = GraphicsHelper.getIntColor(0.15f, 0.15f, 0.15f, 0.9f);
-			int grad2 = GraphicsHelper.getIntColor(0.06f, 0.06f, 0.06f, 0.9f);
-			
-			drawGradientRect(0, 0, viewport.getWidth(), viewport.getHeight(), fade1, fade2);
-			drawGradientRect(0, 0, numberLine.getWidth(), numberLine.getHeight(), grad1, grad2);
-			
-			int nbTimeMarkers = 10;
+			//Determine spacing of time markers
+			int nbTimeMarkers = Math.min(viewport.getWidth() / (TimelineScreen.timeStampFormat.AVERAGE_LENGTH * NUM_CHAR_WIDTH + MARGIN * 2), 10);
 			int delta = (int) (Math.round((duration / (nbTimeMarkers * nbTimeMarkers))) * nbTimeMarkers);
+			
+			//Fractional progress of timeline
 			float amount = (float) ((framePos) / duration);
 			
+			//Render time markers
 			if(delta == 0) delta = 5;
 			{
 				for(float i = 0.0f; i < duration; i += delta)
 				{
 					float numberX = (float) ((i / duration) * numberLine.getWidth());
-					drawCenteredString(font, Integer.toString((int) i), (int) numberX, stringCenterY, 0xFFFFFFFF);
+					drawCenteredString(font, TimelineScreen.timeStampFormat.getTimeStamp((int) i), (int) numberX, stringCenterY, 0xFFFFFFFF);
 					drawVerticalLine((int) numberX, numberLine.bottom, viewport.bottom, getIntColor(0.4f, 0.4f, 0.4f, 0.5f));
 				}
 			}
 			
+			//Render checkpoint markers of recording
 			if(EventHandler.session instanceof PlaybackSession)
 				for(Checkpoint c : ((PlaybackSession) EventHandler.session).recording.checkpoints)
 					renderCheckpointMarker(c, numberLine.getHeight(), viewport.getWidth(), viewport.getHeight());
 			
-			float pointerWidth = (font.getStringWidth(Integer.toString((int) framePos))) / 2.0f + sMargin;
+			//Position pointer
+			String timeStamp = TimelineScreen.timeStampFormat.getTimeStamp(framePos);
+			float pointerWidth = (font.getStringWidth(timeStamp)) / 2.0f + SMALL_MARGIN;
 			float alignmentRatio = ((numberLine.getWidth() - 1.0f) / numberLine.getWidth());
 			float pointerPos = amount * numberLine.getWidth() * alignmentRatio;
 			float pointerHeadPos = Math.max(pointerWidth, Math.min(pointerPos, numberLine.getWidth() - pointerWidth));
 			pointer.left = (int) (pointerHeadPos - pointerWidth);
 			pointer.right = (int) (pointerHeadPos + pointerWidth);
 			
-			int blue1 = GraphicsHelper.getIntColor(0.0f, 0.55f, 1.0f, 1.0f);
-			int blue2 = GraphicsHelper.getIntColor(0.0f, 0.2f, 0.3f, 1.0f);
-			
-			GraphicsHelper.gradientRectToRight((int) pointerPos - fadeHeight / 4, pointer.getHeight(), (int) pointerPos, viewport.getHeight(), fade2, fade1);
-			GraphicsHelper.gradientRectToRight((int) pointerPos + 1, pointer.getHeight(), (int) pointerPos + fadeHeight / 4 + 1, viewport.getHeight(), fade1, fade2);
-			drawVerticalLine((int) pointerPos, pointer.getHeight() - 1, viewport.getHeight(), blue1);
+			//Render pointer
+			GraphicsHelper.gradientRectToRight((int) pointerPos - FADE_HEIGHT / 4, pointer.getHeight(), (int) pointerPos, viewport.getHeight(), FADE_2, FADE_1);
+			GraphicsHelper.gradientRectToRight((int) pointerPos + 1, pointer.getHeight(), (int) pointerPos + FADE_HEIGHT / 4 + 1, viewport.getHeight(), FADE_1, FADE_2);
+			drawVerticalLine((int) pointerPos, pointer.getHeight() - 1, viewport.getHeight(), BLUE_1);
 			pointer.pushMatrix(false);
 			{
-				GraphicsHelper.gradientRectToRight(0, 0, -fadeHeight / 2, pointer.getHeight(), fade1, fade2);
-				GraphicsHelper.gradientRectToRight(pointer.getWidth(), 0, pointer.getWidth() + fadeHeight / 2, pointer.getHeight(), fade1, fade2);
-				drawGradientRect(0, 0, pointer.getWidth(), pointer.getHeight(), blue1, blue2);
-				drawCenteredString(font, Integer.toString((int)framePos), pointer.getWidth() / 2, stringCenterY, 0xFFFFFFFF);
+				GraphicsHelper.gradientRectToRight(0, 0, -FADE_HEIGHT / 2, pointer.getHeight(), FADE_1, FADE_2);
+				GraphicsHelper.gradientRectToRight(pointer.getWidth(), 0, pointer.getWidth() + FADE_HEIGHT / 2, pointer.getHeight(), FADE_1, FADE_2);
+				drawGradientRect(0, 0, pointer.getWidth(), pointer.getHeight(), BLUE_1, BLUE_2);
+				drawCenteredString(font, timeStamp, pointer.getWidth() / 2, stringCenterY, 0xFFFFFFFF);
 			}
 			pointer.popMatrix();
 			
-			if(viewport.isHovered(mouseX, mouseY) && Mouse.isButtonDown(0) && parentScreen.session == SessionType.REPLAY && (parentScreen.timeline.isPaused() || parentScreen.timeline.hasStopped()))
+			//Begin dragging pointer if mouse is pressed on it
+			if(viewport.isHovered(mouseX, mouseY) && Mouse.isButtonDown(0) && parentScreen.session == SessionType.REPLAY && (parentScreen.timeline.isPaused() || parentScreen.timeline.hasStopped()) && GuiButton.currentZLevel == 0)
 				pointerIsDragging = true;
 			else if(!Mouse.isButtonDown(0) && pointerIsDragging) pointerIsDragging = false;
 			
+			//Set timeline position equals to cursor if dragging
 			if(pointerIsDragging) parentScreen.timeline.setFracTime((mouseX - numberLine.getAbsoluteLeft() * 1.0f) / numberLine.getWidth());
 			
+			//Scroll timeline with mouse wheel
+			if(viewport.isHovered(mouseX, mouseY) && (parentScreen.timeline.isPaused() || parentScreen.timeline.hasStopped()) && GuiButton.currentZLevel == 0)
+			{
+				int scrollAmount = Mouse.getDWheel();
+				int currentFrame = (int) parentScreen.timeline.getProperty("framePos").getValue();
+				double oneTick = 1.0 / (parentScreen.timeline.getDuration() * 20.0);
+				
+				if(0 < scrollAmount) //Goto next frame
+				{
+					//Snap timeline pos to current frame
+					parentScreen.timeline.setFracTime(currentFrame / (parentScreen.timeline.getDuration() * 20.0) + oneTick / 10.0);
+					
+					parentScreen.timeline.setFracTime(parentScreen.timeline.getFracTime() + oneTick);
+				}
+				else if(scrollAmount < 0) //Goto previous frame
+				{
+					//Snap timeline pos to current frame
+					parentScreen.timeline.setFracTime(currentFrame / (parentScreen.timeline.getDuration() * 20.0) + oneTick / 10.0);
+					
+					parentScreen.timeline.setFracTime(parentScreen.timeline.getFracTime() - oneTick);
+				}
+				
+				Mouse.getDWheel();
+			}
+			
+			//Darken timeline if not active
 			if(!parentScreen.session.isActive()) drawRect(0, 0, viewport.getWidth(), viewport.getHeight(), GraphicsHelper.getIntColor(GuiStyle.Gui.backroundColor()));
 		}
 		viewport.popMatrix();
 	}
 	
+	/**Renders a checkpoint marker on the timeline.**/
 	private void renderCheckpointMarker(Checkpoint c, int numberLineHeight, int timelineWidth, int timelineHeight)
 	{
+		//Determine position of marker
 		double duration = parentScreen.timeline.getDuration() * 20;
 		double framePos = c.frameNumber;
 		float amount = (float) ((framePos) / duration);
 		int x = (int) (amount * timelineWidth);
+		
+		//Slightly make the marker brighter if it's the one currently selected
 		Vector4f color = GraphicsHelper.getFloatColor(c.color);
 		if(parentScreen.currentCheckpoint != null && parentScreen.currentCheckpoint == c)
 			color.translate(0.25f, 0.25f, 0.25f, 0.0f);
 		
+		//Render Marker
 		int shader = ShaderManager.getGUIShader();
 		int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		GlStateManager.disableTexture2D();
@@ -147,5 +194,77 @@ public class TimelineViewport extends Gui
 			GL20.glUseProgram(prevShader);
 		}
 		GlStateManager.popMatrix();
+	}
+	
+	/**Enum to determine the format to display time**/
+	public static enum TimeStampFormat
+	{
+		GAME_TICKS("ticks", 4),
+		SECONDS("seconds", 3),
+		SECONDS_TENTHS("seconds.tenths", 4),
+		SECONDS_HUNDREDTHS("seconds.hundredths", 5),
+		SECONDS_TICKS("ss:ticks", 5),
+		HH_MM_SS("hh:mm:ss", 8),
+		HH_MM_SS_TENTHS("hh:mm:ss.tenths", 10),
+		HH_MM_SS_HUNDREDTHS("hh:mm:ss.hundredths", 11),
+		HH_MM_SS_TICKS("hh:mm:ss:ticks", 11);
+		
+		public static final TimeStampFormat DEFAULT = GAME_TICKS;
+		
+		/**The precidcted string length for the format.**/
+		public final int AVERAGE_LENGTH;
+		
+		/**Name of the format. The name gives an idea on how it will format time.**/
+		public final String NAME;
+		
+		TimeStampFormat(String name, int length)
+		{
+			AVERAGE_LENGTH = length;
+			NAME = name;
+		}
+		
+		/**
+		 * Get time format from name. If given name does not equal to any formats, it will
+		 * return {@code GAME_TICKS} by default.
+		 */
+		public static TimeStampFormat getFormatFromName(String name)
+		{
+			for(TimeStampFormat format : TimeStampFormat.values())
+				if(name.equals(format.NAME)) return format;
+			return GAME_TICKS;
+		}
+		
+ 		public String getTimeStamp(double gameTicks)
+		{
+			//Hour, minute, second formatting
+			int ticks = (int) gameTicks;
+			int hours = ticks / 72000; ticks %= 72000;  //72000 ticks per hour
+			int minutes = ticks / 1200; ticks %= 1200;  //1200 ticks per minute
+			double seconds = (gameTicks - 72000.0 * hours - 1200.0 * minutes) / 20.0; ticks %= 20; //20 ticks per second
+			double fullSeconds = gameTicks / 20.0; //Has total amount of seconds
+			int frame = ticks; //Remaining frames
+			
+			switch(this)
+			{
+			case SECONDS:
+				return String.format("%1$01ds", (int)fullSeconds);
+			case SECONDS_TENTHS:
+				return String.format("%1$.1fs", fullSeconds);
+			case SECONDS_HUNDREDTHS:
+				return String.format("%1$.2fs", fullSeconds);
+			case SECONDS_TICKS:
+				return String.format("%1$02d:%2$02d", (int)seconds, frame);
+			case HH_MM_SS:
+				return String.format("%1$02d:%2$02d:%3$02d", hours, minutes, (int)seconds);
+			case HH_MM_SS_TENTHS:
+				return String.format("%1$02d:%2$02d:%3$.1f", hours, minutes, seconds);
+			case HH_MM_SS_HUNDREDTHS:
+				return String.format("%1$02d:%2$02d:%3$.2f", hours, minutes, seconds);
+			case HH_MM_SS_TICKS:
+				return String.format("%1$02d:%2$02d:%3$02d:%4$02d", hours, minutes, (int)seconds, frame);
+			default:
+				return Integer.toString((int)gameTicks);
+			}
+		}
 	}
 }

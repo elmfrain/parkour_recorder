@@ -6,6 +6,7 @@ import java.util.List;
 import com.elmfer.parkour_recorder.gui.LoadRecordingScreen;
 import com.elmfer.parkour_recorder.gui.SaveRecordingScreen;
 import com.elmfer.parkour_recorder.gui.TimelineScreen;
+import com.elmfer.parkour_recorder.gui.widgets.GuiButton;
 import com.elmfer.parkour_recorder.parkour.IParkourSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
@@ -15,6 +16,7 @@ import com.elmfer.parkour_recorder.render.ShaderManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -28,6 +30,12 @@ public class EventHandler {
 	public static SessionHUD hud = new SessionHUD();
 	public static IParkourSession session = new RecordingSession();
 	public static List<Recording> recordHistory = new ArrayList<>();
+	
+	@SubscribeEvent
+	public static void onOpenGui(GuiOpenEvent event)
+	{
+		GuiButton.currentZLevel = 0;
+	}
 	
 	@SubscribeEvent
 	public static void onOverlayRender(RenderGameOverlayEvent event)

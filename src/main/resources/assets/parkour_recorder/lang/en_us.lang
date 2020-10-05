@@ -25,17 +25,27 @@ gui.save_recording.clear_history_?=Clear History?
 gui.save_recording.should_remove_?=Should Remove?
 gui.save_recording.remove_selected_?=Remove Selected?
 gui.save_recording.name_recording=Name Recording
+gui.save_recording.override_recording_?=Override Recording?
+gui.save_recording.recording_was_loaded_from=Recording was loaded from
 
 gui.timeline=Timeline
 gui.timeline.no_recording_is_loaded=No Recording is Loaded
 gui.timeline.start_here=Start Here
 gui.timeline.load=Load
 gui.timeline.speed=Speed
+gui.timeline.change_time_format=Change Time Format
+gui.timeline.time_format=Time Format
+gui.timeline.add_checkpoint=Add Checkpoint
+gui.timeline.remove_checkpoint_?=Remove Checkpoint?
 
 gui.confirmation_box.yes=Yes
 gui.confirmation_box.cancel=Cancel
 
 gui.naming_box.name=Name
+
+gui.override_box.override=Override
+gui.override_box.save_as_new=Save As New
+gui.override_box.cancel=Cancel
 
 recording.unamed=Unamed
 recording.file=File

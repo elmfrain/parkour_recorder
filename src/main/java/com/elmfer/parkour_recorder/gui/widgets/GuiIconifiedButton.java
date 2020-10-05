@@ -1,9 +1,10 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widgets;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Vector4f;
 
+import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ModelManager;
 import com.elmfer.parkour_recorder.render.ShaderManager;
@@ -11,11 +12,11 @@ import com.elmfer.parkour_recorder.render.ShaderManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 
-public class GuiModeledButton extends GuiButton
+public class GuiIconifiedButton extends GuiButton
 {
 	public String modelName;
 	
-	public GuiModeledButton(int id, int x, int y, String modelName)
+	public GuiIconifiedButton(int id, int x, int y, String modelName)
 	{
 		super(id, x, y, "");
 		this.modelName = modelName;

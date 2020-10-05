@@ -1,4 +1,4 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widgets;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -6,6 +6,7 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 
 import net.minecraft.client.Minecraft;
