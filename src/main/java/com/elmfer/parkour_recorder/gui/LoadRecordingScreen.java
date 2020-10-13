@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Stack;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiAlertBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiConfirmationBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiNamerBox;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
+import com.elmfer.parkour_recorder.gui.widget.GuiTextField;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -129,6 +134,12 @@ public class LoadRecordingScreen extends Screen {
 	{
 		if(alertBox != null) alertBox.keyPressed(keyID, scancode, mods);
 		return super.keyPressed(keyID, scancode, mods);
+	}
+	
+	@Override
+	public boolean shouldCloseOnEsc()
+	{
+		return alertBox == null;
 	}
 	
 	@Override
@@ -268,7 +279,7 @@ public class LoadRecordingScreen extends Screen {
 	private void rename(String newName)
 	{
 		selections.lastElement().rename(newName);
-		selections.lastElement().save();
+		selections.lastElement().save(false, true, true);
 		buttons.clear();
 		children.clear();
 		init();

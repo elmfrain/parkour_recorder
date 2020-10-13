@@ -1,10 +1,14 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.lwjgl.glfw.GLFW;
+
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
+import com.elmfer.parkour_recorder.gui.widget.GuiTextField;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -74,8 +78,8 @@ public class GuiNamerBox extends GuiAlertBox
 	@Override
 	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
-		if(keyID == GLFW.GLFW_KEY_ENTER)
-			name(null);
+		if(keyID == GLFW.GLFW_KEY_ENTER) { name(null); return true; }
+		if(keyID == GLFW.GLFW_KEY_ESCAPE) { setShouldClose(true); return true; }
 		return false;
 	}
 	

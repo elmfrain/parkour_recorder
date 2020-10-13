@@ -1,9 +1,15 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.gradientRectToRight;
 
 import java.util.List;
+
+import org.lwjgl.glfw.GLFW;
+
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.GuiViewport;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
@@ -27,7 +33,7 @@ abstract public class GuiAlertBox extends Screen {
 	}
 	
 	@Override
-	protected void init()
+	public void init()
 	{
 		buttons.clear();
 		GuiButton.currentZLevel = 1;
@@ -56,6 +62,13 @@ abstract public class GuiAlertBox extends Screen {
 		List<IGuiEventListener> pChildren = (List<IGuiEventListener>) parentScreen.children();
 		pChildren.add(widget);
 		return widget;
+	}
+	
+	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(keyID == GLFW.GLFW_KEY_ESCAPE) { setShouldClose(true); return true; }
+		return false;
 	}
 	
 	public void setShouldClose(boolean shouldClose)

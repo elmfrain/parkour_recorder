@@ -5,30 +5,40 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.MathHelper;
 
-public class PlaybackViewerEntity extends PlayerEntity
+public class ReplayViewerEntity extends PlayerEntity
 {
 	private MovementInput movementInput = new MovementInput();
 	
-	public PlaybackViewerEntity()
+	public ReplayViewerEntity()
 	{
 		super(Minecraft.getInstance().world, Minecraft.getInstance().player.getGameProfile());
 	}
 	
 	public void setState(ParkourFrame frame, ParkourFrame prevFrame, float partialTicks)
 	{
+		Minecraft mc = Minecraft.getInstance();
+		
+		//Set position and inputs
 		double posX = MathHelper.lerp(partialTicks, prevFrame.posX, frame.posX);
 		double posY = MathHelper.lerp(partialTicks, prevFrame.posY, frame.posY);
 		double posZ = MathHelper.lerp(partialTicks, prevFrame.posZ, frame.posZ);
-		
 		setPosition(posX, posY, posZ);
-		frame.setInput(movementInput, this);
+		frame.setMovementInput(movementInput, this);
 		
+		//Set previous values to prevent movement glitches
 		prevPosX = getPosX();
 		prevPosY = getPosY();
 		prevPosZ = getPosZ();
 		
+		//Set head rotations
 		rotationYawHead = rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, frame.headYaw);
 		rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, frame.headPitch);
+		
+		//Set the player's arm rotation
+		float handYawOffset = MathHelper.lerp(partialTicks, prevFrame.armYawOffset, frame.armYawOffset);
+		float handPitchOffset = MathHelper.lerp(partialTicks, prevFrame.armPitchOffset, frame.armPitchOffset);
+		mc.player.prevRenderArmYaw = mc.player.renderArmYaw = mc.player.rotationYawHead - handYawOffset;
+		mc.player.prevRenderArmPitch = mc.player.renderArmPitch = mc.player.rotationPitch - handPitchOffset;
 		
 		movementInput.func_223135_b();
 		movementInput.func_225607_a_(isCrouching() || isVisuallySwimming());

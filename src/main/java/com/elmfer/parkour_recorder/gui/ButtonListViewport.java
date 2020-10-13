@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -14,7 +15,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class ButtonListViewport extends AbstractGui
 {
-	protected List<GuiButton> buttonList = new ArrayList<GuiButton>();
+	public List<GuiButton> buttonList = new ArrayList<GuiButton>();
 	private Screen parentScreen;
 	private float scrollPos = 0.0f;
 	private float scrollSpeed = 0.0f;

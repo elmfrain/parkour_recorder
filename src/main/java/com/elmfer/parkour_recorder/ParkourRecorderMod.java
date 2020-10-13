@@ -1,19 +1,24 @@
 package com.elmfer.parkour_recorder;
 
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.gui.ButtonListViewport;
+import com.elmfer.parkour_recorder.gui.TimelineViewport;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig.Type;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 @Mod(ParkourRecorderMod.MOD_ID)
 public class ParkourRecorderMod 
 {
 	public static final String MOD_ID = "parkour_recorder";
 	public static final String MOD_NAME = "Parkour Recorder Mod";
-	public static final String MOD_VERSION = "1.0.0.0-1.15.2";
+	public static final String MOD_VERSION = "1.0.1.0-1.15.2";
 	
 	public ParkourRecorderMod()
 	{
@@ -26,6 +31,12 @@ public class ParkourRecorderMod
 	{
 		MinecraftForge.EVENT_BUS.register(EventHandler.class);
 		MinecraftForge.EVENT_BUS.register(ButtonListViewport.class);
+		MinecraftForge.EVENT_BUS.register(TimelineViewport.class);
+		
+		//Setup config
+		ModLoadingContext.get().registerConfig(Type.CLIENT, ConfigManager.CONFIG_SPEC);
+		ConfigManager.init(FMLPaths.CONFIGDIR.get().resolve(MOD_ID + ConfigManager.CONFIG_EXTENSION));
+		
 		Settings.getSettings();
 	}
 }

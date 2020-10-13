@@ -1,8 +1,11 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import javax.annotation.Nullable;
 
 import org.lwjgl.glfw.GLFW;
+
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -57,7 +60,8 @@ public class GuiConfirmationBox extends GuiAlertBox {
 	{
 		if(keyID == GLFW.GLFW_KEY_ENTER)
 			confirmed(null);
-		return false;
+		
+		return super.keyPressed(keyID, scancode, mods);
 	}
 	
 	private void confirmed(@Nullable Button button)

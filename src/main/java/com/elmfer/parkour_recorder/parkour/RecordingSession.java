@@ -29,25 +29,20 @@ public class RecordingSession implements IParkourSession {
 		case 0:
 			mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
 			if(recording == null)
-				recording = new Recording(mc.player.getPositionVec(), mc.player.getMotion());
+				recording = new Recording(mc.player.getPositionVec());
 			isRecording = true;
 			nbRecordPresses++;
 			break;
 		case 1:		
 			recording.lastPos = mc.player.getPositionVec();
-			recording.lastVel = mc.player.getMotion();
 			
 			if(onOverride)
 			{
 				String name = recordingToOverride.originalName != null ? recordingToOverride.originalName + " - " : "";
-				Recording record = new Recording(recordingToOverride.initPos, recordingToOverride.initVel);
+				Recording record = recordingToOverride.subList(0, overrideStart);
 				record.lastPos = recording.lastPos;
-				record.lastVel = recording.lastVel;
-				record.originalName = recordingToOverride.originalName;
-				record.addAll(recordingToOverride.subList(0, overrideStart));
 				record.addAll(recording);
 				record.rename(name + Recording.getFormattedTime());
-				record.startingFrame = recordingToOverride.startingFrame;
 				
 				EventHandler.addToHistory(record);
 			}
@@ -92,7 +87,7 @@ public class RecordingSession implements IParkourSession {
 		if(onOverride && isRecording)
 		{
 			nbRecordPresses = 1;
-			onRecord();
+			return onRecord();
 		}
 		return this;
 	}
