@@ -1,4 +1,4 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widget;
 
 import org.lwjgl.opengl.GL11;
 

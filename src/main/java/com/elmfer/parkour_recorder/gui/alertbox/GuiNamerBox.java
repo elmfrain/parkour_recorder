@@ -1,4 +1,4 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import java.util.function.Predicate;
 
@@ -6,7 +6,11 @@ import javax.annotation.Nullable;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.elmfer.parkour_recorder.gui.GuiScreen;
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
+import com.elmfer.parkour_recorder.gui.widget.GuiTextField;
+import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
@@ -58,12 +62,12 @@ public class GuiNamerBox extends GuiAlertBox
 		{
 			int margin = GuiStyle.Gui.margin();
 			textField.setWidth(viewport.getWidth());
-			textField.renderTextBox(GraphicsHelper.identity, mouseX, mouseY, partialTicks);
+			textField.renderTextBox(new MatrixStack(), mouseX, mouseY, partialTicks);
 			GuiButton rename = (GuiButton) buttons.get(1);
 			GuiButton cancel = (GuiButton) buttons.get(2);
 			rename.setWidth(viewport.getWidth() / 2 - margin);
 			cancel.setWidth(rename.getWidth());
-			rename.setY(textField.getHeight() + margin);
+			rename.setY(textField.height() + margin);
 			cancel.setY(rename.y());
 			cancel.setX(viewport.getWidth() - cancel.getWidth());
 			rename.renderButton(mouseX, mouseY, partialTicks);
@@ -75,8 +79,8 @@ public class GuiNamerBox extends GuiAlertBox
 	@Override
 	public boolean keyPressed(int keyID, int scancode, int mods)
 	{
-		if(keyID == GLFW.GLFW_KEY_ENTER)
-			name(null);
+		if(keyID == GLFW.GLFW_KEY_ENTER) { name(null); return true; }
+		if(keyID == GLFW.GLFW_KEY_ESCAPE) { setShouldClose(true); return true; }
 		return false;
 	}
 	

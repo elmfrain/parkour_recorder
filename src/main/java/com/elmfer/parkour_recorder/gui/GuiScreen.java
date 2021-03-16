@@ -2,6 +2,8 @@ package com.elmfer.parkour_recorder.gui;
 
 import java.util.List;
 
+import com.elmfer.parkour_recorder.gui.alertbox.GuiAlertBox;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;

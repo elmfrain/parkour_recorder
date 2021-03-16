@@ -1,13 +1,22 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.alertbox;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.gradientRectToRight;
 
+import java.util.List;
+
+import org.lwjgl.glfw.GLFW;
+
+import com.elmfer.parkour_recorder.gui.GuiScreen;
+import com.elmfer.parkour_recorder.gui.GuiStyle;
+import com.elmfer.parkour_recorder.gui.GuiViewport;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
@@ -26,7 +35,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 	}
 	
 	@Override
-	protected void init()
+	public void init()
 	{
 		buttons.clear();
 		GuiButton.currentZLevel = 1;
@@ -51,8 +60,16 @@ abstract public class GuiAlertBox extends GuiScreen {
 	protected <T extends Widget> T addButton(T widget)
 	{
 		super.addButton(widget);
-		parentScreen.children.add(widget);
+		List<IGuiEventListener> pChildren = (List<IGuiEventListener>) parentScreen.children();
+		pChildren.add(widget);
 		return widget;
+	}
+	
+	@Override
+	public boolean keyPressed(int keyID, int scancode, int mods)
+	{
+		if(keyID == GLFW.GLFW_KEY_ESCAPE) { setShouldClose(true); return true; }
+		return false;
 	}
 	
 	public void setShouldClose(boolean shouldClose)
@@ -115,7 +132,7 @@ abstract public class GuiAlertBox extends GuiScreen {
 			
 			GuiButton closeButton = (GuiButton) buttons.get(0);
 			closeButton.setHeight(title.getHeight() - smallMargin * 2);
-			closeButton.setWidth(closeButton.getHeight());
+			closeButton.setWidth(closeButton.height());
 			closeButton.setY(smallMargin);
 			closeButton.setX(title.getWidth() - smallMargin - closeButton.getWidth());
 			closeButton.renderButton(mouseX, mouseY, partialTicks);

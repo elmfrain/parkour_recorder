@@ -1,4 +1,4 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widget;
 
 import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 

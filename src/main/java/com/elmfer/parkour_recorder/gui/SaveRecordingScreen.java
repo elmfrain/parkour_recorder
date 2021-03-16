@@ -7,6 +7,11 @@ import java.util.Stack;
 import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiAlertBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiConfirmationBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiNamerBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiOverrideBox;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
@@ -70,24 +75,24 @@ public class SaveRecordingScreen extends GuiScreen
 		int buttonId = buttons.indexOf(button);
 		switch(buttonId)
 		{
-		case 1:
+		case 1: //Clear History
 			GuiAlertBox clearBox = new GuiConfirmationBox(I18n.format("gui.save_recording.clear_history_?"), this::clearHistory, this);
 			alertBox = clearBox;
 			alertBox.init();
 			break;
-		case 3:
+		case 3: //Remove from history
 			String title = 1 < selections.size() ? I18n.format("gui.save_recording.remove_selected_?") : I18n.format("gui.save_recording.should_remove_?");
 			GuiAlertBox removeBox = new GuiConfirmationBox(title, this::remove, this);
 			alertBox = removeBox;
 			alertBox.init();
 			break;
-		case 4:
+		case 4: //Exit screen
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(selections.lastElement());
 			EventHandler.hud.fadedness = 200;
 			Minecraft.getInstance().displayGuiScreen(null);
 			break;
-		default:
+		default: //Save recording
 			if(buttonId == 0 || buttonId == 2) 
 			{
 				if(buttonId == 0) 
@@ -105,10 +110,25 @@ public class SaveRecordingScreen extends GuiScreen
 					guiButton.highlighed = true;
 					guiButton.highlightTint = new Vector3f(0.0f, 0.5f, 0.0f);
 				}
-				GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.name_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
-				namerBox.textField.setText(selections.lastElement().getName());
-				alertBox = namerBox;
-				alertBox.init();
+				
+				//If recording was originally opened from a file, prompt overriding alert box
+				if(selections.lastElement().getOriginalFile() != null)
+				{
+					//Create Override box
+					String boxMessage = I18n.format("gui.save_recording.recording_was_loaded_from") + ":\n" + selections.lastElement().getOriginalFile().getName();
+					GuiOverrideBox overrideBox = new GuiOverrideBox(I18n.format("gui.save_recording.override_recording_?"), this, boxMessage, this::override, this::saveNew);
+					alertBox = overrideBox;
+					alertBox.init();
+				}
+				else
+				{
+					//Create namer box
+					GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.name_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
+					alertBox = namerBox;
+					alertBox.init();
+					namerBox.textField.setText(selections.lastElement().getName());
+					namerBox.textField.setCursorPositionZero();
+				}
 			}
 		}
 	}
@@ -149,8 +169,15 @@ public class SaveRecordingScreen extends GuiScreen
 		return super.keyPressed(keyID, scancode, mods);
 	}
 	
+	/** Screen should not close when an alertbox is open. **/
 	@Override
-	 public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+	public boolean func_231178_ax__()
+	{
+		return alertBox == null;
+	}
+	
+	@Override
+	public void drawScreen(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
 	 {
 		Minecraft mc = Minecraft.getInstance();
 		FontRenderer fontRenderer = mc.fontRenderer;
@@ -310,10 +337,33 @@ public class SaveRecordingScreen extends GuiScreen
 		all.pushMatrix(false);
 	 }
 	
+	/**When Save As New button is pressed from alert box**/
+	private void saveNew()
+	{
+		if(alertBox instanceof GuiOverrideBox)
+		{
+			alertBox.setShouldClose(true);
+			//Create namer box
+			GuiNamerBox namerBox = new GuiNamerBox(I18n.format("gui.save_recording.name_recording"), this, (String s) -> { return s.length() > 0; } , this::save);
+			alertBox = namerBox;
+			alertBox.init();
+			namerBox.textField.setText(selections.lastElement().getName());
+			namerBox.textField.setCursorPositionZero();	
+		}
+	}
+	
 	private void save(String newName)
 	{
 		selections.lastElement().rename(newName);
-		selections.lastElement().save();
+		selections.lastElement().save(false, true, false);
+		EventHandler.recordHistory.remove(selections.lastElement());
+		selections.pop();
+		init();
+	}
+	
+	private void override()
+	{
+		selections.lastElement().save(false, true, true);
 		EventHandler.recordHistory.remove(selections.lastElement());
 		selections.pop();
 		init();

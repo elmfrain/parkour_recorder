@@ -9,6 +9,11 @@ import java.util.Stack;
 import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiAlertBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiConfirmationBox;
+import com.elmfer.parkour_recorder.gui.alertbox.GuiNamerBox;
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
+import com.elmfer.parkour_recorder.gui.widget.GuiTextField;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
@@ -132,6 +137,13 @@ public class LoadRecordingScreen extends GuiScreen {
 	{
 		if(alertBox != null) alertBox.keyPressed(keyID, scancode, mods);
 		return super.keyPressed(keyID, scancode, mods);
+	}
+	
+	/** Screen should not close when an alertbox is open. **/
+	@Override
+	public boolean func_231178_ax__()
+	{
+		return alertBox == null;
 	}
 	
 	@Override
@@ -271,7 +283,7 @@ public class LoadRecordingScreen extends GuiScreen {
 	private void rename(String newName)
 	{
 		selections.lastElement().rename(newName);
-		selections.lastElement().save();
+		selections.lastElement().save(false, true, true);
 		buttons.clear();
 		children.clear();
 		init();

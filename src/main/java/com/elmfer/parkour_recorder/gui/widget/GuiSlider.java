@@ -1,7 +1,8 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widget;
 
 import org.lwjgl.opengl.GL11;
 
+import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
@@ -147,3 +148,4 @@ public class GuiSlider extends Slider
 		return mouseX >= viewportX && mouseY >= viewportY && mouseX < viewportX + viewportWidth && mouseY < viewportY + viewportHeight;
 	}
 }
+	

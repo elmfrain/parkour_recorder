@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
+import com.elmfer.parkour_recorder.gui.widget.GuiButton;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 
 import net.minecraft.client.gui.AbstractGui;
@@ -13,7 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class ButtonListViewport extends AbstractGui
 {
-	protected List<GuiButton> buttonList = new ArrayList<GuiButton>();
+	public List<GuiButton> buttonList = new ArrayList<GuiButton>();
 	private GuiScreen parentScreen;
 	private float scrollPos = 0.0f;
 	private float scrollSpeed = 0.0f;

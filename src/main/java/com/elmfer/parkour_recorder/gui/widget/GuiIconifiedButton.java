@@ -1,8 +1,9 @@
-package com.elmfer.parkour_recorder.gui;
+package com.elmfer.parkour_recorder.gui.widget;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ModelManager;
 import com.elmfer.parkour_recorder.render.ShaderManager;
@@ -10,11 +11,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.util.math.vector.Vector4f;
 
-public class GuiModeledButton extends GuiButton
+public class GuiIconifiedButton extends GuiButton
 {
 	public String modelName;
 	
-	public GuiModeledButton(int x, int y, IPressable pressedCallback, String modelName)
+	public GuiIconifiedButton(int x, int y, IPressable pressedCallback, String modelName)
 	{
 		super(x, y, "", pressedCallback);
 		this.modelName = modelName;
@@ -32,7 +33,7 @@ public class GuiModeledButton extends GuiButton
 	            j = 10526880;
 	        else if (isHovered())
 	            j = 16777120;
-	        
+			
 			int shader = ShaderManager.getGUIShader();
 			int prevShader = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 			float smallMargin = GuiStyle.Gui.smallMargin() * 2;
@@ -41,7 +42,6 @@ public class GuiModeledButton extends GuiButton
 			color.setW(1.0f);
 			RenderSystem.disableTexture();
 			RenderSystem.enableBlend();
-			RenderSystem.disableCull();
 			GL11.glColor3f(color.getX(), color.getY(), color.getZ());
 			
 			GL11.glPushMatrix();
