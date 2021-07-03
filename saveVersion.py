@@ -101,12 +101,12 @@ for (dirpath, dirnames, filenames) in os.walk(main_dir):
     for f in filenames:
         if f in files_to_change or f[-5:] == files_to_change[1]:
             if f == files_to_change[0] and gradle_file == None:
-                gradle_file = open(dirpath + '\\' + f, 'r+')
+                gradle_file = open(dirpath + '/' + f, 'r+')
             elif java_file == None and f[-5:] == files_to_change[1]:
-                if is_mod_entry(dirpath + '\\' + f):
-                    java_file = open(dirpath + '\\' + f, 'r+')
+                if is_mod_entry(dirpath + '/' + f):
+                    java_file = open(dirpath + '/' + f, 'r+')
             elif f == files_to_change[2] and info_file == None:
-                info_file = open(dirpath + '\\' + f, 'r+')
+                info_file = open(dirpath + '/' + f, 'r+')
     if all_files_found():
         break
 

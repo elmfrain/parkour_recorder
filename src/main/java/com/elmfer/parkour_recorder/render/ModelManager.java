@@ -106,17 +106,25 @@ public class ModelManager {
 		}
 	}
 	
-	public static boolean renderModel(String modelName)
+	public static boolean renderModel(String modelName, int drawMode)
 	{
 		if(models.containsKey(modelName))
-		{models.get(modelName).render(); return true;}
+		{
+			models.get(modelName).render(drawMode);
+			return true;
+		}
 		else
 		{
 			loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/" + modelName + ".ply"));
+			return false;
 		}
-		return false;
 	}
 	
+	public static boolean renderModel(String modelName)
+	{
+		return renderModel(modelName, GL11.GL_TRIANGLES);
+	}
+
 	private static class Model
 	{
 		int glBufferID;
@@ -168,10 +176,10 @@ public class ModelManager {
 			GL30.glDeleteVertexArrays(glVertArrayID);
 		}
 		
-		public void render()
+		public void render(int drawMode)
 		{
 			GL30.glBindVertexArray(glVertArrayID);
-			GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
+			GL11.glDrawElements(drawMode, vertexCount, GL11.GL_UNSIGNED_INT, 0);
 			GL30.glBindVertexArray(0);
 		}
 	}

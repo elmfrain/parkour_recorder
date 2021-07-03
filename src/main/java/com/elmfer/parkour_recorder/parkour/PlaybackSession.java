@@ -98,7 +98,7 @@ public class PlaybackSession implements IParkourSession {
 			overridingSession.isRecording = true;
 			overridingSession.nbRecordPresses = 1;
 			overridingSession.overrideStart = frameNumber - 1;
-			overridingSession.recording.rename(recording.getName());
+			overridingSession.recording.setName(recording.getName());
 			stop();
 			
 			return overridingSession;
@@ -175,7 +175,7 @@ public class PlaybackSession implements IParkourSession {
 				Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
 				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
 				{
-					ITextComponent errorMessage = new TextComponentTranslation("warn.playback_failed");
+					ITextComponent errorMessage = new TextComponentTranslation("com.elmfer.playback_failed");
 					errorMessage.setStyle((new Style()).setColor(TextFormatting.RED));
 					mc.player.sendMessage(errorMessage);
 					stop();

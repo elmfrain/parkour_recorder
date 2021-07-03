@@ -1,6 +1,6 @@
 package com.elmfer.parkour_recorder;
 
-import com.elmfer.parkour_recorder.gui.ButtonListViewport;
+import com.elmfer.parkour_recorder.gui.ButtonListView;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -25,7 +25,7 @@ public class ParkourRecorderMod
 		if(event.getSide() == Side.CLIENT)
 		{
 			MinecraftForge.EVENT_BUS.register(com.elmfer.parkour_recorder.EventHandler.class);
-			MinecraftForge.EVENT_BUS.register(ButtonListViewport.class);
+			MinecraftForge.EVENT_BUS.register(ButtonListView.class);
 			Settings.getSettings();
 		}
 	}

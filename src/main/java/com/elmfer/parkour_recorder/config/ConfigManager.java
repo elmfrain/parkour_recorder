@@ -3,7 +3,7 @@ package com.elmfer.parkour_recorder.config;
 import java.io.File;
 
 import com.elmfer.parkour_recorder.ParkourRecorderMod;
-import com.elmfer.parkour_recorder.gui.TimelineViewport.TimeStampFormat;
+import com.elmfer.parkour_recorder.gui.NumberLineView.TimeStampFormat;
 
 import net.minecraftforge.common.config.Configuration;
 

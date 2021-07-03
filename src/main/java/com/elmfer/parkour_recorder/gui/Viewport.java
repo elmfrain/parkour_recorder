@@ -9,22 +9,22 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 
-public class GuiViewport extends Gui
+public class Viewport
 {
-	public int left = 0;
-	public int right = 0;
-	public int top = 0;
-	public int bottom = 0;
-	private List<GuiViewport> children = new ArrayList<GuiViewport>();
-	private List<GuiViewport> parents = new ArrayList<GuiViewport>();
+	public float left = 0;
+	public float right = 0;
+	public float top = 0;
+	public float bottom = 0;
+	private List<Viewport> children = new ArrayList<Viewport>();
+	private List<Viewport> parents = new ArrayList<Viewport>();
 	FloatBuffer guiMatrix = null;
 	IntBuffer prevViewport = null;
 	
-	public GuiViewport(ScaledResolution window)
+	@Deprecated
+	public Viewport(ScaledResolution window)
 	{
 		right = window.getScaledWidth();
 		bottom = window.getScaledHeight();
@@ -32,7 +32,15 @@ public class GuiViewport extends Gui
 		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, guiMatrix);
 	}
 	
-	public GuiViewport(GuiViewport parent)
+	public Viewport()
+	{
+		right = UIrender.getUIwidth();
+		bottom = UIrender.getUIheight();
+		guiMatrix = BufferUtils.createFloatBuffer(16);
+		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, guiMatrix);
+	}
+	
+	public Viewport(Viewport parent)
 	{
 		parent.children.add(this);
 		this.parents.addAll(parent.parents);
@@ -41,52 +49,52 @@ public class GuiViewport extends Gui
 		bottom = parent.getHeight();
 	}
 	
-	public boolean isHovered(int mouseX, int mouseY)
+	public boolean isHovered(float mouseX, float mouseY)
 	{
-		int left = getAbsoluteLeft();
-		int top = getAbsoluteTop();
-		int right = left + getWidth();
-		int bottom = top + getHeight();
+		float left = getAbsoluteLeft();
+		float top = getAbsoluteTop();
+		float right = left + getWidth();
+		float bottom = top + getHeight();
 		return mouseX >= left && mouseY >= top && mouseX < right && mouseY < bottom;
 	}
 	
-	public int getWidth()
+	public float getWidth()
 	{
 		return right - left;
 	}
 	
-	public int getHeight()
+	public float getHeight()
 	{
 		return bottom - top;
 	}
 	
-	public int getAbsoluteLeft()
+	public float getAbsoluteLeft()
 	{
 		if(parents.isEmpty())
 			return left;
 		else
 		{
-			int totalLeft = left;
-			for(GuiViewport parent : parents)
+			float totalLeft = left;
+			for(Viewport parent : parents)
 				totalLeft += parent.left;
 			return totalLeft;
 		}
 	}
 	
-	public int getAbsoluteTop()
+	public float getAbsoluteTop()
 	{
 		if(parents.isEmpty())
 			return top;
 		else
 		{
-			int totalTop = top;
-			for(GuiViewport parent : parents)
+			float totalTop = top;
+			for(Viewport parent : parents)
 				totalTop += parent.top;
 			return totalTop;
 		}
 	}
 	
-	protected GuiViewport getParent()
+	protected Viewport getParent()
 	{
 		if(!parents.isEmpty()) return parents.get(parents.size() - 1);
 		else return null;
@@ -100,20 +108,18 @@ public class GuiViewport extends Gui
 	
 	public void pushMatrix(boolean setViewport)
 	{
+		GlStateManager.pushMatrix();
 		if(setViewport)
 		{
 			prevViewport = BufferUtils.createIntBuffer(16);
 			GL11.glGetInteger(GL11.GL_VIEWPORT, prevViewport);
 			
-			Minecraft mc = Minecraft.getMinecraft();
-			ScaledResolution res = new ScaledResolution(mc);
-			
-			int left = getAbsoluteLeft();
-			int top = getAbsoluteTop();
-			int bottom = top + getHeight();
-			double factor = res.getScaleFactor();
+			int left = (int) getAbsoluteLeft();
+			int top = (int) getAbsoluteTop();
+			int bottom = (int) (top + getHeight());
+			double factor = UIrender.getUIScaleFactor();
 			int x = (int) (left * factor);
-			int	y = (int) (mc.displayHeight - bottom * factor);
+			int	y = (int) (UIrender.getWindowHeight() - bottom * factor);
 			int	width = (int) (getWidth() * factor);
 			int	height = (int) (getHeight() * factor);
 			GlStateManager.viewport(x, y, width, height);
@@ -130,7 +136,7 @@ public class GuiViewport extends Gui
 			GlStateManager.translate(left, top, 0.0f);
 			for(int i = parents.size() - 1; i >= 0; i--)
 			{
-				GuiViewport v = parents.get(i);
+				Viewport v = parents.get(i);
 				if(v.prevViewport == null)
 					GlStateManager.translate(v.left, v.top, 0.0f);
 				else
@@ -147,6 +153,7 @@ public class GuiViewport extends Gui
 			setupOverlayRendering();
 			prevViewport = null;
 		}
+		GlStateManager.popMatrix();
 	}
 	
 	private void setupOverlayRendering()

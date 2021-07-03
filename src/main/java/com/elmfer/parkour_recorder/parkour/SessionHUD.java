@@ -19,20 +19,20 @@ public class SessionHUD extends Gui
 	public void render()
 	{
 		increaseOpacity = false;
-		String s = I18n.format("hud.session.stopped");
+		String s = I18n.format("com.elmfer.stopped");
 		if(EventHandler.session instanceof RecordingSession)
 		{
 			if(((RecordingSession) EventHandler.session).onOverride)
 			{
-				s = I18n.format("hud.session.overriding");
+				s = I18n.format("com.elmfer.overriding");
 				String name = ((RecordingSession) EventHandler.session).recording.getName();
-				name = name == null ? "[" + I18n.format("recording.unamed") + "]" : name;
+				name = name == null ? "[" + I18n.format("com.elmfer.unamed") + "]" : name;
 				s += ": " + name;
 				increaseOpacity = true;
 			}
 			else if(((RecordingSession) EventHandler.session).isRecording)
 			{
-				 s = I18n.format("hud.session.recording");
+				 s = I18n.format("com.elmfer.recording");
 				 increaseOpacity = true;
 			}
 		}
@@ -41,15 +41,15 @@ public class SessionHUD extends Gui
 			if(((PlaybackSession) EventHandler.session).isPlaying())
 			{
 				increaseOpacity = true;
-				s = I18n.format("hud.session.playing");
+				s = I18n.format("com.elmfer.playing");
 			}
 			else if(((PlaybackSession) EventHandler.session).isWaitingForPlayer())
 			{
 				increaseOpacity = true;
-				s = I18n.format("hud.session.waiting_for_player");
+				s = I18n.format("com.elmfer.waiting_for_player");
 			}
 			String name = ((PlaybackSession) EventHandler.session).recording.getName();
-			name = name == null ? "[" + I18n.format("recording.unamed") + "]" : name;
+			name = name == null ? "[" + I18n.format("com.elmfer.unamed") + "]" : name;
 			s += " - " + name;
 		}
 		fadedness = Math.min(200, fadedness);
