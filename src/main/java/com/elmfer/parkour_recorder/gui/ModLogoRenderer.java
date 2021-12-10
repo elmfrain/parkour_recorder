@@ -76,7 +76,7 @@ public class ModLogoRenderer
 		}
 		
 		/**
-		 * Renders the mesh. It renders a simplified version if the mesh is not loaded.
+		 * Renders the mesh if it's loaded.
 		 */
 		public static void render()
 		{

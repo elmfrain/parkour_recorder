@@ -311,7 +311,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		try
 		{
 			InputStream file = Minecraft.getMinecraft().getResourceManager().getResource(loc).getInputStream();
-			Scanner scanner = new Scanner(file);
+			Scanner scanner = new Scanner(file, "utf-8");
 			
 			changelog = "";
 			while(scanner.hasNextLine())
