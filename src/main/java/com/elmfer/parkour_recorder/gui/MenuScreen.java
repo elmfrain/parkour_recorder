@@ -17,17 +17,23 @@ public class MenuScreen extends UIscreen
 	private static final float NAV_BAR_HEIGHT = 15.0f;
 	private static final float MARGIN = 3.0f;
 	
-	private Tab loadTab = new Tab();
-	private Tab saveTab = new Tab();
-	private Tab timelineTab = new Tab();
+	//Screens; views
 	private LoadRecordingView loadView = new LoadRecordingView();
 	private SaveRecordingView saveView = new SaveRecordingView();
 	private TimelineView timelineView  = new TimelineView();
+	private ModTitleScreenView modTitleScreenView = new ModTitleScreenView();
+	
+	//Tabs
+	private Tab loadTab = new Tab(loadView);
+	private Tab saveTab = new Tab(saveView);
+	private Tab timelineTab = new Tab(timelineView);
+	private Tab modTitleTab = new Tab(modTitleScreenView);
+	private final Tab[] tabs = { loadTab, saveTab, timelineTab, modTitleTab };
 	
 	private Smoother tabSelectorX1 = new Smoother();
 	private Smoother tabSelectorX2 = new Smoother();
 	
-	private static int pageSelected = 0; //0 = load, 1 = save, 2 = timeline
+	private static int pageSelected = 0; //0 = load, 1 = save, 2 = timeline, 3 = titlescreen
 	
 	public MenuScreen()
 	{
@@ -36,17 +42,16 @@ public class MenuScreen extends UIscreen
 		loadTab.setText(I18n.format("com.elmfer.load"));
 		saveTab.setText(I18n.format("com.elmfer.save"));
 		timelineTab.setText(I18n.format("com.elmfer.timeline"));
+		modTitleTab.setText(I18n.format("com.elmfer.parkour_recorder"));
 		
 		loadTab.width = UIrender.getStringWidth(loadTab.getText()) + 10;
 		saveTab.width = UIrender.getStringWidth(saveTab.getText()) + 10;
 		timelineTab.width = UIrender.getStringWidth(timelineTab.getText()) + 10;
+		modTitleTab.width = UIrender.getStringWidth(modTitleTab.getText()) + 10;
 		
 		loadTab.setAction((t) -> 
 		{
-			loadView.setVisible(true);
-			saveView.setVisible(false);
-			timelineView.setVisible(false);
-			loadView.refresh();
+			showTabView(loadTab);
 			
 			tabSelectorX1.grab(t.x - MARGIN);
 			tabSelectorX2.grab(t.x + t.width + MARGIN);
@@ -54,10 +59,7 @@ public class MenuScreen extends UIscreen
 		});
 		saveTab.setAction((t) ->
 		{
-			loadView.setVisible(false);
-			saveView.setVisible(true);
-			timelineView.setVisible(false);
-			saveView.refresh();
+			showTabView(saveTab);
 			
 			tabSelectorX1.grab(t.x - MARGIN);
 			tabSelectorX2.grab(t.x + t.width + MARGIN);
@@ -65,15 +67,21 @@ public class MenuScreen extends UIscreen
 		});
 		timelineTab.setAction((t) ->
 		{
-			loadView.setVisible(false);
-			saveView.setVisible(false);
-			timelineView.setVisible(true);
-			timelineView.refresh();
+			showTabView(timelineTab);
 			
 			tabSelectorX1.grab(t.x - MARGIN);
 			tabSelectorX2.grab(t.x + t.width + MARGIN);
 			pageSelected = 2;
 		});
+		modTitleTab.setAction((t) ->
+		{
+			showTabView(modTitleTab);
+			
+			tabSelectorX1.grab(t.x - MARGIN);
+			tabSelectorX2.grab(t.x + t.width + MARGIN);
+			pageSelected = 3;
+		});
+		
 		timelineView.x = NAV_BAR_HEIGHT + MARGIN;
 		
 		tabSelectorX1.setSpeed(20);
@@ -95,14 +103,24 @@ public class MenuScreen extends UIscreen
 	{
 		super.onGuiClosed();
 		timelineView.onExit();
+		modTitleScreenView.onExit();
+	}
+	
+	private void showTabView(Tab ptab)
+	{
+		for(Tab tab : tabs) tab.tabView.setVisible(false);
+		ptab.tabView.setVisible(true);
+		ptab.tabView.refresh();
 	}
 	
 	private void initFirstTab()
 	{
+		//Position the tabs in their correct places.
 		GlStateManager.colorMask(false, false, false, false);
 		drawTabs();
 		GlStateManager.colorMask(true, true, true, true);
 		
+		//Load the last tab that was open
 		switch (pageSelected)
 		{
 		case 0:
@@ -113,6 +131,9 @@ public class MenuScreen extends UIscreen
 			break;
 		case 2:
 			timelineTab.getAction().onAction(timelineTab);
+			break;
+		case 3:
+			modTitleTab.getAction().onAction(modTitleTab);
 			break;
 		default:
 			loadTab.getAction().onAction(loadTab);
@@ -129,6 +150,7 @@ public class MenuScreen extends UIscreen
 			loadView.draw();
 			saveView.draw();
 			timelineView.draw();
+			modTitleScreenView.draw();
 		}
 		GlStateManager.popMatrix();
 		
@@ -200,24 +222,33 @@ public class MenuScreen extends UIscreen
 		UIrender.drawRect(0, NAV_BAR_HEIGHT, uiWidth, NAV_BAR_HEIGHT + MARGIN, -16749608);
 		UIrender.drawGradientRect(0, NAV_BAR_HEIGHT + MARGIN, uiWidth, NAV_BAR_HEIGHT * 2 + MARGIN, 1275068416, 0);
 		
-		UIrender.drawString(Anchor.MID_RIGHT, I18n.format("com.elmfer.parkour_recorder"), uiWidth - MARGIN, NAV_BAR_HEIGHT / 2, 0xFFFFFFFF);
-		
 		drawTabs();
 	}
 	
 	private void drawTabs()
 	{
+		//Render blue selector
 		UIrender.drawGradientRect((float) tabSelectorX1.getValue(), 0, (float) tabSelectorX2.getValue(), NAV_BAR_HEIGHT, -16741121, -16749608);
 		
-		Tab[] tabs = {loadTab, saveTab, timelineTab};
 		float tabPosition = NAV_BAR_HEIGHT;
 		for(Tab tab : tabs)
 		{
+			//Position normal tabs inline with each other
+			if(tab != modTitleTab)
+			{
+				tab.x = tabPosition;	
+				tabPosition += tab.width + NAV_BAR_HEIGHT;
+			}
+			//Position Mod Title tab to the far right
+			else
+			{
+				float uiWidth = UIrender.getUIwidth();
+				tab.x = uiWidth - MARGIN - tab.width - NAV_BAR_HEIGHT;
+			}
+			
 			tab.height = NAV_BAR_HEIGHT;
-			tab.x = tabPosition;
 			tab.draw();
 			
-			tabPosition += tab.width + NAV_BAR_HEIGHT;
 			if(tab.justPressed())
 			{
 				tabSelectorX1.grab(tab.x - MARGIN);
@@ -225,15 +256,29 @@ public class MenuScreen extends UIscreen
 			}
 		}
 		
-		if(tabSelectorX1.getValue() == 0.0) //If selector has defaulted to the Load tab yet
+		//If blue selector has not defaulted to the Load tab yet
+		if(tabSelectorX1.getValue() == 0.0)
 		{
 			tabSelectorX1.grab(loadTab.x - MARGIN);
 			tabSelectorX2.grab(loadTab.x + loadTab.width + MARGIN);
 		}
 	}
 	
+	public interface IMenuTabView
+	{
+		public void refresh();
+		public void setVisible(boolean visible);
+	}
+	
 	private static class Tab extends Button
 	{
+		IMenuTabView tabView;
+		
+		public Tab(IMenuTabView view)
+		{
+			tabView = view;
+		}
+		
 		@Override
 		public void draw()
 		{

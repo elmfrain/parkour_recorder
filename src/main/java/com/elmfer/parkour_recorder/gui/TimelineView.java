@@ -12,6 +12,7 @@ import com.elmfer.parkour_recorder.animation.Easing;
 import com.elmfer.parkour_recorder.animation.Property;
 import com.elmfer.parkour_recorder.animation.Timeline;
 import com.elmfer.parkour_recorder.config.ConfigManager;
+import com.elmfer.parkour_recorder.gui.MenuScreen.IMenuTabView;
 import com.elmfer.parkour_recorder.gui.NumberLineView.TimeStampFormat;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
 import com.elmfer.parkour_recorder.gui.UIrender.Direction;
@@ -33,7 +34,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 
-public class TimelineView extends Widget
+public class TimelineView extends Widget implements IMenuTabView
 {
 	public static TimeStampFormat timeStampFormat = ConfigManager.loadTimeFormat();
 

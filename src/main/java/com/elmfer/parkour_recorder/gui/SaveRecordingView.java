@@ -7,6 +7,7 @@ import java.util.Stack;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.gui.MenuScreen.IMenuTabView;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.gui.window.ConfirmationWindow;
@@ -22,7 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 
-public class SaveRecordingView extends Widget
+public class SaveRecordingView extends Widget implements IMenuTabView
 {
 	private ButtonListView buttonsView = new ButtonListView();
 	private Stack<Recording> selections = new Stack<Recording>();

@@ -14,7 +14,7 @@ public class ParkourRecorderMod
 {
 	public static final String MOD_ID = "parkour_recorder";
 	public static final String MOD_NAME = "Parkour Recorder Mod";
-	public static final String MOD_VERSION = "1.0.1.0-1.12.2";
+	public static final String MOD_VERSION = "1.1.1.0-1.12.2";
 	
 	@Instance
 	public static ParkourRecorderMod instance;
