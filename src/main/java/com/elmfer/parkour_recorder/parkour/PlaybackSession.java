@@ -1,11 +1,11 @@
 package com.elmfer.parkour_recorder.parkour;
 
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.TextComponentUtils;
@@ -41,7 +41,6 @@ public class PlaybackSession implements IParkourSession {
 	public boolean isWaitingForPlayer()
 	{ return waitingForPlayer; }
 	
-	/**Start mid-recording.**/
 	public void startAt(int framePos)
 	{
 		boolean wasWaiting = waitingForPlayer;
@@ -99,7 +98,7 @@ public class PlaybackSession implements IParkourSession {
 			overridingSession.isRecording = true;
 			overridingSession.nbRecordPresses = 1;
 			overridingSession.overrideStart = frameNumber - 1;
-			overridingSession.recording.rename(recording.getName());
+			overridingSession.recording.setName(recording.getName());
 			stop();
 			
 			return overridingSession;
@@ -118,7 +117,7 @@ public class PlaybackSession implements IParkourSession {
 				isPlaying = true;
 				playbackCountdown = 10;
 				mc.player.movementInput = new ControlledMovementInput();
-				mc.player.setMotion(0.0, 0.0, 0.0);
+				mc.player.setVelocity(0, 0, 0);
 				frameNumber = recording.startingFrame;
 				waitingForPlayer = false;
 			}
@@ -128,7 +127,7 @@ public class PlaybackSession implements IParkourSession {
 				{
 					if(!initiated)
 					{
-						mc.player.setPositionAndUpdate(recording.initPos.x, recording.initPos.y, recording.initPos.z);
+						mc.player.setPositionAndUpdate(startingPos.x, startingPos.y, startingPos.z);
 						if(arrow.isAlive()) arrow.setExpired();
 						initiated = true;
 					}
@@ -155,13 +154,13 @@ public class PlaybackSession implements IParkourSession {
 				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
 				ParkourFrame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 				
-				mc.player.rotationYaw = MathHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
-				mc.player.rotationPitch = MathHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
+				mc.player.rotationYaw = GraphicsHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
+				mc.player.rotationPitch = GraphicsHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
 				
 				Vector3d pos = mc.player.getPositionVec();
-				double posX = MathHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
-				double posY = MathHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
-				double posZ = MathHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
+				double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
+				double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
+				double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
 				
 				mc.player.setPosition(posX, posY, posZ);
 			}
@@ -169,14 +168,14 @@ public class PlaybackSession implements IParkourSession {
 			{
 				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 				
-				mc.player.rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-				mc.player.rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+				mc.player.prevRotationYaw = mc.player.rotationYaw = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.prevRotationPitch = mc.player.rotationPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
 				
 				Vector3d playerPos = mc.player.getPositionVec();
 				Vector3d framePos = new Vector3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
 				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
 				{
-					IFormattableTextComponent errorMessage = TextComponentUtils.func_240647_a_(new TranslationTextComponent("warn.playback_failed"));
+					IFormattableTextComponent errorMessage = TextComponentUtils.func_240647_a_(new TranslationTextComponent("com.elmfer.playback_failed"));
 					errorMessage.func_240699_a_(TextFormatting.RED);
 					mc.ingameGUI.getChatGUI().printChatMessage(errorMessage);
 					stop();
@@ -193,7 +192,7 @@ public class PlaybackSession implements IParkourSession {
 		isPlaying = false;
 		waitingForPlayer = false;
 
-		//Vector3d playerPos = mc.player.getPositionVec();
+		//Vec3d playerPos = mc.player.getPositionVec();
 		//double motionX = playerPos.x - mc.player.prevPosX;
 		//double motionY = playerPos.y - mc.player.prevPosY;
 		//double motionZ = playerPos.z - mc.player.prevPosZ;

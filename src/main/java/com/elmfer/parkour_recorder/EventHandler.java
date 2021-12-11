@@ -3,10 +3,10 @@ package com.elmfer.parkour_recorder;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.elmfer.parkour_recorder.gui.LoadRecordingScreen;
-import com.elmfer.parkour_recorder.gui.SaveRecordingScreen;
-import com.elmfer.parkour_recorder.gui.TimelineScreen;
-import com.elmfer.parkour_recorder.gui.widget.GuiButton;
+import com.elmfer.parkour_recorder.gui.MenuScreen;
+import com.elmfer.parkour_recorder.gui.UIinput;
+import com.elmfer.parkour_recorder.gui.UIrender.Stencil;
+import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.parkour.IParkourSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
@@ -34,7 +34,13 @@ public class EventHandler {
 	@SubscribeEvent
 	public static void onOpenGui(GuiOpenEvent event)
 	{
-		GuiButton.currentZLevel = 0;
+		Widget.setCurrentZLevel(0);
+		
+		if(mc.getFramebuffer() != null && !mc.getFramebuffer().isStencilEnabled())
+		{
+			mc.getFramebuffer().enableStencil();
+			System.out.println("[Parkour Recorder] : Stencil enabled: " + mc.getFramebuffer().isStencilEnabled());
+		}
 	}
 	
 	@SubscribeEvent
@@ -48,10 +54,21 @@ public class EventHandler {
 	{
 		if(event.phase == Phase.START && mc.player != null)
 			session.onRenderTick();
+		
+		if(event.phase == Phase.END)
+		{
+			Widget.updateWidgetsOnRenderTick();
+			if(UIinput.pollInputs()) Stencil.clear();
+		}
 	}
 	@SubscribeEvent
 	public static void onTick(TickEvent.ClientTickEvent event)
 	{	
+		if(event.phase == Phase.START)
+		{
+			Widget.updateWidgetsOnClientTick();
+		}
+		
 		if(event.phase == Phase.START && mc.player != null)
 		{
 			hud.fadedness += hud.increaseOpacity ? 25 : 0;
@@ -72,14 +89,8 @@ public class EventHandler {
 			if(settings.keybindReloadShaders.isPressed())
 				reloadResources();
 			
-			if(settings.keybindTimeline.isPressed())
-				Minecraft.getInstance().displayGuiScreen(new TimelineScreen());
-			
-			if(settings.keybindLoad.isPressed())
-				Minecraft.getInstance().displayGuiScreen(new LoadRecordingScreen());
-			
-			if(settings.keybindSave.isPressed())
-				Minecraft.getInstance().displayGuiScreen(new SaveRecordingScreen());
+			if(settings.keybindMainMenu.isPressed())
+				Minecraft.getInstance().displayGuiScreen(new MenuScreen());
 		}
 		else if(mc.player == null)
 		{
@@ -109,5 +120,10 @@ public class EventHandler {
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/start_button.ply"));
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/end_button.ply"));
 		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/settings_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/prev_frame_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/next_frame_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/checkpoint.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/prev_checkpoint_button.ply"));
+		ModelManager.loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/next_checkpoint_button.ply"));
 	}
 }

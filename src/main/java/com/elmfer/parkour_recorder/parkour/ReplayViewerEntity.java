@@ -1,59 +1,59 @@
 package com.elmfer.parkour_recorder.parkour;
 
+import com.elmfer.parkour_recorder.render.GraphicsHelper;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 
+/**
+ * A client only entity used during replay (in the Timeline GUI).
+ * The {@code setState()} method is used for positioning the entity using two {@code ParkourFrame}s.
+ **/
 public class ReplayViewerEntity extends PlayerEntity
 {
+	protected static Minecraft mc = Minecraft.getInstance();
 	private MovementInput movementInput = new MovementInput();
 	
+	/**Init dummy player entity**/
 	public ReplayViewerEntity()
 	{
-		super(Minecraft.getInstance().world, new BlockPos(Minecraft.getInstance().player.getPositionVec()), 0.0f, Minecraft.getInstance().player.getGameProfile());
+		super(mc.world, new BlockPos(mc.player.getPositionVec()), 0.0f, mc.player.getGameProfile());
 	}
 	
+	/**Position the viewer entity with previous and current frame information.**/
 	public void setState(ParkourFrame frame, ParkourFrame prevFrame, float partialTicks)
 	{
-		Minecraft mc = Minecraft.getInstance();
-		
-		//Set position and inputs
-		double posX = MathHelper.lerp(partialTicks, prevFrame.posX, frame.posX);
-		double posY = MathHelper.lerp(partialTicks, prevFrame.posY, frame.posY);
-		double posZ = MathHelper.lerp(partialTicks, prevFrame.posZ, frame.posZ);
+		//partialTicks = 0.0f;
+		//Set position and set inputs
+		double posX = GraphicsHelper.lerp(partialTicks, prevFrame.posX, frame.posX);
+		double posY = GraphicsHelper.lerp(partialTicks, prevFrame.posY, frame.posY);
+		double posZ = GraphicsHelper.lerp(partialTicks, prevFrame.posZ, frame.posZ);
 		setPosition(posX, posY, posZ);
 		frame.setMovementInput(movementInput, this);
 		
-		//Set previous values to prevent movement glitches
 		prevPosX = getPosX();
 		prevPosY = getPosY();
 		prevPosZ = getPosZ();
 		
 		//Set head rotations
-		rotationYawHead = rotationYaw = MathHelper.lerp(partialTicks, prevFrame.headYaw, frame.headYaw);
-		rotationPitch = MathHelper.lerp(partialTicks, prevFrame.headPitch, frame.headPitch);
+		rotationYawHead = rotationYaw = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, frame.headYaw);
+		rotationPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, frame.headPitch);
 		
-		//Set the player's arm rotation
-		float handYawOffset = MathHelper.lerp(partialTicks, prevFrame.armYawOffset, frame.armYawOffset);
-		float handPitchOffset = MathHelper.lerp(partialTicks, prevFrame.armPitchOffset, frame.armPitchOffset);
+		//Set the player's arm rotation equal to the frames'
+		float handYawOffset = GraphicsHelper.lerp(partialTicks, prevFrame.armYawOffset, frame.armYawOffset);
+		float handPitchOffset = GraphicsHelper.lerp(partialTicks, prevFrame.armPitchOffset, frame.armPitchOffset);
 		mc.player.prevRenderArmYaw = mc.player.renderArmYaw = mc.player.rotationYawHead - handYawOffset;
 		mc.player.prevRenderArmPitch = mc.player.renderArmPitch = mc.player.rotationPitch - handPitchOffset;
 		
-		movementInput.func_223135_b();
-		movementInput.func_225607_a_(isCrouching() || isVisuallySwimming());
-		super.updateEntityActionState();
+		//Updates entity to prevent movement glitches
 		this.moveStrafing = this.movementInput.moveStrafe;
         this.moveForward = this.movementInput.moveForward;
         this.isJumping = this.movementInput.jump;
-        super.tick();
+        tick();
 	}
 	
-	@Override
-	public boolean isSleeping() {
-		return false;
-	}
 	
 	@Override
 	public boolean isSpectator()

@@ -42,7 +42,7 @@ public class RecordingSession implements IParkourSession {
 				Recording record = recordingToOverride.subList(0, overrideStart);
 				record.lastPos = recording.lastPos;
 				record.addAll(recording);
-				record.rename(name + Recording.getFormattedTime());
+				record.setName(name + Recording.getFormattedTime());
 				
 				EventHandler.addToHistory(record);
 			}

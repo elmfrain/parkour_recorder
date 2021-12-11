@@ -35,19 +35,18 @@ import net.minecraft.util.math.MathHelper;
 public class ShaderManager {
 	
 	private static int DEFAULT_SHADER;
-	private static int GUI_SHADER;
 	private static long lastTime = System.currentTimeMillis();
 	private static int countdownTime = 1000;
 	
 	
 	static {
 		DEFAULT_SHADER = makeProgram("vecshader.glsl", "fragshader.glsl");
-		GUI_SHADER = makeProgram("gui/vecshader.glsl", "gui/fragshader.glsl");
 	}
 	
 	public static float getFarPlaneDistance()
 	{
-		return (float)(Minecraft.getInstance().gameSettings.renderDistanceChunks * 16 * MathHelper.SQRT_2);
+		Minecraft mc = Minecraft.getInstance();
+		return (float)(mc.gameSettings.renderDistanceChunks * 16 * MathHelper.SQRT_2);
 	}
 	public static float getNearPlaneDistance()
 	{
@@ -59,9 +58,7 @@ public class ShaderManager {
 		if(System.currentTimeMillis() - lastTime >= countdownTime)
 		{
 			glDeleteProgram(DEFAULT_SHADER);
-			glDeleteProgram(GUI_SHADER);
 			DEFAULT_SHADER = makeProgram("vecshader.glsl", "fragshader.glsl");
-			GUI_SHADER = makeProgram("gui/vecshader.glsl", "gui/fragshader.glsl");
 			System.out.println("[Shaders] : Reloaded Shaders");
 		}
 	}
@@ -69,11 +66,6 @@ public class ShaderManager {
 	public static int getDefaultShader()
 	{
 		return DEFAULT_SHADER;
-	}
-	
-	public static int getGUIShader()
-	{
-		return GUI_SHADER;
 	}
 	
 	public static void blitMCFramebuffer(Framebuffer toThisFrameBuffer)

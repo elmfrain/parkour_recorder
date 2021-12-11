@@ -8,7 +8,7 @@ if len(sys.argv) < 2:
     time.sleep(1)
     exit(0)
 
-lang_name = sys.argv[1].split('\\')
+lang_name = sys.argv[1].split('/')
 lang_name = lang_name[len(lang_name) - 1][:-5]
 
 if not os.path.exists(sys.argv[1]) or os.path.isdir(sys.argv[1]) or sys.argv[1][-5:] != ".lang":
@@ -17,7 +17,7 @@ if not os.path.exists(sys.argv[1]) or os.path.isdir(sys.argv[1]) or sys.argv[1][
     exit(0)
 
 lang_file = open(sys.argv[1], "r")
-json_file = open(os.path.dirname(sys.argv[1]) + '\\' + lang_name + ".json", "w")
+json_file = open(os.path.dirname(sys.argv[1]) + '/' + lang_name + ".json", "w")
 
 lines = lang_file.read().split("\n")
 

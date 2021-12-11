@@ -1,8 +1,8 @@
 package com.elmfer.parkour_recorder;
 
 import com.elmfer.parkour_recorder.config.ConfigManager;
-import com.elmfer.parkour_recorder.gui.ButtonListViewport;
-import com.elmfer.parkour_recorder.gui.TimelineViewport;
+import com.elmfer.parkour_recorder.gui.ButtonListView;
+import com.elmfer.parkour_recorder.gui.UIinput;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -18,7 +18,7 @@ public class ParkourRecorderMod
 {
 	public static final String MOD_ID = "parkour_recorder";
 	public static final String MOD_NAME = "Parkour Recorder Mod";
-	public static final String MOD_VERSION = "1.0.1.1-1.16.5";
+	public static final String MOD_VERSION = "1.1.1.0-1.16.5";
 	
 	public ParkourRecorderMod()
 	{
@@ -30,8 +30,8 @@ public class ParkourRecorderMod
 	private void onSetup(FMLClientSetupEvent event)
 	{
 		MinecraftForge.EVENT_BUS.register(EventHandler.class);
-		MinecraftForge.EVENT_BUS.register(ButtonListViewport.class);
-		MinecraftForge.EVENT_BUS.register(TimelineViewport.class);
+		MinecraftForge.EVENT_BUS.register(ButtonListView.class);
+		MinecraftForge.EVENT_BUS.register(UIinput.class);
 		
 		//Setup config
 		ModLoadingContext.get().registerConfig(Type.CLIENT, ConfigManager.CONFIG_SPEC);

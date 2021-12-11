@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import com.elmfer.parkour_recorder.gui.TimelineViewport.TimeStampFormat;
+import com.elmfer.parkour_recorder.gui.NumberLineView.TimeStampFormat;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 

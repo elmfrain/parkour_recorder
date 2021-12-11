@@ -3,7 +3,6 @@ package com.elmfer.parkour_recorder;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.util.InputMappings.Type;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 public class Settings {
@@ -14,27 +13,21 @@ public class Settings {
 	public KeyBinding keybindPlay;
 	public KeyBinding keybindOverride;
 	public KeyBinding keybindReloadShaders;
-	public KeyBinding keybindSave;
-	public KeyBinding keybindLoad;
-	public KeyBinding keybindTimeline;
+	public KeyBinding keybindMainMenu;
 	
 	private Settings()
 	{
-		keybindRecord = new KeyBinding("keybind.record", GLFW.GLFW_KEY_R, ParkourRecorderMod.MOD_NAME);
-		keybindPlay = new KeyBinding("keybind.play", GLFW.GLFW_KEY_P, ParkourRecorderMod.MOD_NAME);
-		keybindOverride = new KeyBinding("keybind.override", Type.MOUSE, GLFW.GLFW_MOUSE_BUTTON_5, ParkourRecorderMod.MOD_NAME);
-		keybindReloadShaders = new KeyBinding("Reload Resources", GLFW.GLFW_KEY_O, "Parkour Mod");
-		keybindSave = new KeyBinding("keybind.save_recording", GLFW.GLFW_KEY_M, ParkourRecorderMod.MOD_NAME);
-		keybindLoad = new KeyBinding("keybind.load_recording", GLFW.GLFW_KEY_N, ParkourRecorderMod.MOD_NAME);
-		keybindTimeline = new KeyBinding("keybind.timeline", GLFW.GLFW_KEY_B, ParkourRecorderMod.MOD_NAME);
+		keybindRecord = new KeyBinding("com.elmfer.keybind.record", GLFW.GLFW_KEY_R, ParkourRecorderMod.MOD_NAME);
+		keybindPlay = new KeyBinding("com.elmfer.keybind.play", GLFW.GLFW_KEY_P, ParkourRecorderMod.MOD_NAME);
+		keybindOverride = new KeyBinding("com.elmfer.keybind.override", GLFW.GLFW_MOUSE_BUTTON_4, ParkourRecorderMod.MOD_NAME);
+		keybindReloadShaders = new KeyBinding("Reload Resources", 24, ParkourRecorderMod.MOD_NAME);
+		keybindMainMenu = new KeyBinding("com.elmfer.keybind.main_menu", GLFW.GLFW_KEY_MENU, ParkourRecorderMod.MOD_NAME);
 		
 		ClientRegistry.registerKeyBinding(keybindRecord);
 		ClientRegistry.registerKeyBinding(keybindPlay);
 		ClientRegistry.registerKeyBinding(keybindOverride);
 		//ClientRegistry.registerKeyBinding(keybindReloadShaders);//
-		ClientRegistry.registerKeyBinding(keybindSave);
-		ClientRegistry.registerKeyBinding(keybindLoad);
-		ClientRegistry.registerKeyBinding(keybindTimeline);
+		ClientRegistry.registerKeyBinding(keybindMainMenu);
 	}
 	public static Settings getSettings()
 	{

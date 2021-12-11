@@ -1,0 +1,19 @@
+§a§l§nMinor Update v1.1.1.0 - Title Screen
+  §e§lAdded Features
+    §7§l-Added a title screen§r to the mod's main menu in gratitude towards surpassing 1000 downloads!
+    §7§l-Added a cool 3D render of the mod's logo in the title screen.
+    §7§l-Changelog Viewer:§r View the mod's changelog. Accessable in the title screen.
+
+§2§l§nMajor Update v1.1.0.0 - Tabular Menu GUI
+  §e§lAdded Features
+    §7§l-Front-end Rework:§r The 'widgets' used in Gui's work independently from MC with the goal of porting into other MC versions quicker and easier.
+    §7§l-Tabular Menu Gui:§r Three pages in one Gui screen (Load, Save, Timeline). Each page can be loaded by clicking their respective tabs.
+    §7§l-Timeline Controls:§r Use controls similar to YouTube to operate the timeline (space bar, J, K, L).
+    §7§l-Frame Skipping:§r In timeline menu, use frame skip button to go through each frame when held down.
+    §7§l-Nicer looking pop-up boxes.
+  §c§lBug Fixes
+    -Renaming a recording in the Load page doesn't rename the recording.
+    -Overriding a recording in the Save page improperly renames the file.
+    -Crashing and rendering bugs on other PCs. Thus GLSL shaders won't be used until I figure out how to use them properly.
+ 
+

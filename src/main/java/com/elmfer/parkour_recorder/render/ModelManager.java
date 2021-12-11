@@ -106,17 +106,25 @@ public class ModelManager {
 		}
 	}
 	
-	public static boolean renderModel(String modelName)
+	public static boolean renderModel(String modelName, int drawMode)
 	{
 		if(models.containsKey(modelName))
-		{models.get(modelName).render(); return true;}
+		{
+			models.get(modelName).render(drawMode);
+			return true;
+		}
 		else
 		{
 			loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/" + modelName + ".ply"));
+			return false;
 		}
-		return false;
 	}
 	
+	public static boolean renderModel(String modelName)
+	{
+		return renderModel(modelName, GL11.GL_TRIANGLES);
+	}
+
 	private static class Model
 	{
 		int glBufferID;
@@ -147,14 +155,14 @@ public class ModelManager {
 				GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 6);
 				GL20.glVertexAttribPointer(3, 3, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 8);
 				
-				GL15.glEnableClientState(GL15.GL_VERTEX_ARRAY);
-				GL15.glEnableClientState(GL15.GL_NORMAL_ARRAY);
-				GL15.glEnableClientState(GL15.GL_TEXTURE_COORD_ARRAY);
-				GL15.glEnableClientState(GL15.GL_COLOR_ARRAY);				
-				GL15.glVertexPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 0);
-				GL15.glNormalPointer(GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 3);
-				GL15.glTexCoordPointer(2, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 6);
-				GL15.glColorPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 8);
+				GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+				GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+				GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);				
+				GL11.glVertexPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 0);
+				GL11.glNormalPointer(GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 3);
+				GL11.glTexCoordPointer(2, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 6);
+				GL11.glColorPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 8);
 			}
 			GL30.glBindVertexArray(0);
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
@@ -168,10 +176,10 @@ public class ModelManager {
 			GL30.glDeleteVertexArrays(glVertArrayID);
 		}
 		
-		public void render()
+		public void render(int drawMode)
 		{
 			GL30.glBindVertexArray(glVertArrayID);
-			GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
+			GL11.glDrawElements(drawMode, vertexCount, GL11.GL_UNSIGNED_INT, 0);
 			GL30.glBindVertexArray(0);
 		}
 	}

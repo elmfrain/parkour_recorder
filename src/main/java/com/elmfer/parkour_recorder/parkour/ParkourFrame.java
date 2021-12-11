@@ -11,6 +11,7 @@ import net.minecraft.util.math.vector.Vector3d;
 /**Stores movement inputs and player's states for one tick.**/
 public class ParkourFrame {
 	
+	/**Number of bytes needed to represent a frame. Used for serializing.**/
 	public static final int BYTES = 42;
 	
 	public final float headYaw;
@@ -36,7 +37,7 @@ public class ParkourFrame {
 		posX = playerPos.x;
 		posY = playerPos.y;
 		posZ = playerPos.z;
-			
+		
 		//Get Input Data
 		short flags = 0;
 		MovementInput playerInput = playerIn.movementInput;
@@ -73,17 +74,20 @@ public class ParkourFrame {
 		return Deserializer.getDeserializer(format).deSerialize(buffer);
 	}
 	
-	public void setMovementInput(MovementInput input, PlayerEntity playerIn)
+	/**Set the entity's movement inputs from the frame**/
+	public void setMovementInput(MovementInput input, PlayerEntity entityIn)
 	{
+		Minecraft mc = Minecraft.getInstance();
+		
 		input.forwardKeyDown = getFlag(Flags.FORWARD);
 		input.backKeyDown = getFlag(Flags.BACKWARD);
 		input.leftKeyDown = getFlag(Flags.LEFT_STRAFE);
 		input.rightKeyDown = getFlag(Flags.RIGHT_STRAFE);
 		input.jump = getFlag(Flags.JUMPING);
 		input.sneaking = getFlag(Flags.SNEAKING);
-		playerIn.setSneaking(getFlag(Flags.SNEAKING));
-		playerIn.setSprinting(getFlag(Flags.SPRINTING));
-		Minecraft.getInstance().player.abilities.isFlying = getFlag(Flags.FLYING);
+		entityIn.setSneaking(getFlag(Flags.SNEAKING));
+		entityIn.setSprinting(getFlag(Flags.SPRINTING));
+		mc.player.abilities.isFlying = getFlag(Flags.FLYING);
 	}
 	
 	@Override
@@ -109,7 +113,7 @@ public class ParkourFrame {
 		return (flags & flag.value) != 0;
 	}
 	
-	/**Convert frame to streamable data.**/
+	/**Convert frame to serialized data.**/
 	public byte[] serialize()
 	{
 		byte[] data = new byte[BYTES];
@@ -126,6 +130,7 @@ public class ParkourFrame {
 		return data;
 	}
 	
+	/**An enum that stores which bit belongs to each flag.**/
 	public static enum Flags
 	{
 		JUMPING((short) 0x001),
