@@ -61,12 +61,12 @@ public class UIinput
 	
 	public static int getUICursorX()
 	{
-		return (int) (mc.mouseHelper.getMouseX() / UIrender.getUIScaleFactor());
+		return (int) (mc.mouseHandler.xpos() / UIrender.getUIScaleFactor());
 	}
 	
 	public static int getUICursorY()
 	{
-		return (int) (mc.mouseHelper.getMouseY() / UIrender.getUIScaleFactor());
+		return (int) (mc.mouseHandler.ypos() / UIrender.getUIScaleFactor());
 	}
 	
 	public static boolean isCtrlPressed()
@@ -88,8 +88,8 @@ public class UIinput
 	{
 		int uiScale = UIrender.getUIScaleFactor();
 		
-		float currentMouseX = (float) mc.mouseHelper.getMouseX();
-		float currentMouseY = (float) mc.mouseHelper.getMouseY();
+		float currentMouseX = (float) mc.mouseHandler.xpos();
+		float currentMouseY = (float) mc.mouseHandler.ypos();
 		
 		final float cursorX = currentMouseX / uiScale;
 		final float cursorY = currentMouseY / uiScale;

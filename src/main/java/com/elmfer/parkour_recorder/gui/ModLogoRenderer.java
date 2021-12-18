@@ -17,10 +17,13 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import com.elmfer.parkour_recorder.ParkourRecorderMod;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.resources.ResourceLocation;
 
 public class ModLogoRenderer
 	{
@@ -41,6 +44,8 @@ public class ModLogoRenderer
 		 */
 		public static void load()
 		{
+			if(isLoaded) return;
+			
 			ResourceLocation loc = new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/3d_logo_baked.bin");
 			
 			try
@@ -53,9 +58,10 @@ public class ModLogoRenderer
 				
 				loadMeshHeaders(idata);
 				loadMeshes(idata);
-				isLoaded = true;
 				
 				if(shadow_plane == null || pr_logo == null) throw new IOException("Unable to find \"shadow_plane\" and/or \"pr_logo\" meshes!");
+				
+				isLoaded = true;
 				
 				file.close();
 			}
@@ -85,12 +91,16 @@ public class ModLogoRenderer
 			GL11.glEnable(GL11.GL_BLEND);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-			GL11.glAlphaFunc(GL11.GL_ALWAYS, 0.0f);
 			
+			ShaderInstance shader = GameRenderer.getPositionTexShader();
+			shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
+			shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
+			shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+			
+			shader.apply();
 			shadow_plane.render(GL11.GL_TRIANGLES);
 			pr_logo.render(GL11.GL_TRIANGLES);
-			
-			GL11.glAlphaFunc(GL11.GL_GREATER, 0.1f);
+			shader.clear();
 		}
 		
 		private static void loadMeshes(ByteBuffer buffer)
@@ -163,11 +173,6 @@ public class ModLogoRenderer
 					GL20.glEnableVertexAttribArray(1);
 					GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, Float.BYTES * 5, Float.BYTES * 0);
 					GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, Float.BYTES * 5, Float.BYTES * 3);
-					
-					GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-					GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);			
-					GL11.glVertexPointer(3, GL11.GL_FLOAT, Float.BYTES * 5, Float.BYTES * 0);
-					GL11.glTexCoordPointer(2, GL11.GL_FLOAT, Float.BYTES * 5, Float.BYTES * 3);
 				}
 				GL30.glBindVertexArray(0);
 				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
@@ -188,9 +193,10 @@ public class ModLogoRenderer
 				GL30.glDeleteVertexArrays(glVertArrayID);
 			}
 			
+			@SuppressWarnings("deprecation")
 			public void render(int drawMode)
 			{
-				GL11.glEnable(GL11.GL_TEXTURE_2D);
+				//GL11.glEnable(GL11.GL_TEXTURE_2D);
 				GL13.glActiveTexture(GL13.GL_TEXTURE0);
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, glTextureID);
 				GL30.glBindVertexArray(glVertArrayID);
@@ -198,7 +204,7 @@ public class ModLogoRenderer
 				GL30.glBindVertexArray(0);
 				
 				//Tell Minecraft the bound texture changed
-				Minecraft.getInstance().getTextureManager().bindTexture(TextureManager.RESOURCE_LOCATION_EMPTY);
+				Minecraft.getInstance().getTextureManager().bindForSetup(TextureAtlas.LOCATION_BLOCKS);
 			}
 		}
 		

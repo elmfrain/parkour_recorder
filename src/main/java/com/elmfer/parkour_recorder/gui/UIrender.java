@@ -1,27 +1,28 @@
 package com.elmfer.parkour_recorder.gui;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 
 import com.elmfer.parkour_recorder.render.ModelManager;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 
 //Rendering implementation for UIs.
 public class UIrender
 {
-	public static final MatrixStack identity = new MatrixStack();
+	public static final PoseStack identity = new PoseStack();
 	private static Minecraft mc = Minecraft.getInstance();
 
 	private static void arrangePositions(float positions[])
@@ -46,21 +47,7 @@ public class UIrender
 		float positions[] = { left, top, right, bottom };
 		arrangePositions(positions);
 
-		Color c = new Color(color);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tessellator.getBuffer();
-		RenderSystem.enableBlend();
-		RenderSystem.disableTexture();
-		GL15.glBlendFuncSeparate(GL15.GL_SRC_ALPHA, GL15.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-		GL11.glColor4f(c.r,  c.g, c.b, c.a);
-		bufferbuilder.begin(7, DefaultVertexFormats.POSITION);
-		bufferbuilder.pos((double) positions[0], (double) positions[3], 0.0D).endVertex();
-		bufferbuilder.pos((double) positions[2], (double) positions[3], 0.0D).endVertex();
-		bufferbuilder.pos((double) positions[2], (double) positions[1], 0.0D).endVertex();
-		bufferbuilder.pos((double) positions[0], (double) positions[1], 0.0D).endVertex();
-		tessellator.draw();
-		RenderSystem.enableTexture();
-		RenderSystem.disableBlend();
+		GuiComponent.fill(identity, (int) left, (int) top, (int) right, (int) bottom, color);
 	}
 
 	public static void drawGradientRect(float left, float top, float right, float bottom, int startColor, int endColor)
@@ -81,22 +68,22 @@ public class UIrender
 
 		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
-		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GL15.glBlendFuncSeparate(GL15.GL_SRC_ALPHA, GL15.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-		GL11.glShadeModel(GL11.GL_SMOOTH);
-
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tessellator.getBuffer();
-		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
-		bufferbuilder.pos((double) verticies[0], (double) verticies[1], 0.0).color(c1.r, c1.g, c1.b, c1.a).endVertex();
-		bufferbuilder.pos((double) verticies[2], (double) verticies[3], 0.0).color(c1.r, c1.g, c1.b, c1.a).endVertex();
-		bufferbuilder.pos((double) verticies[4], (double) verticies[5], 0.0).color(c0.r, c0.g, c0.b, c0.a).endVertex();
-		bufferbuilder.pos((double) verticies[6], (double) verticies[7], 0.0).color(c0.r, c0.g, c0.b, c0.a).endVertex();
-		tessellator.draw();
-
-		GL11.glShadeModel(GL11.GL_FLAT);
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.setShader(GameRenderer::getPositionColorShader);
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferbuilder = tesselator.getBuilder();
+		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+		bufferbuilder.vertex((double) verticies[0], (double) verticies[1], 0.0).color(c1.r, c1.g, c1.b, c1.a)
+				.endVertex();
+		bufferbuilder.vertex((double) verticies[2], (double) verticies[3], 0.0).color(c1.r, c1.g, c1.b, c1.a)
+				.endVertex();
+		bufferbuilder.vertex((double) verticies[4], (double) verticies[5], 0.0).color(c0.r, c0.g, c0.b, c0.a)
+				.endVertex();
+		bufferbuilder.vertex((double) verticies[6], (double) verticies[7], 0.0).color(c0.r, c0.g, c0.b, c0.a)
+				.endVertex();
+		tesselator.end();
+		//RenderSystem.set
 		RenderSystem.disableBlend();
-		GL11.glEnable(GL11.GL_ALPHA_TEST);
 		RenderSystem.enableTexture();
 	}
 
@@ -107,7 +94,7 @@ public class UIrender
 
 	public static void drawHoveringText(List<String> lines, float x, float y)
 	{
-		//Not yet implemented
+		// Not yet implemented
 	}
 
 	public static void drawVerticalLine(float x, float startY, float endY, int color)
@@ -124,53 +111,53 @@ public class UIrender
 
 	public static float getPartialTicks()
 	{
-		return mc.getRenderPartialTicks();
+		return mc.getFrameTime();
 	}
-	
+
 	public static int getStringWidth(String text)
 	{
-		return mc.fontRenderer.getStringWidth(text);
+		return mc.font.width(text);
 	}
 
 	public static int getStringHeight()
 	{
-		return mc.fontRenderer.FONT_HEIGHT;
+		return mc.font.lineHeight;
 	}
 
 	public static int getStringHeight(String text)
 	{
-		return mc.fontRenderer.FONT_HEIGHT;
+		return mc.font.lineHeight;
 	}
 
 	public static int getCharWidth(int character)
 	{
 		String strChar = "" + (char) character;
-		return mc.fontRenderer.getStringWidth(strChar);
+		return mc.font.width(strChar);
 	}
 
 	public static int getUIScaleFactor()
 	{
-		return (int) mc.getMainWindow().getGuiScaleFactor();
+		return (int) mc.getWindow().getGuiScale();
 	}
 
 	public static int getWindowWidth()
 	{
-		return mc.getMainWindow().getWidth();
+		return mc.getWindow().getWidth();
 	}
 
 	public static int getWindowHeight()
 	{
-		return mc.getMainWindow().getHeight();
+		return mc.getWindow().getHeight();
 	}
 
 	public static int getUIwidth()
 	{
-		return mc.getMainWindow().getScaledWidth();
+		return mc.getWindow().getGuiScaledWidth();
 	}
 
 	public static int getUIheight()
 	{
-		return mc.getMainWindow().getScaledHeight();
+		return mc.getWindow().getGuiScaledHeight();
 	}
 
 	public static void drawString(String text, float x, float y, int color)
@@ -183,44 +170,35 @@ public class UIrender
 		float newPositions[] = { 0, 0 };
 		anchor.anchor(text, x, y, newPositions);
 
-		mc.fontRenderer.func_238405_a_(identity, text, newPositions[0], newPositions[1], color);
+		mc.font.draw(identity, text, newPositions[0], newPositions[1], color);
 	}
 
 	public static void drawIcon(String iconKey, float x, float y, float scale, int color)
 	{
 		Color c = new Color(color);
-
-		GL11.glEnable(GL11.GL_LIGHTING);
-		GL11.glEnable(GL11.GL_COLOR_MATERIAL);
-		GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
-
-		FloatBuffer vec4Color = BufferUtils.createFloatBuffer(4);
-		vec4Color.put(c.r).put(c.g).put(c.b).put(c.a);
-		vec4Color.rewind();
-
-		GL11.glLightModelfv(GL11.GL_LIGHT_MODEL_AMBIENT, vec4Color);
-
-		RenderSystem.disableTexture();
+		
 		RenderSystem.enableBlend();
-		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GL11.glShadeModel(GL11.GL_SMOOTH);
 		RenderSystem.disableCull();
 
-		GL11.glPushMatrix();
+		RenderSystem.getModelViewStack().pushPose();
 		{
-			GL11.glTranslatef(x, y, 0.0f);
-			GL11.glScalef(scale, -scale, 1.0f);
+			RenderSystem.getModelViewStack().translate(x, y, 0.0);
+			RenderSystem.getModelViewStack().scale(scale, -scale, 1.0f);
+			RenderSystem.applyModelViewMatrix();
 
+			ShaderInstance posColShader = GameRenderer.getPositionColorShader();
+			posColShader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
+			posColShader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
+			posColShader.COLOR_MODULATOR.set(c.r, c.g, c.b, c.a);
+			posColShader.apply();
 			ModelManager.renderModel(iconKey);
+			posColShader.clear();
 		}
-		GL11.glPopMatrix();
+		RenderSystem.getModelViewStack().popPose();
+		RenderSystem.applyModelViewMatrix();
 
 		RenderSystem.enableCull();
-		GL11.glShadeModel(GL11.GL_FLAT);
 		RenderSystem.disableBlend();
-		GL11.glEnable(GL11.GL_ALPHA_TEST);
-		RenderSystem.enableTexture();
-		GL11.glDisable(GL11.GL_LIGHTING);
 	}
 
 	public static class Stencil

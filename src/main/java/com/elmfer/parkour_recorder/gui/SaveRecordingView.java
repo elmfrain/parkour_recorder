@@ -4,8 +4,6 @@ import static com.elmfer.parkour_recorder.render.GraphicsHelper.getIntColor;
 
 import java.util.Stack;
 
-import org.lwjgl.opengl.GL11;
-
 import com.elmfer.parkour_recorder.EventHandler;
 import com.elmfer.parkour_recorder.gui.MenuScreen.IMenuTabView;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
@@ -18,21 +16,21 @@ import com.elmfer.parkour_recorder.gui.window.Window;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
+import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.resources.language.I18n;
 
 public class SaveRecordingView extends Widget implements IMenuTabView
 {
 	private ButtonListView buttonsView = new ButtonListView();
 	private Stack<Recording> selections = new Stack<Recording>();
 	
-	private Button saveLastButton = new Button(I18n.format("com.elmfer.save_last"));
-	private Button clearHistoryButton = new Button(I18n.format("com.elmfer.clear_history"));
-	private Button saveButton = new Button(I18n.format("com.elmfer.save"));
-	private Button removeButton = new Button(I18n.format("com.elmfer.remove_selected"));
-	private Button openButton = new Button(I18n.format("com.elmfer.open"));
+	private Button saveLastButton = new Button(I18n.get("com.elmfer.save_last"));
+	private Button clearHistoryButton = new Button(I18n.get("com.elmfer.clear_history"));
+	private Button saveButton = new Button(I18n.get("com.elmfer.save"));
+	private Button removeButton = new Button(I18n.get("com.elmfer.remove_selected"));
+	private Button openButton = new Button(I18n.get("com.elmfer.open"));
 	
 	public SaveRecordingView()
 	{
@@ -42,12 +40,12 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 		
 		clearHistoryButton.setAction((b) ->
 		{
-			String title = I18n.format("com.elmfer.clear_history_?");
+			String title = I18n.get("com.elmfer.clear_history_?");
 			Window.createWindow(v -> {return new ConfirmationWindow(title, this::clearHistory);});
 		});
 		removeButton.setAction(b ->
 		{
-			String title = 1 < selections.size() ? I18n.format("com.elmfer.remove_selected_?") : I18n.format("com.elmfer.should_remove_?");
+			String title = 1 < selections.size() ? I18n.get("com.elmfer.remove_selected_?") : I18n.get("com.elmfer.should_remove_?");
 			Window.createWindow(v -> {return new ConfirmationWindow(title, this::remove);});
 		});
 		openButton.setAction(b ->
@@ -55,7 +53,7 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(selections.lastElement());
 			EventHandler.hud.fadedness = 200;
-			Minecraft.getInstance().displayGuiScreen(null);
+			Minecraft.getInstance().setScreen(null);
 		});
 		saveLastButton.setAction(b ->
 		{
@@ -150,101 +148,97 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 		desc.top = aside.bottom;
 		desc.bottom -= margin;
 		
-		GL11.glPushMatrix();
+		body.pushMatrix(false);
+		{
+			UIrender.drawRect(0, 0, body.getWidth(), body.getHeight(), 1275068416);
+		}
+		body.popMatrix();
+		
+		listBody.pushMatrix(false);
 		{	
-			body.pushMatrix(false);
+			UIrender.drawGradientRect(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+			UIrender.drawString(I18n.get("com.elmfer.record_history") + worldName, margin, margin, 0xFFFFFFFF);
+		}
+		listBody.popMatrix();
+		
+		buttonsView.setViewport(list);
+		buttonsView.draw();
+		
+		actionsBody.pushMatrix(true);
+		{
+			UIrender.drawGradientRect(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+			UIrender.drawString(I18n.get("com.elmfer.actions"), margin, margin, 0xFFFFFFFF);
+		}
+		actionsBody.popMatrix();
+		
+		actions.pushMatrix(false);
+		{
+			Button[] buttons = { saveLastButton, clearHistoryButton };
+			int i = 0;
+			for(Button button : buttons)
 			{
-				UIrender.drawRect(0, 0, body.getWidth(), body.getHeight(), 1275068416);
-			}
-			body.popMatrix();
-			
-			listBody.pushMatrix(false);
-			{	
-				UIrender.drawGradientRect(0, 0, listBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				UIrender.drawString(I18n.format("com.elmfer.record_history") + worldName, margin, margin, 0xFFFFFFFF);
-			}
-			listBody.popMatrix();
-			
-			buttonsView.setViewport(list);
-			buttonsView.draw();
-			
-			actionsBody.pushMatrix(true);
-			{
-				UIrender.drawGradientRect(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				UIrender.drawString(I18n.format("com.elmfer.actions"), margin, margin, 0xFFFFFFFF);
-			}
-			actionsBody.popMatrix();
-			
-			actions.pushMatrix(false);
-			{
-				Button[] buttons = { saveLastButton, clearHistoryButton };
-				int i = 0;
-				for(Button button : buttons)
-				{
-					button.width = aside.getWidth();
-					button.height = shortButtonHeight;
-					button.y = (shortButtonHeight + smallMargin) * i++;
-					button.draw();
-					button.setEnabled(!EventHandler.recordHistory.isEmpty());
-				}
-			}
-			actions.popMatrix();
-			
-			asideBody.pushMatrix(true);
-			{
-				UIrender.drawGradientRect(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
-				
-				String subTitle = I18n.format("com.elmfer.information");
-				subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
-				UIrender.drawString(subTitle, margin, margin, 0xFFFFFFFF);
-			}
-			asideBody.popMatrix();
-			
-			aside.pushMatrix(false);
-			{
-				Button[] buttons = { saveButton, removeButton, openButton };
-				int i = 2;
-				for(Button button : buttons)
-				{
-					button.width = aside.getWidth();
-					button.height = shortButtonHeight;
-					button.y = (shortButtonHeight + smallMargin) * (i++ - 2);
-					button.draw();
-					button.setEnabled(!selections.isEmpty());
-				}
-				
-				if(selections.size() > 1) removeButton.setText(I18n.format("com.elmfer.remove_selected"));
-				else removeButton.setText(I18n.format("com.elmfer.remove"));
-			}
-			aside.popMatrix();
-			
-			all.pushMatrix(false);
-			{
-				boolean flag = EventHandler.session.isSessionActive();
-				openButton.setEnabled(!flag && openButton.isEnabled());
-				
-				if(openButton.isHovered() && flag && !selections.isEmpty()) 
-				{	
-					String warning = I18n.format("com.elmfer.cannot_open_while_recording_or_playing");
-					UIrender.drawHoveringText(warning, UIinput.getUICursorX(), UIinput.getUICursorY());
-				}
-			}
-			all.popMatrix();
-			
-			if(!selections.isEmpty() && desc.getHeight() > 0)
-			{
-				desc.pushMatrix(true);
-				{
-					String[] lines = selections.lastElement().toString().split("\n");
-					for(int i = 0; i < lines.length; i++)
-					{
-						UIrender.drawString(lines[i], 0, UIrender.getStringHeight() * i, 0xFFFFFFFF);
-					}
-				}
-				desc.popMatrix();
+				button.width = aside.getWidth();
+				button.height = shortButtonHeight;
+				button.y = (shortButtonHeight + smallMargin) * i++;
+				button.draw();
+				button.setEnabled(!EventHandler.recordHistory.isEmpty());
 			}
 		}
-		GL11.glPopMatrix();
+		actions.popMatrix();
+		
+		asideBody.pushMatrix(true);
+		{
+			UIrender.drawGradientRect(0, 0, actionsBody.getWidth(), listBody.getHeight() / 6, fade1, fade2);
+			
+			String subTitle = I18n.get("com.elmfer.information");
+			subTitle = 1 < selections.size() ? subTitle + " (" + Integer.toString(selections.size()) + ")" : subTitle;
+			UIrender.drawString(subTitle, margin, margin, 0xFFFFFFFF);
+		}
+		asideBody.popMatrix();
+		
+		aside.pushMatrix(false);
+		{
+			Button[] buttons = { saveButton, removeButton, openButton };
+			int i = 2;
+			for(Button button : buttons)
+			{
+				button.width = aside.getWidth();
+				button.height = shortButtonHeight;
+				button.y = (shortButtonHeight + smallMargin) * (i++ - 2);
+				button.draw();
+				button.setEnabled(!selections.isEmpty());
+			}
+			
+			if(selections.size() > 1) removeButton.setText(I18n.get("com.elmfer.remove_selected"));
+			else removeButton.setText(I18n.get("com.elmfer.remove"));
+		}
+		aside.popMatrix();
+		
+		all.pushMatrix(false);
+		{
+			boolean flag = EventHandler.session.isSessionActive();
+			openButton.setEnabled(!flag && openButton.isEnabled());
+			
+			if(openButton.isHovered() && flag && !selections.isEmpty()) 
+			{	
+				String warning = I18n.get("com.elmfer.cannot_open_while_recording_or_playing");
+				UIrender.drawHoveringText(warning, UIinput.getUICursorX(), UIinput.getUICursorY());
+			}
+		}
+		all.popMatrix();
+		
+		if(!selections.isEmpty() && desc.getHeight() > 0)
+		{
+			desc.pushMatrix(true);
+			{
+				String[] lines = selections.lastElement().toString().split("\n");
+				for(int i = 0; i < lines.length; i++)
+				{
+					UIrender.drawString(lines[i], 0, UIrender.getStringHeight() * i, 0xFFFFFFFF);
+				}
+			}
+			desc.popMatrix();
+		}
 	 }
 	
 	private void override()
@@ -281,7 +275,7 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 			{
 				NamingWindow namerBox = (NamingWindow) Window.createWindow(v ->
 				{
-					return new NamingWindow(I18n.format("com.elmfer.name_recording"), (String s) -> { return s.length() > 0; } , this::save);
+					return new NamingWindow(I18n.get("com.elmfer.name_recording"), (String s) -> { return s.length() > 0; } , this::save);
 				});
 				namerBox.getTextField().setText(selections.lastElement().getName());
 				namerBox.getTextField().setCursorAtEnd(false);
@@ -289,10 +283,10 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 			};
 			
 			//Create Override box
-			String boxMessage = I18n.format("com.elmfer.recording_was_loaded_from") + ":\n" + selections.lastElement().getOriginalFile().getName();
+			String boxMessage = I18n.get("com.elmfer.recording_was_loaded_from") + ":\n" + selections.lastElement().getOriginalFile().getName();
 			Window.createWindow(v -> 
 			{
-				return new OverrideWindow(I18n.format("com.elmfer.override_recording_?"), boxMessage, this::override, saveNewCallback);
+				return new OverrideWindow(I18n.get("com.elmfer.override_recording_?"), boxMessage, this::override, saveNewCallback);
 			});
 		}
 		else
@@ -300,7 +294,7 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 			//Create namer box
 			NamingWindow namerBox = (NamingWindow) Window.createWindow(v ->
 			{
-				return new NamingWindow(I18n.format("com.elmfer.name_recording"), (String s) -> { return s.length() > 0; } , this::save);
+				return new NamingWindow(I18n.get("com.elmfer.name_recording"), (String s) -> { return s.length() > 0; } , this::save);
 			});
 			namerBox.getTextField().setText(selections.lastElement().getName());
 			namerBox.getTextField().setCursorAtEnd(false);
@@ -365,8 +359,8 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 			}
 		}
 		
-		if(selections.size() > 1) removeButton.setText(I18n.format("com.elmfer.remove_selected"));
-		else removeButton.setText(I18n.format("com.elmfer.remove"));
+		if(selections.size() > 1) removeButton.setText(I18n.get("com.elmfer.remove_selected"));
+		else removeButton.setText(I18n.get("com.elmfer.remove"));
 	}
 
 	@Override

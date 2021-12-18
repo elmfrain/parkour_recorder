@@ -2,12 +2,10 @@ package com.elmfer.parkour_recorder.gui;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.ParkourRecorderMod;
@@ -16,11 +14,14 @@ import com.elmfer.parkour_recorder.gui.MenuScreen.IMenuTabView;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
 import com.elmfer.parkour_recorder.gui.UIrender.Direction;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.resources.ResourceLocation;
 
 public class ModTitleScreenView extends Widget implements IMenuTabView
 {
@@ -155,15 +156,17 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		UIrender.drawGradientRect(Direction.TO_LEFT, uiWidth * 2 / 3, 18, uiWidth * 3 / 4 + 10, yCursor, 0, 1275068416);
 		
 		//Render Title
-		String title = I18n.format("com.elmfer.parkour_recorder");
+		String title = I18n.get("com.elmfer.parkour_recorder");
 		float titleWidth = UIrender.getStringWidth(title);
-		GL11.glPushMatrix();
+		RenderSystem.getModelViewStack().pushPose();
 		{
-			GL11.glScalef(2.0f, 2.0f, 1.0f);
+			RenderSystem.getModelViewStack().scale(2.0f, 2.0f, 1.0f);
+			RenderSystem.applyModelViewMatrix();
 			UIrender.drawString(Anchor.TOP_CENTER, title, uiWidth / 4, 13.5f, -10066330);
 			UIrender.drawString(Anchor.TOP_CENTER, title, uiWidth / 4, 12.5f, 0xFFFFFFFF);
 		}
-		GL11.glPopMatrix();
+		RenderSystem.getModelViewStack().popPose();
+		RenderSystem.applyModelViewMatrix();
 		
 		String tagline = "by elmfer - v" + ParkourRecorderMod.MOD_VERSION;
 		
@@ -171,8 +174,8 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		UIrender.drawString(tagline, uiWidth / 2 - titleWidth, yCursor - 13, 0xFFFFFFFF);
 		
 		yCursor += 8;
-		UIrender.drawString(Anchor.CENTER, I18n.format("com.elmfer.record_and_playback_your_parkour_sessions"),uiWidth / 2, yCursor + 1, -10066330);
-		UIrender.drawString(Anchor.CENTER, I18n.format("com.elmfer.record_and_playback_your_parkour_sessions"),uiWidth / 2, yCursor, 0xFFFFFFFF);
+		UIrender.drawString(Anchor.CENTER, I18n.get("com.elmfer.record_and_playback_your_parkour_sessions"),uiWidth / 2, yCursor + 1, -10066330);
+		UIrender.drawString(Anchor.CENTER, I18n.get("com.elmfer.record_and_playback_your_parkour_sessions"),uiWidth / 2, yCursor, 0xFFFFFFFF);
 		
 		changelogViewport = new Viewport();
 		changelogViewport.left = (int) uiWidth / 4 - 5;
@@ -184,7 +187,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		{
 			UIrender.drawRect(0, 0, changelogViewport.getWidth(), changelogViewport.getHeight(), 2130706432);
 			UIrender.drawRect(0, 0, changelogViewport.getWidth(), 12, 1711276032);
-			UIrender.drawString(Anchor.MID_LEFT, I18n.format("com.elmfer.changelog"), 6, 6, 0xFFFFFFFF);
+			UIrender.drawString(Anchor.MID_LEFT, I18n.get("com.elmfer.changelog"), 6, 6, 0xFFFFFFFF);
 		}
 		changelogViewport.popMatrix();
 		if(changelog != null)
@@ -195,9 +198,10 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 			changelogViewport.bottom -= 5;
 			changelogViewport.pushMatrix(true);
 			{
-				GL11.glPushMatrix();
+				RenderSystem.getModelViewStack().pushPose();
 				{
-					GL11.glTranslated(0.0, -changelogScrool.getValue(), 0.0);
+					RenderSystem.getModelViewStack().translate(0.0, -changelogScrool.getValue(), 0.0);
+					RenderSystem.applyModelViewMatrix();
 					yCursor = 0.0f;
 					for(String line : changelog.split("\n"))
 					{
@@ -221,36 +225,37 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 					if(changelogScrool.getValue() < 0) changelogScrool.grab(MIN_SCROLL);
 					else if(changelogScrool.getValue() > MAX_SCROLL) changelogScrool.grab(MAX_SCROLL);
 				}
-				GL11.glPopMatrix();
+				RenderSystem.getModelViewStack().popPose();
 			}
 			changelogViewport.popMatrix();
 		}
 		
 		//Draw the 3D logo
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+		GL11.glDisable(GL11.GL_CULL_FACE);
 		
-		Matrix4f perspectiveMatrix = Matrix4f.perspective((float) fovTransition.getValue(), (float) UIrender.getWindowWidth() / (float) UIrender.getWindowHeight(), 0.05f, 50.0f);
-		FloatBuffer perspective = BufferUtils.createFloatBuffer(16);
-		perspectiveMatrix.write(perspective);
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glPushMatrix();
-		GL11.glLoadIdentity();
-		GL11.glTranslatef(0.0f, 0.04f, 0.0f);
-		GL11.glMultMatrixf(perspective);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glPushMatrix();
+		Matrix4f prevProjection = RenderSystem.getProjectionMatrix().copy();
+		RenderSystem.getProjectionMatrix().setIdentity();
+		RenderSystem.getProjectionMatrix().translate(new Vector3f(0.0f, 0.04f, 0.0f));
+		RenderSystem.getProjectionMatrix().multiply(Matrix4f.perspective((float) fovTransition.getValue(), (float) UIrender.getWindowWidth() / (float) UIrender.getWindowHeight(), 0.05f, 50.0f));
+		
+		RenderSystem.getModelViewStack().pushPose();
 		{
-			GL11.glLoadIdentity();
-			GL11.glRotatef(5.2f, 1.0f, 0.0f, 0.0f);
-			GL11.glTranslatef(0.0f, -1.51f, -10.0f);
-			GL11.glRotatef(prevLogoRotation + (logoRotation - prevLogoRotation) * UIrender.getPartialTicks(), 0.0f, 1.0f, 0.0f);
-			GL11.glColor4f(1.0f, 1.0f, 1.0f, logoOpacityCounter / 25.0f);
+			float rotation = (float) Math.toRadians(prevLogoRotation + (logoRotation - prevLogoRotation) * UIrender.getPartialTicks());
+			RenderSystem.getModelViewStack().setIdentity();
+			RenderSystem.getModelViewStack().mulPose(Quaternion.fromXYZ(0.0907571f, 0.0f, 0.0f)); // 5.2 deg on x axis
+			RenderSystem.getModelViewStack().translate(0.0, -1.51, -10.0);
+			RenderSystem.getModelViewStack().mulPose(Quaternion.fromXYZ(0.0f, rotation, 0.0f));
+			RenderSystem.applyModelViewMatrix();
+			
+			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, logoOpacityCounter / 25.0f);
 			ModLogoRenderer.render();
+			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		}
-		GL11.glPopMatrix();
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glPopMatrix();
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		RenderSystem.getModelViewStack().popPose();
+		RenderSystem.applyModelViewMatrix();
+		
+		RenderSystem.setProjectionMatrix(prevProjection);
 	}
 	
 	public void onExit()

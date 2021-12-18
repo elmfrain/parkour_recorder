@@ -30,10 +30,11 @@ import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.ReplayViewerEntity;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Quaternion;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 public class TimelineView extends Widget implements IMenuTabView
 {
@@ -49,9 +50,9 @@ public class TimelineView extends Widget implements IMenuTabView
 	protected Checkpoint currentCheckpoint = null;
 
 	protected SettingsButton settingsButton = new SettingsButton();
-	protected Slider speedSlider = new Slider(I18n.format("com.elmfer.speed"));
-	protected Button formatSelectButton = new Button(I18n.format("com.elmfer.time_format"));
-	private Button startHereButton = new Button(I18n.format("com.elmfer.start_here"));
+	protected Slider speedSlider = new Slider(I18n.get("com.elmfer.speed"));
+	protected Button formatSelectButton = new Button(I18n.get("com.elmfer.time_format"));
+	private Button startHereButton = new Button(I18n.get("com.elmfer.start_here"));
 	private Button rewindButton = new Button();
 	private Button playButton = new Button();
 	private Button pauseButton = new Button();
@@ -101,7 +102,7 @@ public class TimelineView extends Widget implements IMenuTabView
 				PlaybackSession session = (PlaybackSession) EventHandler.session;
 				session.startAt((int) timeline.getProperty("framePos").getValue());
 			}
-			mc.displayGuiScreen(null);
+			mc.setScreen(null);
 		});
 		settingsButton.setAction(b ->
 		{
@@ -155,7 +156,7 @@ public class TimelineView extends Widget implements IMenuTabView
 		{
 			Window.createWindow(v ->
 			{
-				return new NamingWindow(I18n.format("com.elmfer.add_checkpoint"), (String s) ->
+				return new NamingWindow(I18n.get("com.elmfer.add_checkpoint"), (String s) ->
 				{
 					return true;
 				}, this::addCheckpoint);
@@ -166,7 +167,7 @@ public class TimelineView extends Widget implements IMenuTabView
 		{
 			Window.createWindow(v ->
 			{
-				String message = I18n.format("com.elmfer.remove_checkpoint_?");
+				String message = I18n.get("com.elmfer.remove_checkpoint_?");
 				message += currentCheckpoint.name.isEmpty() ? "" : " - " + currentCheckpoint.name;
 
 				return new ConfirmationWindow(message, this::removeCheckpoint);
@@ -312,8 +313,8 @@ public class TimelineView extends Widget implements IMenuTabView
 
 					double speed = 0.01 + speedSlider.getAmount() * 3.99;
 					this.timeline.setSpeed(speed);
-					speedSlider.setText(String.format("%s: %.2fx", I18n.format("com.elmfer.speed"), speed));
-					formatSelectButton.setText(I18n.format("com.elmfer.time_format") + ": " + timeStampFormat.NAME);
+					speedSlider.setText(String.format("%s: %.2fx", I18n.get("com.elmfer.speed"), speed));
+					formatSelectButton.setText(I18n.get("com.elmfer.time_format") + ": " + timeStampFormat.NAME);
 
 					speedSlider.draw();
 					formatSelectButton.draw();
@@ -354,16 +355,16 @@ public class TimelineView extends Widget implements IMenuTabView
 		{
 			if (viewer == null)
 				viewer = new ReplayViewerEntity();
-			mc.setRenderViewEntity(viewer);
-			mc.player.prevRenderArmYaw = mc.player.renderArmYaw = mc.player.prevRotationYaw;
-			mc.player.prevRenderArmPitch = mc.player.renderArmPitch = mc.player.prevRotationPitch;
+			mc.setCameraEntity(viewer);
+			mc.player.yBobO = mc.player.yBob = mc.player.yRotO;
+			mc.player.xBobO = mc.player.xBob = mc.player.xRotO;
 		}
-		else mc.setRenderViewEntity(mc.player);
+		else mc.setCameraEntity(mc.player);
 	}
 
 	public void onExit()
 	{
-		mc.setRenderViewEntity(mc.player);
+		mc.setCameraEntity(mc.player);
 
 		// Save time format to config file
 		ConfigManager.saveTimeFormat(timeStampFormat);
@@ -427,7 +428,7 @@ public class TimelineView extends Widget implements IMenuTabView
 			UIrender.drawRect(0, 0, taskBar.getWidth(), taskBar.getHeight(), 1711276032);
 
 			String recordingName = recordingIsLoaded ? ((PlaybackSession) EventHandler.session).recording.getName()
-					: I18n.format("com.elmfer.no_recording_is_loaded");
+					: I18n.get("com.elmfer.no_recording_is_loaded");
 			int nameColor = recordingIsLoaded ? 0xFFFFFFFF : -8421505;
 
 			UIrender.drawString(Anchor.MID_LEFT, recordingName, MARGIN * 2, taskBar.getHeight() / 2, nameColor);
@@ -585,7 +586,7 @@ public class TimelineView extends Widget implements IMenuTabView
 			// Render backround and buttons
 			UIrender.drawRect(0, 0, controls.getWidth(), controls.getHeight(),
 					getIntColor(GuiStyle.Gui.backroundColor()));
-			GlStateManager.disableCull();
+			GL11.glDisable(GL11.GL_CULL_FACE);
 			for (Button button : buttons)
 				button.draw();
 		}
@@ -686,14 +687,16 @@ public class TimelineView extends Widget implements IMenuTabView
 				UIrender.drawRect(x, y, x + width, y + height, backgroundColor);
 
 				// Render Gear Icon
-				GL11.glPushMatrix();
+				RenderSystem.getModelViewStack().pushPose();
 				{
-					GL11.glTranslatef(x + width / 2, y + height / 2, 0.0f);
-					GL11.glRotatef((float) gear.getProperty("rotation").getValue(), 0.0f, 0.0f, 1.0f);
+					RenderSystem.getModelViewStack().translate(x + width / 2, y + height / 2, 0.0);
+					RenderSystem.getModelViewStack().mulPose(Quaternion.fromXYZ(0.0f, 0.0f, (float) Math.toRadians(gear.getProperty("rotation").getValue())));
+					RenderSystem.applyModelViewMatrix();
 
 					UIrender.drawIcon(getIcon(), 0, 0, MODEL_SCALE, iconColor);
 				}
-				GL11.glPopMatrix();
+				RenderSystem.getModelViewStack().popPose();
+				RenderSystem.applyModelViewMatrix();
 			}
 		}
 	}

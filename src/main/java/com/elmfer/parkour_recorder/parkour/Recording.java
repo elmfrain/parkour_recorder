@@ -22,9 +22,11 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import com.mojang.math.Vector3d;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.phys.Vec3;
 
 public class Recording implements List<ParkourFrame>
 {
@@ -78,6 +80,12 @@ public class Recording implements List<ParkourFrame>
 	private String name;
 	private boolean renamed = false;
 
+	public Recording(Vec3 startingPos)
+	{
+		initPos = new Vector3d(startingPos.x, startingPos.y, startingPos.z);
+		this.name = null;
+	}
+	
 	public Recording(Vector3d startingPos)
 	{
 		initPos = startingPos;
@@ -105,26 +113,16 @@ public class Recording implements List<ParkourFrame>
 	@Override
 	public String toString()
 	{
-		// Get Vectors that rounds to the nearest tenth
-		double initPosX = Math.round(initPos.x * 10.0) / 10.0;
-		double initPosY = Math.round(initPos.y * 10.0) / 10.0;
-		double initPosZ = Math.round(initPos.z * 10.0) / 10.0;
-		Vector3d initPos = new Vector3d(initPosX, initPosY, initPosZ);
-		double lastPosX = Math.round(lastPos.x * 10.0) / 10.0;
-		double lastPosY = Math.round(lastPos.y * 10.0) / 10.0;
-		double lastPosZ = Math.round(lastPos.z * 10.0) / 10.0;
-		Vector3d lastPos = new Vector3d(lastPosX, lastPosY, lastPosZ);
-
 		// Create formmated string
 		String s = name + "\n\n";
 		String tab = ":\n   ";
 		if (recordFile != null)
-			s += I18n.format("com.elmfer.file") + tab
-					+ (recordFile != null ? recordFile.getName() : "[" + I18n.format("com.elmfer.unsaved") + "]")
+			s += I18n.get("com.elmfer.file") + tab
+					+ (recordFile != null ? recordFile.getName() : "[" + I18n.get("com.elmfer.unsaved") + "]")
 					+ "\n\n";
-		s += I18n.format("com.elmfer.recording_length") + tab + frames.size() / 20.0f + "s\n\n";
-		s += I18n.format("com.elmfer.starting_position") + tab + initPos + "\n\n";
-		s += I18n.format("com.elmfer.ending_position") + tab + lastPos + "\n\n";
+		s += I18n.get("com.elmfer.recording_length") + tab + frames.size() / 20.0f + "s\n\n";
+		s += String.format("%s%s%.2f %.2f %.2f\n\n", I18n.get("com.elmfer.starting_position"), tab, initPos.x, initPos.y, initPos.z);
+		s += String.format("%s%s%.2f %.2f %.2f\n\n", I18n.get("com.elmfer.ending_position"), tab, lastPos.x, lastPos.y, lastPos.z);
 		return s;
 	}
 
@@ -310,20 +308,20 @@ public class Recording implements List<ParkourFrame>
 
 	public static String getCurrentWorldName(Minecraft mc)
 	{
-		if (mc.getIntegratedServer() != null)
+		if (mc.getSingleplayerServer() != null)
 		{
-			return mc.getIntegratedServer().func_240793_aU_().getWorldName();
+			return mc.getSingleplayerServer().getWorldData().getLevelName();
 		} else
-			return mc.getCurrentServerData().serverName + ": " + mc.getCurrentServerData().serverIP;
+			return mc.getCurrentServer().name + ": " + mc.getCurrentServer().ip;
 	}
 
 	private static String getWorldPath(Minecraft mc)
 	{
-		if (mc.getIntegratedServer() != null)
+		if (mc.getSingleplayerServer() != null)
 		{
-			return "local/" + mc.getIntegratedServer().func_240793_aU_().getWorldName();
+			return "local/" + mc.getSingleplayerServer().getWorldData().getLevelName();
 		} else
-			return "servers/" + mc.getCurrentServerData().serverIP.replace('.', '-').replace(':', '_');
+			return "servers/" + mc.getCurrentServer().ip.replace('.', '-').replace(':', '_');
 	}
 
 	public ParkourFrame get(int index)

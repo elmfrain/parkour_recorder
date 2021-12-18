@@ -8,7 +8,7 @@ import com.elmfer.parkour_recorder.gui.NumberLineView.TimeStampFormat;
 import com.elmfer.parkour_recorder.gui.TimelineView;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 public class TimeFormatSelectionWindow extends Window
 {
@@ -19,7 +19,7 @@ public class TimeFormatSelectionWindow extends Window
 	
 	public TimeFormatSelectionWindow()
 	{
-		super(I18n.format("com.elmfer.change_time_format"));
+		super(I18n.get("com.elmfer.change_time_format"));
 		
 		//Setup button list
 		for(TimeStampFormat format : TimeStampFormat.values())

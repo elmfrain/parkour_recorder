@@ -9,9 +9,10 @@ import com.elmfer.parkour_recorder.gui.widgets.Button;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.gui.window.TimeFormatSelectionWindow;
 import com.elmfer.parkour_recorder.gui.window.Window;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 public class MenuScreen extends UIscreen
 {
@@ -40,10 +41,10 @@ public class MenuScreen extends UIscreen
 	{
 		super();
 		
-		loadTab.setText(I18n.format("com.elmfer.load"));
-		saveTab.setText(I18n.format("com.elmfer.save"));
-		timelineTab.setText(I18n.format("com.elmfer.timeline"));
-		modTitleTab.setText(I18n.format("com.elmfer.parkour_recorder"));
+		loadTab.setText(I18n.get("com.elmfer.load"));
+		saveTab.setText(I18n.get("com.elmfer.save"));
+		timelineTab.setText(I18n.get("com.elmfer.timeline"));
+		modTitleTab.setText(I18n.get("com.elmfer.parkour_recorder"));
 		
 		loadTab.width = UIrender.getStringWidth(loadTab.getText()) + 10;
 		saveTab.width = UIrender.getStringWidth(saveTab.getText()) + 10;
@@ -94,9 +95,9 @@ public class MenuScreen extends UIscreen
 	
 	/**When gui closes.**/
 	@Override
-	public void func_231164_f_()
+	public void removed()
 	{
-		super.func_231164_f_();
+		super.removed();
 		timelineView.onExit();
 		modTitleScreenView.onExit();
 	}
@@ -137,18 +138,21 @@ public class MenuScreen extends UIscreen
 	}
 	
 	@Override
-	public void func_230430_a_(MatrixStack stack, int mouseX, int mouseY, float partialTicks)
+	public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks)
 	{
 		//getMinecraft().displayGuiScreen(null);
-		GL11.glPushMatrix();
+		RenderSystem.getModelViewStack().pushPose();
 		{
-			GL11.glTranslatef(0, 0, 0);
+			RenderSystem.getModelViewStack().translate(0.0, 0.0, 0.0);
+			RenderSystem.applyModelViewMatrix();
+			
 			loadView.draw();
 			saveView.draw();
 			timelineView.draw();
 			modTitleScreenView.draw();
 		}
-		GL11.glPopMatrix();
+		RenderSystem.getModelViewStack().popPose();
+		RenderSystem.applyModelViewMatrix();
 		
 		drawNavigationBar();
 		Window.drawWindows();
@@ -156,7 +160,7 @@ public class MenuScreen extends UIscreen
 	
 	//Don't pause game
 	@Override
-	public boolean func_231177_au__()
+	public boolean isPauseScreen()
 	{
 		return false;
 	}

@@ -15,7 +15,7 @@ import com.elmfer.parkour_recorder.render.ModelManager;
 import com.elmfer.parkour_recorder.render.ShaderManager;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -36,10 +36,10 @@ public class EventHandler {
 	{
 		Widget.setCurrentZLevel(0);
 		
-		if(mc.getFramebuffer() != null && !mc.getFramebuffer().isStencilEnabled())
+		if(mc.getMainRenderTarget() != null && !mc.getMainRenderTarget().isStencilEnabled())
 		{
-			mc.getFramebuffer().enableStencil();
-			System.out.println("[Parkour Recorder] : Stencil enabled: " + mc.getFramebuffer().isStencilEnabled());
+			mc.getMainRenderTarget().enableStencil();
+			System.out.println("[Parkour Recorder] : Stencil enabled: " + mc.getMainRenderTarget().isStencilEnabled());
 		}
 	}
 	
@@ -57,6 +57,7 @@ public class EventHandler {
 		
 		if(event.phase == Phase.END)
 		{
+			ModelManager.onRenderTick();
 			Widget.updateWidgetsOnRenderTick();
 			if(UIinput.pollInputs()) Stencil.clear();
 		}
@@ -77,20 +78,20 @@ public class EventHandler {
 			
 			Settings settings = Settings.getSettings();
 			
-			if(settings.keybindPlay.isPressed())
+			if(settings.keybindPlay.consumeClick())
 				session = session.onPlay();
 			
-			if(settings.keybindRecord.isPressed())
+			if(settings.keybindRecord.consumeClick())
 				session = session.onRecord();
 			
-			if(settings.keybindOverride.isPressed())
+			if(settings.keybindOverride.consumeClick())
 				session = session.onOverride();
 			
-			if(settings.keybindReloadShaders.isPressed())
+			if(settings.keybindReloadShaders.consumeClick())
 				reloadResources();
 			
-			if(settings.keybindMainMenu.isPressed())
-				Minecraft.getInstance().displayGuiScreen(new MenuScreen());
+			if(settings.keybindMainMenu.isDown())
+				Minecraft.getInstance().setScreen(new MenuScreen());
 		}
 		else if(mc.player == null)
 		{

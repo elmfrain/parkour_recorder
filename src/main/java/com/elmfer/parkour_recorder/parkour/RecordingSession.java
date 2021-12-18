@@ -1,9 +1,11 @@
 package com.elmfer.parkour_recorder.parkour;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.mojang.math.Vector3d;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.MovementInputFromOptions;
+import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.world.phys.Vec3;
 
 public class RecordingSession implements IParkourSession {
 
@@ -27,14 +29,15 @@ public class RecordingSession implements IParkourSession {
 		switch(nbRecordPresses) 
 		{
 		case 0:
-			mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
+			mc.player.input = new KeyboardInput(mc.options);
 			if(recording == null)
-				recording = new Recording(mc.player.getPositionVec());
+				recording = new Recording(mc.player.getPosition(0.0f));
 			isRecording = true;
 			nbRecordPresses++;
 			break;
-		case 1:		
-			recording.lastPos = mc.player.getPositionVec();
+		case 1:
+			Vec3 v = mc.player.getPosition(0.0f);
+			recording.lastPos = new Vector3d(v.x, v.y, v.z);
 			
 			if(onOverride)
 			{
@@ -95,8 +98,8 @@ public class RecordingSession implements IParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(isRecording && !mc.isGamePaused())
-			recording.add(new ParkourFrame(mc.gameSettings, mc.player));
+		if(isRecording && !mc.isPaused())
+			recording.add(new ParkourFrame(mc.options, mc.player));
 	}
 
 	@Override

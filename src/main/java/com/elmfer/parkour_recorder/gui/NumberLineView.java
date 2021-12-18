@@ -12,10 +12,10 @@ import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.parkour.Checkpoint;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.mojang.math.Vector4f;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.client.gui.Font;
 
 public class NumberLineView extends Widget
 {
@@ -48,7 +48,7 @@ public class NumberLineView extends Widget
 	public void draw()
 	{
 		Minecraft mc = Minecraft.getInstance();
-		FontRenderer font = mc.fontRenderer;
+		Font font = mc.font;
 		
 		numberLineViewport = new Viewport(mainViewport);
 		numberLineViewport.bottom = (int) (mainViewport.getHeight() / 3.0f);
@@ -61,7 +61,7 @@ public class NumberLineView extends Widget
 		double framePos = parentWidget.timeline.getProperty("framePos").getValue();
 		
 		//Y pos for numbers on number line
-		int stringCenterY = (int) numberLineViewport.getHeight() / 2 - font.FONT_HEIGHT / 2;
+		int stringCenterY = (int) numberLineViewport.getHeight() / 2 - font.lineHeight / 2;
 		
 		//Styling constants
 		final int FADE_HEIGHT = GuiStyle.Gui.fadeHeight();
@@ -105,7 +105,7 @@ public class NumberLineView extends Widget
 			
 			//Position pointer
 			String timeStamp = TimelineView.timeStampFormat.getTimeStamp(framePos);
-			float pointerWidth = (font.getStringWidth(timeStamp)) / 2.0f + SMALL_MARGIN;
+			float pointerWidth = (font.width(timeStamp)) / 2.0f + SMALL_MARGIN;
 			float alignmentRatio = ((numberLineViewport.getWidth() - 1.0f) / numberLineViewport.getWidth());
 			float pointerPos = amount * numberLineViewport.getWidth() * alignmentRatio;
 			float pointerHeadPos = Math.max(pointerWidth, Math.min(pointerPos, numberLineViewport.getWidth() - pointerWidth));
@@ -155,7 +155,7 @@ public class NumberLineView extends Widget
 		//Slightly make the marker brighter if it's the one currently selected
 		Vector4f color = GraphicsHelper.getFloatColor(c.color);
 		if(parentWidget.currentCheckpoint != null && parentWidget.currentCheckpoint == c)
-			color.set(color.getX() + 0.25f, color.getY() + 0.25F, color.getZ() + 0.25f, color.getW());
+			color.set(color.x() + 0.25f, color.y() + 0.25F, color.z() + 0.25f, color.w());
 
 		
 		//Render Marker

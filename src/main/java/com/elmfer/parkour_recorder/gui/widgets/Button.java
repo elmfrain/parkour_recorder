@@ -6,8 +6,7 @@ import com.elmfer.parkour_recorder.animation.Timeline;
 import com.elmfer.parkour_recorder.animation.compositon.Composition;
 import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
-
-import net.minecraft.util.math.vector.Vector3f;
+import com.mojang.math.Vector3f;
 
 public class Button extends Widget
 {
@@ -193,11 +192,11 @@ public class Button extends Widget
 	
 	protected int getTextColor()
 	{
-		int j = 14737632;
+		int j = -2039584;
 		if (!isEnabled())
-            j = 10526880;
+            j = -6250336;
         else if (isHovered())
-            j = 16777120;
+            j = -96;
 		
 		return j;
 	}

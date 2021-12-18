@@ -1,20 +1,21 @@
 package com.elmfer.parkour_recorder.gui;
 
-import net.minecraft.client.MainWindow;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.math.Vector4f;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.client.gui.Font;
 
 public class GuiStyle
 {
-	private static FontRenderer font = Minecraft.getInstance().fontRenderer;
-	private static MainWindow res = Minecraft.getInstance().getMainWindow();
+	private static Font font = Minecraft.getInstance().font;
+	private static Window res = Minecraft.getInstance().getWindow();
 	
 	public static class Gui
 	{
 		public static int bodyMargin()
 		{
-			return (int) (80 / res.getGuiScaleFactor());
+			return (int) (80 / res.getGuiScale());
 		}
 		
 		public static int margin()
@@ -82,12 +83,12 @@ public class GuiStyle
 		
 		public static int boxWidth()
 		{
-			return res.getScaledWidth() / 2;
+			return res.getGuiScaledWidth() / 2;
 		}
 		
 		public static int titleHeight()
 		{
-			return font.FONT_HEIGHT * 2;
+			return font.lineHeight * 2;
 		}
 	}
 }
