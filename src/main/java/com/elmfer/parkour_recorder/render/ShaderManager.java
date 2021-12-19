@@ -25,12 +25,11 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL45;
 
 import com.elmfer.parkour_recorder.ParkourRecorderMod;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.Window;
 
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.resources.ResourceLocation;
 
 public class ShaderManager {
 	
@@ -46,7 +45,7 @@ public class ShaderManager {
 	public static float getFarPlaneDistance()
 	{
 		Minecraft mc = Minecraft.getInstance();
-		return (float)(mc.gameSettings.renderDistanceChunks * 16 * MathHelper.SQRT_2);
+		return (float)(mc.gameRenderer.getDepthFar() * 16 * 1.41421356237);
 	}
 	public static float getNearPlaneDistance()
 	{
@@ -68,12 +67,12 @@ public class ShaderManager {
 		return DEFAULT_SHADER;
 	}
 	
-	public static void blitMCFramebuffer(Framebuffer toThisFrameBuffer)
+	public static void blitMCFramebuffer(RenderTarget toThisFrameBuffer)
 	{
 		Minecraft mc = Minecraft.getInstance();
-		MainWindow res = mc.getMainWindow();
+		Window res = mc.getWindow();
 		
-		GL45.glBlitNamedFramebuffer(mc.getFramebuffer().framebufferObject, toThisFrameBuffer.framebufferObject, 0, 0, res.getWidth(), res.getHeight(), 0, 0, res.getWidth(), res.getHeight(), GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
+		GL45.glBlitNamedFramebuffer(mc.getMainRenderTarget().frameBufferId, toThisFrameBuffer.frameBufferId, 0, 0, res.getWidth(), res.getHeight(), 0, 0, res.getWidth(), res.getHeight(), GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
 	}
 	
 	public static int getUniformLocation(String param)
@@ -86,7 +85,7 @@ public class ShaderManager {
 		Minecraft mc = Minecraft.getInstance();
 		float[] projectionMatrix = new float[16];
 		float[] modelViewMatrix = new float[16];
-		MainWindow res = mc.getMainWindow();
+		Window res = mc.getWindow();
 		
 		GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
 		GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelViewMatrix);

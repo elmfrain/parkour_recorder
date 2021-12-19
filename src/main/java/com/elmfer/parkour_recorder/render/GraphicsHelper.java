@@ -1,7 +1,7 @@
 package com.elmfer.parkour_recorder.render;
 
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector4f;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 
 public class GraphicsHelper {
 	
@@ -18,12 +18,12 @@ public class GraphicsHelper {
 	
 	public static int getIntColor(Vector4f color)
 	{
-		return getIntColor(color.getX(), color.getY(), color.getZ(), color.getW());
+		return getIntColor(color.x(), color.y(), color.z(), color.w());
 	}
 	
 	public static int getIntColor(Vector3f color, float alpha)
 	{
-		return getIntColor(color.getX(), color.getY(), color.getZ(), alpha);
+		return getIntColor(color.x(), color.y(), color.z(), alpha);
 	}
 	
 	public static float lerp(float partials, float prevValue, float value)

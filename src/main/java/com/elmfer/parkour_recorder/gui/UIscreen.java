@@ -6,14 +6,14 @@ import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.gui.window.Window;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public abstract class UIscreen extends Screen implements UIinput.Listener
 {	
 	public UIscreen()
 	{
-		super(new TranslationTextComponent("com.elmfer.parkour_recorder"));
+		super(new TranslatableComponent("com.elmfer.parkour_recorder"));
 		UIinput.addListener(this);
 	}
 	
@@ -25,7 +25,7 @@ public abstract class UIscreen extends Screen implements UIinput.Listener
 	
 	/**When gui closes.**/
 	@Override
-	public void func_231164_f_()
+	public void removed()
 	{
 		Window.closeWindows();
 		UIinput.clearListeners();
@@ -33,7 +33,7 @@ public abstract class UIscreen extends Screen implements UIinput.Listener
 	}
 	
 	@Override
-	public boolean func_231046_a_(int p_231046_1_, int p_231046_2_, int p_231046_3_)
+	public boolean keyPressed(int p_231046_1_, int p_231046_2_, int p_231046_3_)
 	{
 		return false;
 	}
@@ -44,7 +44,7 @@ public abstract class UIscreen extends Screen implements UIinput.Listener
 		if(!Window.areWindowsOpen() && keyCode == GLFW.GLFW_KEY_ESCAPE)
 		{
 			Minecraft mc = Minecraft.getInstance();
-			mc.displayGuiScreen(null);
+			mc.setScreen(null);
 		}
 	}
 }

@@ -3,10 +3,11 @@ package com.elmfer.parkour_recorder.parkour;
 import java.nio.ByteBuffer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.MovementInput;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.Options;
+import net.minecraft.client.player.Input;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 
 /**Stores movement inputs and player's states for one tick.**/
 public class ParkourFrame {
@@ -24,34 +25,34 @@ public class ParkourFrame {
 	private final short flags;
 	
 	/**Create a frame from keybinds and the player's state.**/
-	public ParkourFrame(net.minecraft.client.GameSettings gameSettingsIn, ClientPlayerEntity playerIn)
+	public ParkourFrame(Options gameSettingsIn, LocalPlayer playerIn)
 	{
 		//Get Rotational Data
-		headYaw = playerIn.getRotationYawHead();
-		headPitch = playerIn.rotationPitch;
-		armYawOffset = playerIn.rotationYawHead - playerIn.renderArmYaw;
-		armPitchOffset = playerIn.rotationPitch - playerIn.renderArmPitch;
+		headYaw = playerIn.yHeadRot;
+		headPitch = playerIn.getXRot();
+		armYawOffset = playerIn.yHeadRot - playerIn.yBob;
+		armPitchOffset = playerIn.getXRot() - playerIn.xBob;
 		
 		//Get Positional Data
-		Vector3d playerPos = playerIn.getPositionVec();
+		Vec3 playerPos = playerIn.getPosition(0.0f);
 		posX = playerPos.x;
 		posY = playerPos.y;
 		posZ = playerPos.z;
 		
 		//Get Input Data
 		short flags = 0;
-		MovementInput playerInput = playerIn.movementInput;
-		if(playerInput.jump) flags |= Flags.JUMPING.value;
-		if(playerInput.sneaking) flags |= Flags.SNEAKING.value;
-		if(gameSettingsIn.keyBindForward.isKeyDown()) flags |= Flags.FORWARD.value;
-		if(gameSettingsIn.keyBindLeft.isKeyDown()) flags |= Flags.LEFT_STRAFE.value;
-		if(gameSettingsIn.keyBindRight.isKeyDown()) flags |= Flags.RIGHT_STRAFE.value;
-		if(gameSettingsIn.keyBindBack.isKeyDown()) flags |= Flags.BACKWARD.value;
+		Input playerInput = playerIn.input;
+		if(playerInput.jumping) flags |= Flags.JUMPING.value;
+		if(playerInput.shiftKeyDown) flags |= Flags.SNEAKING.value;
+		if(gameSettingsIn.keyUp.isDown()) flags |= Flags.FORWARD.value;
+		if(gameSettingsIn.keyLeft.isDown()) flags |= Flags.LEFT_STRAFE.value;
+		if(gameSettingsIn.keyRight.isDown()) flags |= Flags.RIGHT_STRAFE.value;
+		if(gameSettingsIn.keyDown.isDown()) flags |= Flags.BACKWARD.value;
 		if(playerIn.isSprinting()) flags |= Flags.SPRINTING.value;
-		if(gameSettingsIn.keyBindAttack.isKeyDown()) flags |= Flags.HITTING.value;
-		if(gameSettingsIn.keyBindUseItem.isKeyDown()) flags |= Flags.USING.value;
-		if(playerIn.func_233570_aj_()) flags |= Flags.ON_GROUND.value;
-		if(playerIn.abilities.isFlying) flags |= Flags.FLYING.value;
+		if(gameSettingsIn.keyAttack.isDown()) flags |= Flags.HITTING.value;
+		if(gameSettingsIn.keyUse.isDown()) flags |= Flags.USING.value;
+		if(playerIn.isOnGround()) flags |= Flags.ON_GROUND.value;
+		if(playerIn.getAbilities().flying) flags |= Flags.FLYING.value;
 		this.flags = flags;
 	}
 	
@@ -75,19 +76,19 @@ public class ParkourFrame {
 	}
 	
 	/**Set the entity's movement inputs from the frame**/
-	public void setMovementInput(MovementInput input, PlayerEntity entityIn)
+	public void setMovementInput(Input input, Player entityIn)
 	{
 		Minecraft mc = Minecraft.getInstance();
 		
-		input.forwardKeyDown = getFlag(Flags.FORWARD);
-		input.backKeyDown = getFlag(Flags.BACKWARD);
-		input.leftKeyDown = getFlag(Flags.LEFT_STRAFE);
-		input.rightKeyDown = getFlag(Flags.RIGHT_STRAFE);
-		input.jump = getFlag(Flags.JUMPING);
-		input.sneaking = getFlag(Flags.SNEAKING);
-		entityIn.setSneaking(getFlag(Flags.SNEAKING));
+		input.up = getFlag(Flags.FORWARD);
+		input.down = getFlag(Flags.BACKWARD);
+		input.left = getFlag(Flags.LEFT_STRAFE);
+		input.right = getFlag(Flags.RIGHT_STRAFE);
+		input.jumping = getFlag(Flags.JUMPING);
+		input.shiftKeyDown = getFlag(Flags.SNEAKING);
+		entityIn.setShiftKeyDown(getFlag(Flags.SNEAKING));
 		entityIn.setSprinting(getFlag(Flags.SPRINTING));
-		mc.player.abilities.isFlying = getFlag(Flags.FLYING);
+		mc.player.getAbilities().flying = getFlag(Flags.FLYING);
 	}
 	
 	@Override

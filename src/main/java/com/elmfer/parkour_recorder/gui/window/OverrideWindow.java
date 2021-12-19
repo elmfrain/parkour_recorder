@@ -7,7 +7,7 @@ import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 /**Override alert box. Used for saving overridden recordings.**/
 public class OverrideWindow extends Window
@@ -16,9 +16,9 @@ public class OverrideWindow extends Window
 	private final ConfirmOverride override;
 	private final SaveToNew saveNew;
 	private final String message;
-	private Button overrideButton = new Button(I18n.format("com.elmfer.override"));
-	private Button saveButton = new Button(I18n.format("com.elmfer.save_as_new"));
-	private Button cancelButton = new Button(I18n.format("com.elmfer.cancel"));
+	private Button overrideButton = new Button(I18n.get("com.elmfer.override"));
+	private Button saveButton = new Button(I18n.get("com.elmfer.save_as_new"));
+	private Button cancelButton = new Button(I18n.get("com.elmfer.cancel"));
 	
 	public OverrideWindow(String titleIn, String message, ConfirmOverride overrideCallback, SaveToNew saveNewCallback)
 	{

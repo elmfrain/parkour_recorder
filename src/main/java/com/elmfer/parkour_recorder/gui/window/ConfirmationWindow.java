@@ -5,13 +5,13 @@ import org.lwjgl.glfw.GLFW;
 import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 public class ConfirmationWindow extends Window {
 	
 	private Callback callback;
-	private Button yesButton = new Button(I18n.format("com.elmfer.yes"));
-	private Button cancelButton = new Button(I18n.format("com.elmfer.cancel"));
+	private Button yesButton = new Button(I18n.get("com.elmfer.yes"));
+	private Button cancelButton = new Button(I18n.get("com.elmfer.cancel"));
 	
 	public ConfirmationWindow(String title, Callback func)
 	{

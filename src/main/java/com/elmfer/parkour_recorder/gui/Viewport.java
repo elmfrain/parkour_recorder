@@ -9,9 +9,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-
-import net.minecraft.client.MainWindow;
-import net.minecraft.client.Minecraft;
+import com.mojang.math.Matrix4f;
 
 public class Viewport
 {
@@ -29,7 +27,7 @@ public class Viewport
 		right = UIrender.getUIwidth();
 		bottom = UIrender.getUIheight();
 		guiMatrix = BufferUtils.createFloatBuffer(16);
-		GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, guiMatrix);
+		RenderSystem.getModelViewMatrix().store(guiMatrix);
 	}
 	
 	public Viewport(Viewport parent)
@@ -100,7 +98,7 @@ public class Viewport
 	
 	public void pushMatrix(boolean setViewport)
 	{
-		GL11.glPushMatrix();
+		RenderSystem.getModelViewStack().pushPose();
 		if(setViewport)
 		{
 			prevViewport = BufferUtils.createIntBuffer(16);
@@ -115,25 +113,26 @@ public class Viewport
 			int	width = (int) (getWidth() * factor);
 			int	height = (int) (getHeight() * factor);
 			GL11.glViewport(x, y, width, height);
-			GL11.glMatrixMode(GL11.GL_PROJECTION);
-			GL11.glLoadIdentity();
-			GL11.glOrtho(0, getWidth(), getHeight(), 0, 1000.0D, 3000.0D);
-			GL11.glMatrixMode(GL11.GL_MODELVIEW);
-			
-			GL11.glLoadMatrixf(getGuiMatrix());
+			RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0f, getWidth(), 0.0f, getHeight(), 1000.0f, 3000.0f));
+		
+			RenderSystem.getModelViewStack().last().pose().load(getGuiMatrix());
+			RenderSystem.applyModelViewMatrix();
 		}
 		else 
 		{
-			GL11.glLoadMatrixf(getGuiMatrix());
-			GL11.glTranslatef(left, top, 0.0f);
+			RenderSystem.getModelViewStack().last().pose().load(getGuiMatrix());
+			RenderSystem.getModelViewStack().translate(left, top, 0.0f);
+			
 			for(int i = parents.size() - 1; i >= 0; i--)
 			{
 				Viewport v = parents.get(i);
 				if(v.prevViewport == null)
-					GL11.glTranslatef(v.left, v.top, 0.0f);
+					RenderSystem.getModelViewStack().translate(v.left, v.top, 0.0f);
 				else
 					break;
 			}
+			
+			RenderSystem.applyModelViewMatrix();
 		}
 	}
 	
@@ -145,18 +144,15 @@ public class Viewport
 			setupOverlayRendering();
 			prevViewport = null;
 		}
-		GL11.glPopMatrix();
+		RenderSystem.getModelViewStack().popPose();
+		RenderSystem.applyModelViewMatrix();
 	}
 	
 	private void setupOverlayRendering()
 	{
-		MainWindow mainwindow = Minecraft.getInstance().getMainWindow();
-        RenderSystem.clear(256, Minecraft.IS_RUNNING_ON_MAC);
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glOrtho(0.0D, (double)mainwindow.getFramebufferWidth() / mainwindow.getGuiScaleFactor(), (double)mainwindow.getFramebufferHeight() / mainwindow.getGuiScaleFactor(), 0.0D, 1000.0D, 3000.0D);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glLoadIdentity();
-        GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
+        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0f, UIrender.getUIwidth(), 0.0f, UIrender.getUIheight(), 1000.0f, 3000.0f));
+        RenderSystem.getModelViewStack().setIdentity();
+        RenderSystem.getModelViewStack().translate(0.0f, 0.0f, -2000.0f);
+        RenderSystem.applyModelViewMatrix();
 	}
 }

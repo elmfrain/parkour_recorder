@@ -8,13 +8,13 @@ import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
 import com.elmfer.parkour_recorder.gui.widgets.TextField;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 public class NamingWindow extends Window
 {
 	private final TextField textField = new TextField();
-	private Button nameButton = new Button(I18n.format("com.elmfer.name"));
-	private Button cancelButton = new Button(I18n.format("com.elmfer.cancel"));
+	private Button nameButton = new Button(I18n.get("com.elmfer.name"));
+	private Button cancelButton = new Button(I18n.get("com.elmfer.cancel"));
 	private Predicate<String> textValidator;
 	private NamedCallback callback;
 	
@@ -24,7 +24,7 @@ public class NamingWindow extends Window
 		textValidator = textPredicate;
 		this.callback = callback;
 		
-		textField.setTitle(I18n.format("com.elmfer.type_here"));
+		textField.setTitle(I18n.get("com.elmfer.type_here"));
 		
 		cancelButton.setAction((b) -> {setShouldClose(true);});
 		nameButton.setAction((b) -> 

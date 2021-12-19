@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.gui.UIinput;
 import com.elmfer.parkour_recorder.gui.UIrender;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public abstract class Widget implements UIinput.Listener
 {
@@ -192,7 +193,7 @@ public abstract class Widget implements UIinput.Listener
 			
 			MODELVIEW_MATRIX.rewind();
 			VIEWPORT_PARAMS.rewind();
-			GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, MODELVIEW_MATRIX);
+			RenderSystem.getModelViewMatrix().store(MODELVIEW_MATRIX);
 	    	GL11.glGetIntegerv(GL11.GL_VIEWPORT, VIEWPORT_PARAMS);
 	    	
 	    	viewportX = VIEWPORT_PARAMS.get(0) / uiScale;

@@ -1,10 +1,9 @@
 package com.elmfer.parkour_recorder.gui;
 
-import org.lwjgl.opengl.GL11;
-
 import com.elmfer.parkour_recorder.animation.Smoother;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class ButtonListView extends Widget
 {
@@ -30,9 +29,10 @@ public class ButtonListView extends Widget
 		viewport.pushMatrix(true);
 		{
 			//Draw buttons
-			GL11.glPushMatrix();
+			RenderSystem.getModelViewStack().pushPose();
 			{
-				GL11.glTranslated(0, scrollPosition.getValue(), 0);
+				RenderSystem.getModelViewStack().translate(0, scrollPosition.getValue(), 0);
+				RenderSystem.applyModelViewMatrix();
 				
 				int i = 0;
 				for(Widget child : getChildrenWidgets())
@@ -43,7 +43,8 @@ public class ButtonListView extends Widget
 					child.draw();
 				}
 			}
-			GL11.glPopMatrix();
+			RenderSystem.getModelViewStack().popPose();
+			RenderSystem.applyModelViewMatrix();
 			
 			//Draw scroll tab
 			int tabHeight = (int) (((float) viewport.getHeight() / listHeight) * viewport.getHeight());

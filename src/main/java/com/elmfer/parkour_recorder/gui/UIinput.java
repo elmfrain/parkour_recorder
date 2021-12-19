@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class UIinput
@@ -61,12 +61,12 @@ public class UIinput
 	
 	public static int getUICursorX()
 	{
-		return (int) (mc.mouseHelper.getMouseX() / UIrender.getUIScaleFactor());
+		return (int) (mc.mouseHandler.xpos() / UIrender.getUIScaleFactor());
 	}
 	
 	public static int getUICursorY()
 	{
-		return (int) (mc.mouseHelper.getMouseY() / UIrender.getUIScaleFactor());
+		return (int) (mc.mouseHandler.ypos() / UIrender.getUIScaleFactor());
 	}
 	
 	public static boolean isCtrlPressed()
@@ -88,8 +88,8 @@ public class UIinput
 	{
 		int uiScale = UIrender.getUIScaleFactor();
 		
-		float currentMouseX = (float) mc.mouseHelper.getMouseX();
-		float currentMouseY = (float) mc.mouseHelper.getMouseY();
+		float currentMouseX = (float) mc.mouseHandler.xpos();
+		float currentMouseY = (float) mc.mouseHandler.ypos();
 		
 		final float cursorX = currentMouseX / uiScale;
 		final float cursorY = currentMouseY / uiScale;
@@ -145,7 +145,7 @@ public class UIinput
 	}
 	
 	@SubscribeEvent
-	public static void onKeyPressed(GuiScreenEvent.KeyboardKeyPressedEvent.Pre event)
+	public static void onKeyPressed(ScreenEvent.KeyboardKeyPressedEvent.Pre event)
 	{
 		keyPressed = event.getKeyCode();
 		if(event.getKeyCode() == GLFW.GLFW_KEY_LEFT_ALT || event.getKeyCode() == GLFW.GLFW_KEY_RIGHT_ALT)
@@ -157,7 +157,7 @@ public class UIinput
 	}
 	
 	@SubscribeEvent
-	public static void onKeyRelease(GuiScreenEvent.KeyboardKeyReleasedEvent.Pre event)
+	public static void onKeyRelease(ScreenEvent.KeyboardKeyReleasedEvent.Pre event)
 	{
 		if(event.getKeyCode() == GLFW.GLFW_KEY_LEFT_ALT || event.getKeyCode() == GLFW.GLFW_KEY_RIGHT_ALT)
 			isAltPressed = false;
@@ -168,25 +168,25 @@ public class UIinput
 	}
 	
 	@SubscribeEvent
-	public static void onCharTyped(GuiScreenEvent.KeyboardCharTypedEvent.Pre event)
+	public static void onCharTyped(ScreenEvent.KeyboardCharTypedEvent.Pre event)
 	{
 		charTyped = event.getCodePoint();
 	}
 	
 	@SubscribeEvent
-	public static void onMouseClicked(GuiScreenEvent.MouseClickedEvent.Pre event)
+	public static void onMouseClicked(ScreenEvent.MouseClickedEvent.Pre event)
 	{
 		mousePressedStates |= 1 << event.getButton();
 	}
 	
 	@SubscribeEvent
-	public static void onMouseReleased(GuiScreenEvent.MouseReleasedEvent.Pre event)
+	public static void onMouseReleased(ScreenEvent.MouseReleasedEvent.Pre event)
 	{
 		mouseReleasedStates |= 1 << event.getButton();
 	}
 	
 	@SubscribeEvent
-	public static void onGuiScroll(GuiScreenEvent.MouseScrollEvent.Pre event)
+	public static void onGuiScroll(ScreenEvent.MouseScrollEvent.Pre event)
 	{
 		scroll = (float) event.getScrollDelta() * 100;
 	}

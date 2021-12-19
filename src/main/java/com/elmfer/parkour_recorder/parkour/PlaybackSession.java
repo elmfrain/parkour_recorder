@@ -4,13 +4,13 @@ import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.MovementInputFromOptions;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextComponentUtils;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.phys.Vec3;
 
 public class PlaybackSession implements IParkourSession {
 
@@ -23,14 +23,14 @@ public class PlaybackSession implements IParkourSession {
 	private int frameNumber = 0;
 	private ParkourFrame currentFrame = null;
 	private int playbackCountdown = 0;
-	private Vector3d startingPos;
+	private Vec3 startingPos;
 	private boolean initiated = false;
 	
 	public PlaybackSession(Recording recording)
 	{
 		this.recording = recording;
 		ParkourFrame startingFrame = recording.get(recording.startingFrame);
-		startingPos = new Vector3d(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
+		startingPos = new Vec3(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
 		frameNumber = recording.startingFrame;
 		
 	}
@@ -48,7 +48,7 @@ public class PlaybackSession implements IParkourSession {
 		
 		framePos = Math.max(Math.min(framePos, recording.size() - 2), 0);
 		ParkourFrame startingFrame = recording.get(framePos);
-		startingPos = new Vector3d(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
+		startingPos = new Vec3(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
 		frameNumber = framePos;
 		recording.startingFrame = framePos;
 		initiated = false;
@@ -109,15 +109,15 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(!mc.isGamePaused())
+		if(!mc.isPaused())
 		{
 			playbackCountdown = Math.max(0, playbackCountdown - 1);
-			if(waitingForPlayer && startingPos.distanceTo(mc.player.getPositionVec()) < 0.25)
+			if(waitingForPlayer && startingPos.distanceTo(mc.player.getPosition(0.0f)) < 0.25)
 			{
 				isPlaying = true;
 				playbackCountdown = 10;
-				mc.player.movementInput = new ControlledMovementInput();
-				mc.player.setVelocity(0, 0, 0);
+				mc.player.input = new ControlledMovementInput();
+				mc.player.setDeltaMovement(0.0, 0.0, 0.0);
 				frameNumber = recording.startingFrame;
 				waitingForPlayer = false;
 			}
@@ -127,13 +127,13 @@ public class PlaybackSession implements IParkourSession {
 				{
 					if(!initiated)
 					{
-						mc.player.setPositionAndUpdate(startingPos.x, startingPos.y, startingPos.z);
-						if(arrow.isAlive()) arrow.setExpired();
+						mc.player.setPos(startingPos.x, startingPos.y, startingPos.z);
+						if(arrow.isAlive()) arrow.remove();
 						initiated = true;
 					}
 					currentFrame = recording.get(frameNumber);
 					
-					currentFrame.setMovementInput(mc.player.movementInput, mc.player);
+					currentFrame.setMovementInput(mc.player.input, mc.player);
 					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 					frameNumber++;
 				}
@@ -146,42 +146,44 @@ public class PlaybackSession implements IParkourSession {
 	@Override
 	public void onRenderTick()
 	{
-		if(!mc.isGamePaused())
+		if(!mc.isPaused())
 		{	
-			float partialTicks = mc.getRenderPartialTicks();
+			float partialTicks = mc.getFrameTime();
 			if(playbackCountdown > 0)
 			{
 				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
 				ParkourFrame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 				
-				mc.player.rotationYaw = GraphicsHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
-				mc.player.rotationPitch = GraphicsHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
+				mc.player.setYRot(GraphicsHelper.lerp(countdownAmount, mc.player.getYRot(), firstFrame.headYaw));
+				mc.player.setXRot(GraphicsHelper.lerp(countdownAmount, mc.player.getXRot(), firstFrame.headPitch));
 				
-				Vector3d pos = mc.player.getPositionVec();
+				Vec3 pos = mc.player.getPosition(0.0f);
 				double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
 				double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
 				double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
 				
-				mc.player.setPosition(posX, posY, posZ);
+				mc.player.setPos(posX, posY, posZ);
 			}
 			else if(isPlaying)
 			{
 				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 				
-				mc.player.prevRotationYaw = mc.player.rotationYaw = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-				mc.player.prevRotationPitch = mc.player.rotationPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+				mc.player.yRotO = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.setYRot(mc.player.yRotO);
+				mc.player.xRotO = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+				mc.player.setXRot(mc.player.xRotO);
 				
-				Vector3d playerPos = mc.player.getPositionVec();
-				Vector3d framePos = new Vector3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
+				Vec3 playerPos = mc.player.getPosition(0.0f);
+				Vec3 framePos = new Vec3(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
 				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
 				{
-					IFormattableTextComponent errorMessage = TextComponentUtils.func_240647_a_(new TranslationTextComponent("com.elmfer.playback_failed"));
-					errorMessage.func_240699_a_(TextFormatting.RED);
-					mc.ingameGUI.getChatGUI().printChatMessage(errorMessage);
+					Component errorMessage = ComponentUtils.fromMessage(new TranslatableComponent("com.elmfer.playback_failed"));
+					errorMessage.getStyle().applyFormat(ChatFormatting.RED);
+					mc.gui.getChat().addMessage(errorMessage);
 					stop();
 				}
 				else
-					mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+					mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 			}
 		}
 	}
@@ -198,18 +200,18 @@ public class PlaybackSession implements IParkourSession {
 		//double motionZ = playerPos.z - mc.player.prevPosZ;
 		//mc.player.setVelocity(motionX, motionY, motionZ);
 		
-		mc.player.movementInput = new MovementInputFromOptions(mc.gameSettings);
+		mc.player.input = new KeyboardInput(mc.options);
 	}
 
 	private void spawnParticles()
 	{
 		despawnParticles();
 		
-		arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
-		mc.particles.addEffect(arrow);
+		arrow = new ParticleArrow(mc.level, startingPos.x, startingPos.y, startingPos.z);
+		mc.particleEngine.add(arrow);
 		
-		finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
-		mc.particles.addEffect(finish);
+		finish = new ParticleFinish(mc.level, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
+		mc.particleEngine.add(finish);
 	}
 	
 	public int getFrameNumber()
@@ -219,8 +221,8 @@ public class PlaybackSession implements IParkourSession {
 	
 	private void despawnParticles()
 	{
-		if(finish != null) finish.setExpired();
-		if(arrow != null) arrow.setExpired();
+		if(finish != null) finish.remove();
+		if(arrow != null) arrow.remove();
 	}
 
 	@Override

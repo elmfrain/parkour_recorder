@@ -3,9 +3,12 @@ package com.elmfer.parkour_recorder.render;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -16,13 +19,19 @@ import org.lwjgl.opengl.GL30;
 import com.elmfer.parkour_recorder.ParkourRecorderMod;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class ModelManager {
 	
+	private static final List<Consumer<Integer>> SCHEDULED_OPERATIONS = new ArrayList<>();
 	private static final Map<String, Model> models = new HashMap<String, Model>();
-	private static final int VERTEX_BYTES = 44;
+	private static final int VERTEX_BYTES = 36;
+	
+	public static void onRenderTick()
+	{
+		SCHEDULED_OPERATIONS.forEach((o) -> o.accept(0));
+		SCHEDULED_OPERATIONS.clear();
+	}
 	
 	public static void loadModelFromResource(ResourceLocation model) {
 		
@@ -71,10 +80,10 @@ public class ModelManager {
 						modelData.putFloat(scanner.nextFloat()); // norm z 
 						modelData.putFloat(scanner.nextFloat()); // tex s
 						modelData.putFloat(scanner.nextFloat()); // tex t 
-						modelData.putFloat(scanner.nextFloat() / 255.0f); // color r
-						modelData.putFloat(scanner.nextFloat() / 255.0f); // color g
-						modelData.putFloat(scanner.nextFloat() / 255.0f); // color b
-						scanner.nextFloat(); // color a
+						modelData.put((byte) scanner.nextInt()); //color r
+						modelData.put((byte) scanner.nextInt()); //color g
+						modelData.put((byte) scanner.nextInt()); //color b
+						modelData.put((byte) scanner.nextInt()); //color a
 						vertexCount++;	
 					}
 					else if(faceCount < faceTotal)
@@ -101,8 +110,9 @@ public class ModelManager {
 			scanner.close();
 			modelFile.close();
 		}catch(Exception e) {
-			CrashReport report = new CrashReport("Invalid Model: ", e.getCause());
-			Minecraft.getInstance().crashed(report);
+			//CrashReport report = new CrashReport("Invalid Model: ", e.getCause());
+			//Minecraft.crash(report);
+			e.printStackTrace();
 		}
 	}
 	
@@ -115,7 +125,7 @@ public class ModelManager {
 		}
 		else
 		{
-			loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/" + modelName + ".ply"));
+			SCHEDULED_OPERATIONS.add((i) -> {loadModelFromResource(new ResourceLocation(ParkourRecorderMod.MOD_ID, "models/" + modelName + ".ply"));});
 			return false;
 		}
 	}
@@ -150,19 +160,10 @@ public class ModelManager {
 				GL20.glEnableVertexAttribArray(1);
 				GL20.glEnableVertexAttribArray(2);
 				GL20.glEnableVertexAttribArray(3);
-				GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 0);
-				GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 3);
-				GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 6);
-				GL20.glVertexAttribPointer(3, 3, GL11.GL_FLOAT, false, Float.BYTES * 11, Float.BYTES * 8);
-				
-				GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-				GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);				
-				GL11.glVertexPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 0);
-				GL11.glNormalPointer(GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 3);
-				GL11.glTexCoordPointer(2, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 6);
-				GL11.glColorPointer(3, GL11.GL_FLOAT, Float.BYTES * 11, Float.BYTES * 8);
+				GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT,         false, VERTEX_BYTES, Float.BYTES * 0);
+				GL20.glVertexAttribPointer(3, 3, GL11.GL_FLOAT,         false, VERTEX_BYTES, Float.BYTES * 3);
+				GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT,         false, VERTEX_BYTES, Float.BYTES * 6);
+				GL20.glVertexAttribPointer(1, 4, GL11.GL_UNSIGNED_BYTE,  true, VERTEX_BYTES, Float.BYTES * 8);
 			}
 			GL30.glBindVertexArray(0);
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
@@ -178,9 +179,10 @@ public class ModelManager {
 		
 		public void render(int drawMode)
 		{
+			int prevBinding = GL11.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
 			GL30.glBindVertexArray(glVertArrayID);
 			GL11.glDrawElements(drawMode, vertexCount, GL11.GL_UNSIGNED_INT, 0);
-			GL30.glBindVertexArray(0);
+			GL30.glBindVertexArray(prevBinding);
 		}
 	}
 }

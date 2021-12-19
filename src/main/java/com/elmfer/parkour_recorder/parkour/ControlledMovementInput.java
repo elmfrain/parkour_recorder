@@ -1,19 +1,18 @@
 package com.elmfer.parkour_recorder.parkour;
 
-import net.minecraft.util.MovementInput;
+import net.minecraft.client.player.Input;
 
-public class ControlledMovementInput extends MovementInput {
+public class ControlledMovementInput extends Input {
 	
-	/** updatePlayerMoveState(boolean slowdown) **/
 	@Override
-	public void func_225607_a_(boolean p_225607_1_)
+	public void tick(boolean p_225607_1_)
 	{
-		 this.moveForward = this.forwardKeyDown == this.backKeyDown ? 0.0F : (this.forwardKeyDown ? 1.0F : -1.0F);
-		 this.moveStrafe = this.leftKeyDown == this.rightKeyDown ? 0.0F : (this.leftKeyDown ? 1.0F : -1.0F);
+		 this.forwardImpulse = this.up == this.down ? 0.0F : (this.up ? 1.0F : -1.0F);
+		 this.leftImpulse = this.left == this.right ? 0.0F : (this.left ? 1.0F : -1.0F);
 		 if (p_225607_1_)
 		 {
-		    this.moveStrafe = (float)((double)this.moveStrafe * 0.3D);
-		    this.moveForward = (float)((double)this.moveForward * 0.3D);
+		    this.leftImpulse = (float)((double)this.leftImpulse * 0.3D);
+		    this.forwardImpulse = (float)((double)this.forwardImpulse * 0.3D);
 		 }
 	}
 }

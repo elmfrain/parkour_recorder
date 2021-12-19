@@ -11,6 +11,7 @@ import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
 import com.elmfer.parkour_recorder.gui.UIrender.Stencil;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class TextField extends Button
 {
@@ -235,10 +236,11 @@ public class TextField extends Button
 				UIrender.drawString(Anchor.MID_LEFT, title, x + SPACING - titleOffset, y + height / 2, GraphicsHelper.getIntColor(0.7f, 0.7f, 0.7f, titleTransparency));
 			}
 			
-			GL11.glPushMatrix();
+			RenderSystem.getModelViewStack().pushPose();
 			{
 				float scroll = (float) textScroll.getValue();
-				GL11.glTranslatef(scroll, 0.0f, 0.0f);
+				RenderSystem.getModelViewStack().translate(scroll, 0.0, 0.0);
+				RenderSystem.applyModelViewMatrix();
 				
 				if(focused)
 				{			
@@ -261,7 +263,8 @@ public class TextField extends Button
 				
 				UIrender.drawString(Anchor.MID_LEFT, getText(), x + SPACING, y + height / 2, textColor);
 			}
-			GL11.glPopMatrix();
+			RenderSystem.getModelViewStack().popPose();
+			RenderSystem.applyModelViewMatrix();
 		}
 		Stencil.popStencilState();
 	}

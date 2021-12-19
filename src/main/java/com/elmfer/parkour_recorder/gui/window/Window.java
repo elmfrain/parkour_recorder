@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import org.lwjgl.opengl.GL11;
-
 import com.elmfer.parkour_recorder.gui.GuiStyle;
 import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
@@ -13,6 +11,7 @@ import com.elmfer.parkour_recorder.gui.UIrender.Direction;
 import com.elmfer.parkour_recorder.gui.Viewport;
 import com.elmfer.parkour_recorder.gui.widgets.Button;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 abstract public class Window extends Widget {
 
@@ -133,12 +132,12 @@ abstract public class Window extends Widget {
 		int i = 0;
 		for(Window window : LOADED_WINDOWS)
 		{
-			GL11.glPushMatrix();
+			RenderSystem.getModelViewStack().pushPose();
 			{
-				GL11.glTranslatef(4 * i, 4 * i++, 0);
+				RenderSystem.getModelViewStack().translate(4 * i, 4 * i++, 0);
 				window.draw();
 			}
-			GL11.glPopMatrix();
+			RenderSystem.getModelViewStack().popPose();
 			i++;
 		}
 	}
