@@ -67,29 +67,6 @@ public class TimelineView extends Widget implements IMenuTabView
 
 	public TimelineView()
 	{
-		// Set session state
-		if (EventHandler.session instanceof PlaybackSession)
-		{
-			PlaybackSession session = (PlaybackSession) EventHandler.session;
-			this.session = session.isPlaying() ? SessionType.PLAYBACK : SessionType.REPLAY;
-		}
-
-		if (session.isActive()) // Setup timeline object if there is a recording loaded
-		{
-			PlaybackSession session = (PlaybackSession) EventHandler.session;
-
-			double duration = (session.recording.size() - 1) / 20.0;
-			timeline = new Timeline(duration);
-			Property framePos = new Property("framePos", 0.0, session.recording.size() - 1);
-			timeline.addProperties(framePos);
-			timeline.setTimePos(session.recording.startingFrame / 20.0);
-		} else // Setup a dummy timline object
-		{
-			timeline = new Timeline(1.0);
-			Property framePos = new Property("framePos", 0.0, 1.0);
-			timeline.addProperties(framePos);
-		}
-
 		speedSlider.setAmount(0.248120301);
 		setButtonsIcons();
 		setButtonsActions();
@@ -348,6 +325,30 @@ public class TimelineView extends Widget implements IMenuTabView
 
 	public void refresh()
 	{
+		// Set session state
+		if (EventHandler.session instanceof PlaybackSession)
+		{
+			PlaybackSession session = (PlaybackSession) EventHandler.session;
+			this.session = session.isPlaying() ? SessionType.PLAYBACK : SessionType.REPLAY;
+		}
+		else session = SessionType.NONE;
+
+		if (session.isActive()) // Setup timeline object if there is a recording loaded
+		{
+			PlaybackSession session = (PlaybackSession) EventHandler.session;
+
+			double duration = (session.recording.size() - 1) / 20.0;
+			timeline = new Timeline(duration);
+			Property framePos = new Property("framePos", 0.0, session.recording.size() - 1);
+			timeline.addProperties(framePos);
+			timeline.setTimePos(session.recording.startingFrame / 20.0);
+		} else // Setup a dummy timline object
+		{
+			timeline = new Timeline(1.0);
+			Property framePos = new Property("framePos", 0.0, 1.0);
+			timeline.addProperties(framePos);
+		}
+
 		if (session == SessionType.REPLAY)
 		{
 			if (viewer == null)

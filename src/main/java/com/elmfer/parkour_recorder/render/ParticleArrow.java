@@ -1,11 +1,11 @@
 package com.elmfer.parkour_recorder.render;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
@@ -36,8 +36,11 @@ public class ParticleArrow extends Particle
 		float ticks = particleAge + partialTicks;
 		float angle = (float) ((60.0f * Math.log(2 * ticks + 1) + ticks) * 2);
 
-		GlStateManager.disableTexture2D();
-		RenderHelper.disableStandardItemLighting();
+		GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+		
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
 		GlStateManager.pushMatrix();
@@ -52,7 +55,9 @@ public class ParticleArrow extends Particle
 
 		GlStateManager.popMatrix();
 
-		GlStateManager.disableLighting();
-		GlStateManager.enableTexture2D();
+		GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}
 }
