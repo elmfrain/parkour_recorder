@@ -393,7 +393,9 @@ public class TimelineView extends Widget implements IMenuTabView
 
 			taskBar.pushMatrix(false);
 			{
-				GL11.glTranslatef(0, taskBar.getHeight(), 0);
+				RenderSystem.getModelViewStack().translate(0, taskBar.getHeight(), 0);
+				RenderSystem.applyModelViewMatrix();
+				
 				UIrender.drawRect(SMALL_MARGIN, SMALL_MARGIN, STRING_LENGTH + stringOffset,
 						SMALL_MARGIN + STRING_HEIGHT, BACKROUND_COLOR);
 				UIrender.drawGradientRect(Direction.TO_RIGHT, STRING_LENGTH + stringOffset, SMALL_MARGIN,
