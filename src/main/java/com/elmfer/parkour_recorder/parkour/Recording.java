@@ -283,6 +283,12 @@ public class Recording implements List<ParkourFrame>
 		return name;
 	}
 
+	public boolean isLoop()
+	{
+		// init pos and last pos in loop parkour data must be same position.
+		return initPos.equals(lastPos);
+	}
+
 	/**
 	 * Create recording from raw data. May throw an exception if file is corrupted.
 	 **/

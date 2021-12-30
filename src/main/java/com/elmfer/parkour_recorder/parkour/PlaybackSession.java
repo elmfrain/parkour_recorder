@@ -1,5 +1,6 @@
 package com.elmfer.parkour_recorder.parkour;
 
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
@@ -137,7 +138,9 @@ public class PlaybackSession implements IParkourSession {
 					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 					frameNumber++;
 				}
-				else 
+				else if (ConfigManager.isLoopMode() && recording.isLoop())
+					frameNumber = 0;
+				else
 					stop();
 			}
 		}
