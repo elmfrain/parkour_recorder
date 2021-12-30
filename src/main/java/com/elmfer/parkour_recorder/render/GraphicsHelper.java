@@ -35,7 +35,26 @@ public class GraphicsHelper {
 	{
 		return prevValue + (value - prevValue) * partials;
 	}
-	
+
+	// 2D Angle Interpolation (shortest distance) by shaunlebron
+	// https://gist.github.com/shaunlebron/8832585
+	private static double shortAngleDist(double prevValue, double value)
+	{
+		double max = 360.0;
+		double da = (value - prevValue) % max;
+		return 2 * da % max - da;
+	}
+
+	public static float lerpAngle(float partials, float prevValue, float value)
+	{
+		return prevValue + (float) shortAngleDist(prevValue, value) * partials;
+	}
+
+	public static double lerpAngle(float partials, double prevValue, double value)
+	{
+		return prevValue + shortAngleDist(prevValue, value) * partials;
+	}
+
 	public static Vector4f getFloatColor(int color)
 	{
 		float f = (float)(color >> 24 & 255) / 255.0F;

@@ -139,7 +139,10 @@ public class PlaybackSession implements IParkourSession {
 					frameNumber++;
 				}
 				else if (ConfigManager.isLoopMode() && recording.isLoop())
-					frameNumber = 0;
+				{
+					initiated = false;
+					frameNumber = recording.startingFrame;
+				}
 				else
 					stop();
 			}
@@ -157,7 +160,7 @@ public class PlaybackSession implements IParkourSession {
 				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
 				ParkourFrame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 				
-				mc.player.rotationYaw = GraphicsHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
+				mc.player.rotationYaw = GraphicsHelper.lerpAngle(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
 				mc.player.rotationPitch = GraphicsHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
 				
 				Vector3d pos = mc.player.getPositionVec();
@@ -171,7 +174,7 @@ public class PlaybackSession implements IParkourSession {
 			{
 				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 				
-				mc.player.prevRotationYaw = mc.player.rotationYaw = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.prevRotationYaw = mc.player.rotationYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
 				mc.player.prevRotationPitch = mc.player.rotationPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
 				
 				Vector3d playerPos = mc.player.getPositionVec();
