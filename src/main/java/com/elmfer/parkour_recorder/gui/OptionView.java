@@ -10,11 +10,28 @@ import org.lwjgl.opengl.GL11;
 public class OptionView extends Widget implements IMenuTabView
 {
 
+	private Button hiddenIpButton = new Button(getHiddenIpText());
+
 	public OptionView()
 	{
 		super();
 
-		addWidgets();
+		addWidgets(hiddenIpButton);
+
+		hiddenIpButton.setAction(b ->
+		{
+			ConfigManager.saveHiddenIp(!ConfigManager.isHiddenIp());
+			hiddenIpButton.setText(getHiddenIpText());
+		});
+	}
+
+	private static String getHiddenIpText()
+	{
+		return I18n.format("com.elmfer.hidden_ip",
+				ConfigManager.isHiddenIp()
+						? I18n.format("com.elmfer.enabled")
+						: I18n.format("com.elmfer.disabled")
+		);
 	}
 
 	@Override
@@ -60,7 +77,7 @@ public class OptionView extends Widget implements IMenuTabView
 
 			aside.pushMatrix(true);
 			{
-				Button[] buttons = {};
+				Button[] buttons = {hiddenIpButton};
 				int i = 0;
 				for(Button button : buttons)
 				{
