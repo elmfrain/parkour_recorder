@@ -10,11 +10,28 @@ import org.lwjgl.opengl.GL11;
 public class OptionView extends Widget implements IMenuTabView
 {
 
+	private Button enableLoopButton = new Button(getLoopButtonText());
+
 	public OptionView()
 	{
 		super();
 
-		addWidgets();
+		addWidgets(enableLoopButton);
+
+		enableLoopButton.setAction(b ->
+		{
+			ConfigManager.saveLoopMode(!ConfigManager.isLoopMode());
+			enableLoopButton.setText(getLoopButtonText());
+		});
+	}
+
+	private static String getLoopButtonText()
+	{
+		return I18n.format("com.elmfer.loop",
+				ConfigManager.isLoopMode()
+						? I18n.format("com.elmfer.enabled")
+						: I18n.format("com.elmfer.disabled")
+		);
 	}
 
 	@Override
@@ -60,7 +77,7 @@ public class OptionView extends Widget implements IMenuTabView
 
 			aside.pushMatrix(true);
 			{
-				Button[] buttons = {};
+				Button[] buttons = {enableLoopButton};
 				int i = 0;
 				for(Button button : buttons)
 				{

@@ -18,6 +18,7 @@
     "com.elmfer.keybind.record": "Record",
     "com.elmfer.list": "List",
     "com.elmfer.load": "Load",
+    "com.elmfer.loop": "Loop Mode: %s",
     "com.elmfer.name": "Name",
     "com.elmfer.name_recording": "Name Recording",
     "com.elmfer.no_recording_is_loaded": "No recording is loaded",
