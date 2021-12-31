@@ -45,7 +45,7 @@ public class MenuScreen extends UIscreen
 		loadTab.setText(I18n.format("com.elmfer.load"));
 		saveTab.setText(I18n.format("com.elmfer.save"));
 		timelineTab.setText(I18n.format("com.elmfer.timeline"));
-		optionTab.setText(I18n.format("com.elmfer.option"));
+		optionTab.setText(I18n.format("com.elmfer.options"));
 		modTitleTab.setText(I18n.format("com.elmfer.parkour_recorder"));
 		
 		loadTab.width = UIrender.getStringWidth(loadTab.getText()) + 10;

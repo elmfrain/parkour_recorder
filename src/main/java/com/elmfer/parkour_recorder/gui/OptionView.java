@@ -9,19 +9,25 @@ import org.lwjgl.opengl.GL11;
 
 public class OptionView extends Widget implements IMenuTabView
 {
-
 	private Button enableLoopButton = new Button(getLoopButtonText());
+	private Button hiddenIpButton = new Button(getHiddenIpText());
 
 	public OptionView()
 	{
 		super();
 
-		addWidgets(enableLoopButton);
+		addWidgets(enableLoopButton, hiddenIpButton);
 
 		enableLoopButton.setAction(b ->
 		{
 			ConfigManager.saveLoopMode(!ConfigManager.isLoopMode());
 			enableLoopButton.setText(getLoopButtonText());
+		});
+		
+		hiddenIpButton.setAction(b ->
+		{
+			ConfigManager.saveHiddenIp(!ConfigManager.isHiddenIp());
+			hiddenIpButton.setText(getHiddenIpText());
 		});
 	}
 
@@ -29,6 +35,16 @@ public class OptionView extends Widget implements IMenuTabView
 	{
 		return I18n.format("com.elmfer.loop",
 				ConfigManager.isLoopMode()
+						? I18n.format("com.elmfer.enabled")
+						: I18n.format("com.elmfer.disabled")
+		);
+
+	}
+
+	private static String getHiddenIpText()
+	{
+		return I18n.format("com.elmfer.hidden_ip",
+				ConfigManager.isHiddenIp()
 						? I18n.format("com.elmfer.enabled")
 						: I18n.format("com.elmfer.disabled")
 		);
@@ -66,18 +82,25 @@ public class OptionView extends Widget implements IMenuTabView
 			int fade1 = 1711276032;
 			int fade2 = 0;
 
-			asideBody.pushMatrix(true);
+			body.pushMatrix(false);
+			{
+				UIrender.drawRect(0, 0, body.getWidth(), body.getHeight(), 1275068416);
+			}
+			body.popMatrix();
+			
+			asideBody.pushMatrix(false);
 			{
 				UIrender.drawGradientRect(0, 0, asideBody.getWidth(), asideBody.getHeight() / 6, fade1, fade2);
 
-				String subTitle = I18n.format("com.elmfer.option");
+				String subTitle = I18n.format("com.elmfer.options");
 				UIrender.drawString(subTitle, margin, margin, 0xFFFFFFFF);
 			}
 			asideBody.popMatrix();
 
-			aside.pushMatrix(true);
+			aside.pushMatrix(false);
 			{
-				Button[] buttons = {enableLoopButton};
+				Button[] buttons = {enableLoopButton, hiddenIpButton};
+				
 				int i = 0;
 				for(Button button : buttons)
 				{

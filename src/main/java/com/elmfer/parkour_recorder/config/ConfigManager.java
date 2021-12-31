@@ -14,6 +14,7 @@ public class ConfigManager
 	private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 	private static final TimelineSettings TIMELINE_CONFIG = new TimelineSettings(BUILDER);
 	private static final RecordingSettings RECORDING_CONFIG = new RecordingSettings(BUILDER);
+	private static final MenuSettings MENU_CONFIG = new MenuSettings(BUILDER);
 	public static final ForgeConfigSpec CONFIG_SPEC = BUILDER.build();
 	
 	public static final String CONFIG_EXTENSION = ".toml";
@@ -51,6 +52,23 @@ public class ConfigManager
 			builder.pop();
 		}
 	}
+	
+	private static class MenuSettings
+	{
+		public final ForgeConfigSpec.ConfigValue<Boolean> HIDDEN_IP;
+
+		public MenuSettings(ForgeConfigSpec.Builder builder)
+		{
+			builder.push("Menu Settings");
+			{
+				HIDDEN_IP =
+						builder.comment("If enabled, the server ip will be hidden.")
+								.translation("gui.menu.hidden_ip")
+								.define("hiddenIp", false);
+			}
+			builder.pop();
+		}
+	}
 
 	public static void init(Path file)
 	{
@@ -84,5 +102,16 @@ public class ConfigManager
 	public static boolean isLoopMode()
 	{
 		return RECORDING_CONFIG.ENABLE_LOOP.get();
+	}
+	
+	public static void saveHiddenIp(boolean isHiddenIp)
+	{
+		MENU_CONFIG.HIDDEN_IP.set(isHiddenIp);
+		CONFIG_SPEC.save();
+	}
+
+	public static boolean isHiddenIp()
+	{
+		return MENU_CONFIG.HIDDEN_IP.get();
 	}
 }
