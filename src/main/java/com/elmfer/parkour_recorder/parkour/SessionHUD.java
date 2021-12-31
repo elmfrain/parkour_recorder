@@ -31,6 +31,11 @@ public class SessionHUD extends AbstractGui
 				s += ": " + name;
 				increaseOpacity = true;
 			}
+			else if(((RecordingSession) EventHandler.session).isWaitingForPlayer())
+			{
+				increaseOpacity = true;
+				s = I18n.format("com.elmfer.waiting_for_player");
+			}
 			else if(((RecordingSession) EventHandler.session).isRecording)
 			{
 				 s = I18n.format("com.elmfer.recording");

@@ -13,6 +13,7 @@ public class ConfigManager
 {
 	private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 	private static final TimelineSettings TIMELINE_CONFIG = new TimelineSettings(BUILDER);
+	private static final RecordingSettings RECORDING_CONFIG = new RecordingSettings(BUILDER);
 	public static final ForgeConfigSpec CONFIG_SPEC = BUILDER.build();
 	
 	public static final String CONFIG_EXTENSION = ".toml";
@@ -33,7 +34,24 @@ public class ConfigManager
 			builder.pop();
 		}
 	}
-	
+
+	private static class RecordingSettings
+	{
+		public final ForgeConfigSpec.ConfigValue<Boolean> ENABLE_LOOP;
+
+		public RecordingSettings(ForgeConfigSpec.Builder builder)
+		{
+			builder.push("Recording Settings");
+			{
+				ENABLE_LOOP =
+						builder.comment("It will be played endlessly. If enabled, the end and start points must be the same when recording.")
+								.translation("gui.recording.enable_loop")
+								.define("enableLoop", false);
+			}
+			builder.pop();
+		}
+	}
+
 	public static void init(Path file)
 	{
 		final CommentedFileConfig configData = CommentedFileConfig.builder(file)
@@ -55,5 +73,16 @@ public class ConfigManager
 	public static TimeStampFormat loadTimeFormat()
 	{
 		return TimeStampFormat.getFormatFromName(TIMELINE_CONFIG.TIME_FORMAT.get());
+	}
+
+	public static void saveLoopMode(boolean isLoopEnabled)
+	{
+		RECORDING_CONFIG.ENABLE_LOOP.set(isLoopEnabled);
+		CONFIG_SPEC.save();
+	}
+
+	public static boolean isLoopMode()
+	{
+		return RECORDING_CONFIG.ENABLE_LOOP.get();
 	}
 }
