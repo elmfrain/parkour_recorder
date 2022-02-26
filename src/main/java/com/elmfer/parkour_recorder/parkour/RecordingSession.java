@@ -1,9 +1,9 @@
 package com.elmfer.parkour_recorder.parkour;
 
 import com.elmfer.parkour_recorder.EventHandler;
-
 import com.elmfer.parkour_recorder.config.ConfigManager;
-import com.elmfer.parkour_recorder.render.ParticleArrow;
+import com.elmfer.parkour_recorder.render.ParticleArrowLoop;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovementInputFromOptions;
 
@@ -12,7 +12,7 @@ public class RecordingSession implements IParkourSession {
 	protected static final Minecraft mc = Minecraft.getInstance();
 	protected Recording recording = null;
 	protected Recording recordingToOverride = null;
-	private ParticleArrow arrow;
+	private ParticleArrowLoop arrow;
 	protected int overrideStart = 0;
 	protected boolean onOverride = false;
 	protected boolean isRecording = false;
@@ -137,7 +137,7 @@ public class RecordingSession implements IParkourSession {
 	{
 		despawnParticles();
 
-		arrow = new ParticleArrow(mc.world, recording.initPos.x, recording.initPos.y, recording.initPos.z);
+		arrow = new ParticleArrowLoop(mc.world, recording.initPos.x, recording.initPos.y, recording.initPos.z);
 		mc.particles.addEffect(arrow);
 	}
 

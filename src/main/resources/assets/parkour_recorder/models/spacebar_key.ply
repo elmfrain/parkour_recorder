@@ -1,0 +1,25 @@
+ply
+format ascii 1.0
+comment Created by Blender 2.82 (sub 7) - www.blender.org, source file: 'movement_keys.blend'
+element vertex 4
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+property float s
+property float t
+property uchar red
+property uchar green
+property uchar blue
+property uchar alpha
+element face 2
+property list uchar uint vertex_indices
+end_header
+0.998772 -0.775639 0.000000 -0.000000 0.000000 1.000000 1.000000 0.000000 158 158 158 255
+-0.000053 -0.633343 0.000000 -0.000000 0.000000 1.000000 0.000000 1.000000 255 255 255 255
+-0.000053 -0.775639 0.000000 -0.000000 0.000000 1.000000 0.000000 0.000000 158 158 158 255
+0.998772 -0.633343 0.000000 -0.000000 0.000000 1.000000 1.000000 1.000000 255 255 255 255
+3 0 1 2
+3 0 3 1

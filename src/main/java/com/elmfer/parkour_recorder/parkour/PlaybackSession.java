@@ -3,6 +3,7 @@ package com.elmfer.parkour_recorder.parkour;
 import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
+import com.elmfer.parkour_recorder.render.ParticleArrowLoop;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
 import net.minecraft.client.Minecraft;
@@ -135,6 +136,7 @@ public class PlaybackSession implements IParkourSession {
 					currentFrame = recording.get(frameNumber);
 					
 					currentFrame.setMovementInput(mc.player.movementInput, mc.player);
+					KeyInputHUD.setParkourFrame(currentFrame);
 					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 					frameNumber++;
 				}
@@ -211,11 +213,19 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		
-		arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
+		boolean inLoopMode = recording.isLoop() && ConfigManager.isLoopMode();
+		
+		if(inLoopMode)
+			arrow = new ParticleArrowLoop(mc.world, startingPos.x, startingPos.y, startingPos.z);
+		else
+			arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
 		mc.particles.addEffect(arrow);
 		
-		finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
-		mc.particles.addEffect(finish);
+		if(!inLoopMode)
+		{
+			finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
+			mc.particles.addEffect(finish);
+		}
 	}
 	
 	public int getFrameNumber()

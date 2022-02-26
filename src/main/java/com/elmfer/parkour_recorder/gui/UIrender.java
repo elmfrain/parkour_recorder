@@ -144,7 +144,7 @@ public class UIrender
 
 	public static int getCharWidth(int character)
 	{
-		String strChar = "" + (char) character;
+		String strChar = new String(Character.toChars(character));
 		return mc.fontRenderer.getStringWidth(strChar);
 	}
 
@@ -186,6 +186,87 @@ public class UIrender
 		mc.fontRenderer.func_238405_a_(identity, text, newPositions[0], newPositions[1], color);
 	}
 
+	public static String getTextFormats(String src)
+	{
+		StringBuilder result = new StringBuilder();
+		int[] unicodes = src.chars().toArray();
+		
+		for(int i = 0; i < unicodes.length; i++)
+		{
+			int unicode = unicodes[i];
+			
+			if(unicode == 167 && i + 1 < unicodes.length)
+			{
+				int formatKey = "0123456789abcdefklmnor".indexOf(String.valueOf((char) unicodes[i + 1]).toLowerCase());
+				
+				if(0 <= formatKey && formatKey < 22)
+				{
+					result.appendCodePoint(167);
+					result.appendCodePoint(unicodes[i + 1]);
+				}
+				i++;
+			}
+		}
+		
+		return result.toString();
+	}
+	
+	public static String splitStringToFit(String src, float maxWidth, String delimiter)
+	{
+		int[] unicodes = src.chars().toArray();
+		
+		float cursor = 0.0f;
+		boolean boldStyle = false;
+		
+		int i = 0;
+		int dlimLen = delimiter.length();
+		int dlimCount = 0;
+		int lstDlim = 0;
+		for(i = 0; i < unicodes.length;)
+		{
+			int unicode = unicodes[i];
+			
+			StringBuilder dlimCheck = new StringBuilder();
+			for(int j = i; j < Math.min(dlimLen + i, unicodes.length); j++) dlimCheck.appendCodePoint(unicodes[j]);
+			
+			if(0 < dlimLen && delimiter.equals(dlimCheck.toString()))
+			{
+				dlimCount++;
+				lstDlim = i + dlimLen;
+			}
+			
+			if(unicode == 167 && i + 1 < unicodes.length)
+			{
+				int formatKey = "0123456789abcdefklmnor".indexOf(String.valueOf((char) unicodes[i + 1]).toLowerCase());
+				
+				if(formatKey < 16) 
+					boldStyle = false;
+				else if(formatKey == 17) 
+					boldStyle = true;
+				i++;
+			}
+			else
+			{
+				cursor += getCharWidth(unicode) + (boldStyle ? 1 : 0);
+				
+				if(maxWidth < cursor)
+				{
+					int numRead = i;
+					if(0 < dlimLen && 0 < dlimCount) numRead = lstDlim;
+					
+					StringBuilder result = new StringBuilder();
+					for(int j = 0; j < numRead; j++)
+						result.appendCodePoint(unicodes[j]);
+					
+					return result.toString();
+				}
+			}
+			i++;
+		}
+		
+		return src;
+	}
+	
 	public static void drawIcon(String iconKey, float x, float y, float scale, int color)
 	{
 		Color c = new Color(color);

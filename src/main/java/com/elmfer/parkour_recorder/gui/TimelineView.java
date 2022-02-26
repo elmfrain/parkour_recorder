@@ -25,6 +25,7 @@ import com.elmfer.parkour_recorder.gui.window.NamingWindow;
 import com.elmfer.parkour_recorder.gui.window.TimeFormatSelectionWindow;
 import com.elmfer.parkour_recorder.gui.window.Window;
 import com.elmfer.parkour_recorder.parkour.Checkpoint;
+import com.elmfer.parkour_recorder.parkour.KeyInputHUD;
 import com.elmfer.parkour_recorder.parkour.ParkourFrame;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
@@ -283,6 +284,20 @@ public class TimelineView extends Widget implements IMenuTabView
 
 		renderTaskbar(taskBar);
 		renderCheckpointStatus(taskBar);
+		
+		if(ConfigManager.showInputs())
+		{
+			if(session == SessionType.REPLAY)
+			{
+				PlaybackSession session = (PlaybackSession) EventHandler.session;
+				int currentFrame = (int) this.timeline.getProperty("framePos").getValue();
+				KeyInputHUD.setParkourFrame(session.recording.get(currentFrame));
+			}
+			
+			KeyInputHUD.posY = taskBar.bottom + smallMargin * 2;
+			KeyInputHUD.posX = UIrender.getUIwidth() - smallMargin * 2 - KeyInputHUD.size;
+			KeyInputHUD.render();
+		}
 
 		// Render the timeline bar
 		timelineBar.pushMatrix(false);

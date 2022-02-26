@@ -15,6 +15,7 @@ public class ConfigManager
 	private static final TimelineSettings TIMELINE_CONFIG = new TimelineSettings(BUILDER);
 	private static final RecordingSettings RECORDING_CONFIG = new RecordingSettings(BUILDER);
 	private static final MenuSettings MENU_CONFIG = new MenuSettings(BUILDER);
+	private static final PlaybackSettings PLAYBACK_CONFIG = new PlaybackSettings(BUILDER);
 	public static final ForgeConfigSpec CONFIG_SPEC = BUILDER.build();
 	
 	public static final String CONFIG_EXTENSION = ".toml";
@@ -69,6 +70,23 @@ public class ConfigManager
 			builder.pop();
 		}
 	}
+	
+	private static class PlaybackSettings
+	{
+		public final ForgeConfigSpec.ConfigValue<Boolean> SHOW_INPUTS;
+		
+		public PlaybackSettings(ForgeConfigSpec.Builder builder)
+		{
+			builder.push("Playback Settings");
+			{
+				SHOW_INPUTS =
+						builder.comment("If enabled, a HUD displaying input states will be shown.")
+						.translation("gui.playback.show_inputs")
+						.define("showInputs", false);
+			}
+			builder.pop();
+		}
+	}
 
 	public static void init(Path file)
 	{
@@ -113,5 +131,16 @@ public class ConfigManager
 	public static boolean isHiddenIp()
 	{
 		return MENU_CONFIG.HIDDEN_IP.get();
+	}
+	
+	public static void saveShowInputs(boolean showInputs)
+	{
+		PLAYBACK_CONFIG.SHOW_INPUTS.set(showInputs);
+		CONFIG_SPEC.save();
+	}
+	
+	public static boolean showInputs()
+	{
+		return PLAYBACK_CONFIG.SHOW_INPUTS.get();
 	}
 }

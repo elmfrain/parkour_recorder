@@ -3,21 +3,21 @@ package com.elmfer.parkour_recorder.parkour;
 import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.platform.GlStateManager;
 
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.resources.I18n;
 
-public class SessionHUD extends AbstractGui
+public class SessionHUD
 {
-	public int fadedness = 0;
-	public boolean increaseOpacity = false;
+	public static int fadedness = 0;
+	public static boolean increaseOpacity = false;
 	
-	public void render()
+	public static void render()
 	{
 		increaseOpacity = false;
 		String s = I18n.format("com.elmfer.stopped");
@@ -77,7 +77,17 @@ public class SessionHUD extends AbstractGui
 			
 			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			
-			UIrender.drawRect(width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
+			boolean showLoopIcon =
+					EventHandler.session instanceof PlaybackSession ? ((PlaybackSession) EventHandler.session).recording.isLoop() : true;
+			
+			if(ConfigManager.isLoopMode() && showLoopIcon)
+			{
+				UIrender.drawRect(width - stringWidth - border - lip * 3 - stringHeight, border - lip, width - border + lip, border + stringHeight + lip, c1);
+				
+				UIrender.drawIcon("loop_icon", width - border - stringWidth - stringHeight, border + border / 2, stringHeight, c);
+			}
+			else
+				UIrender.drawRect(width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
 			
 			UIrender.drawString(s, width - stringWidth - border, border, c);
 		}
