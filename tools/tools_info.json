@@ -1,0 +1,105 @@
+{
+    "readme_file": "README.txt",
+    "scripts":
+    {
+        "mod_tools.py":
+        {
+            "name": "Mod Tools",
+            "summary": "Python module for managing all tool scripts."
+        },
+        "json_to_lang.py":
+        {
+            "name": "JSON To LANG",
+            "summary": "Convert .json to .lang files for older versions of Minecraft.",
+            "options":
+            {
+                "lang_directory": "../src/main/resources/assets/parkour_recorder/lang/"
+            }
+        },
+        "save_version.py":
+        {
+            "name": "Save Version",
+            "summary": "Automatically update the version numbers to all files that store them.",
+            "options":
+            {
+                "files":
+                [
+                    {
+                        "file": "../src/main/java/com/elmfer/parkour_recorder/ParkourRecorderMod.java",
+                        "entries":
+                        [
+                            {
+                                "start": "public static final String MOD_VERSION",
+                                "end": ";",
+                                "format": "public static final String MOD_VERSION = \"%s-%s\"",
+                                "format_parameters": ["mod_version", "mc_version"]
+                            }
+                        ]
+                    },
+                    {
+                        "file": "../build.gradle",
+                        "entries":
+                        [
+                            {
+                                "start": "version = ",
+                                "end": "\n",
+                                "format": "version = \"%s-%s\"",
+                                "format_parameters": ["mod_version", "mc_version"]
+                            }
+                        ]
+                    },
+                    {
+                        "file": "../src/main/resources/mcmod.info",
+                        "entries": 
+                        [
+                            {
+                                "start": "\"version\":",
+                                "end": ",",
+                                "format": "\"version\": \"%s\"",
+                                "format_parameters": ["mod_version"]
+                            },
+                            {
+                                "start": "\"mcversion\":",
+                                "end": ",",
+                                "format": "\"mcversion\": \"%s\"",
+                                "format_parameters": ["mc_version"]
+                            }
+                        ]
+                    },
+                    {
+                        "file": "../src/main/resources/META-INF/mods.toml",
+                        "entries":
+                        [
+                            {
+                                "start": "version=",
+                                "end": "\n",
+                                "format": "version=\"%s-%s\"",
+                                "format_parameters": ["mod_version", "mc_version"]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "lang_to_json.py":
+        {
+            "name": "LANG To JSON",
+            "summary": "Convert .lang files to .json files for newer versions of Minecraft.",
+            "options":
+            {
+                "lang_directory": "../src/main/resources/assets/parkour_recorder/lang/"
+            }
+        },
+        "update_changelog.py":
+        {
+            "name": "Update Changelog",
+            "summary": "Update local changelog, fetched from prmod.elmfer.com",
+            "options":
+            {
+                "changelog_file_path": "../src/main/resources/assets/parkour_recorder/changelog.txt",
+                "online_changelog_url": "https://prmod.elmfer.com/changelog.txt",
+                "format": "§c§lOffline Changelog\n\n%s"
+            }
+        }
+    }
+}

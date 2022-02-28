@@ -13,11 +13,12 @@ import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.gui.window.ConfirmationWindow;
 import com.elmfer.parkour_recorder.gui.window.NamingWindow;
 import com.elmfer.parkour_recorder.gui.window.OverrideWindow;
-import com.elmfer.parkour_recorder.gui.window.Window;
 import com.elmfer.parkour_recorder.gui.window.OverrideWindow.SaveToNew;
+import com.elmfer.parkour_recorder.gui.window.Window;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
+import com.elmfer.parkour_recorder.parkour.SessionHUD;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -54,7 +55,7 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 		{
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(selections.lastElement());
-			EventHandler.hud.fadedness = 200;
+			SessionHUD.fadedness = 200;
 			Minecraft.getMinecraft().displayGuiScreen(null);
 		});
 		saveLastButton.setAction(b ->

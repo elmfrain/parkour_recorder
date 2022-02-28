@@ -1,7 +1,9 @@
 package com.elmfer.parkour_recorder.parkour;
 
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
+import com.elmfer.parkour_recorder.render.ParticleArrowLoop;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
 import net.minecraft.client.Minecraft;
@@ -134,10 +136,16 @@ public class PlaybackSession implements IParkourSession {
 					currentFrame = recording.get(frameNumber);
 					
 					currentFrame.setMovementInput(mc.player.movementInput, mc.player);
+					KeyInputHUD.setParkourFrame(currentFrame);
 					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 					frameNumber++;
 				}
-				else 
+				else if (ConfigManager.isLoopMode() && recording.isLoop())
+				{
+					initiated = false;
+					frameNumber = recording.startingFrame;
+				}
+				else
 					stop();
 			}
 		}
@@ -154,7 +162,7 @@ public class PlaybackSession implements IParkourSession {
 				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
 				ParkourFrame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 				
-				mc.player.rotationYaw = GraphicsHelper.lerp(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
+				mc.player.rotationYaw = GraphicsHelper.lerpAngle(countdownAmount, mc.player.rotationYaw, firstFrame.headYaw);
 				mc.player.rotationPitch = GraphicsHelper.lerp(countdownAmount, mc.player.rotationPitch, firstFrame.headPitch);
 				
 				Vec3d pos = mc.player.getPositionVector();
@@ -168,7 +176,7 @@ public class PlaybackSession implements IParkourSession {
 			{
 				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 				
-				mc.player.prevRotationYaw = mc.player.rotationYaw = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.prevRotationYaw = mc.player.rotationYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
 				mc.player.prevRotationPitch = mc.player.rotationPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
 				
 				Vec3d playerPos = mc.player.getPositionVector();
@@ -205,11 +213,19 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		
-		arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
+		boolean inLoopMode = recording.isLoop() && ConfigManager.isLoopMode();
+		
+		if(inLoopMode)
+			arrow = new ParticleArrowLoop(mc.world, startingPos.x, startingPos.y, startingPos.z);
+		else
+			arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
 		mc.effectRenderer.addEffect(arrow);
 		
-		finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
-		mc.effectRenderer.addEffect(finish);
+		if(!inLoopMode)
+		{
+			finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
+			mc.effectRenderer.addEffect(finish);
+		}
 	}
 	
 	public int getFrameNumber()

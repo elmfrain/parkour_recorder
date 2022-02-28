@@ -56,8 +56,8 @@ public class ParticleArrow extends Particle
 		GlStateManager.popMatrix();
 
 		GL13.glActiveTexture(GL13.GL_TEXTURE1);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
 }

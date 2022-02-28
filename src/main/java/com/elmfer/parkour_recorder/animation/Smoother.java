@@ -85,6 +85,12 @@ public class Smoother
 		return value;
 	}
 
+	public float getValuef()
+	{
+		update();
+		return (float) value;
+	}
+	
 	public void setValue(double value)
 	{
 		this.value = value;
@@ -97,6 +103,8 @@ public class Smoother
 		if (previousTime == 0) previousTime = currentTime;
 
 		double delta = (currentTime - previousTime) / 1.0e9;
+		
+		delta = Math.min(delta, 0.25);
 
 		if (grabbed)
 		{

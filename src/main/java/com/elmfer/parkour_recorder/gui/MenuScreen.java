@@ -1,6 +1,7 @@
 package com.elmfer.parkour_recorder.gui;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.animation.Smoother;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
@@ -21,19 +22,21 @@ public class MenuScreen extends UIscreen
 	private LoadRecordingView loadView = new LoadRecordingView();
 	private SaveRecordingView saveView = new SaveRecordingView();
 	private TimelineView timelineView  = new TimelineView();
+	private OptionView optionView = new OptionView();
 	private ModTitleScreenView modTitleScreenView = new ModTitleScreenView();
 	
 	//Tabs
 	private Tab loadTab = new Tab(loadView);
 	private Tab saveTab = new Tab(saveView);
 	private Tab timelineTab = new Tab(timelineView);
+	private Tab optionTab = new Tab(optionView);
 	private Tab modTitleTab = new Tab(modTitleScreenView);
-	private final Tab[] tabs = { loadTab, saveTab, timelineTab, modTitleTab };
+	private final Tab[] tabs = { loadTab, saveTab, timelineTab, optionTab, modTitleTab };
 	
 	private Smoother tabSelectorX1 = new Smoother();
 	private Smoother tabSelectorX2 = new Smoother();
 	
-	private static int pageSelected = 0; //0 = load, 1 = save, 2 = timeline, 3 = titlescreen
+	private static int pageSelected = 0; //0 = load, 1 = save, 2 = timeline, 3 = options, 4 = titlescreen
 	
 	public MenuScreen()
 	{
@@ -42,11 +45,13 @@ public class MenuScreen extends UIscreen
 		loadTab.setText(I18n.format("com.elmfer.load"));
 		saveTab.setText(I18n.format("com.elmfer.save"));
 		timelineTab.setText(I18n.format("com.elmfer.timeline"));
+		optionTab.setText(I18n.format("com.elmfer.options"));
 		modTitleTab.setText(I18n.format("com.elmfer.parkour_recorder"));
 		
 		loadTab.width = UIrender.getStringWidth(loadTab.getText()) + 10;
 		saveTab.width = UIrender.getStringWidth(saveTab.getText()) + 10;
 		timelineTab.width = UIrender.getStringWidth(timelineTab.getText()) + 10;
+		optionTab.width = UIrender.getStringWidth(optionTab.getText()) + 10;
 		modTitleTab.width = UIrender.getStringWidth(modTitleTab.getText()) + 10;
 		
 		loadTab.setAction((t) -> 
@@ -73,13 +78,21 @@ public class MenuScreen extends UIscreen
 			tabSelectorX2.grab(t.x + t.width + MARGIN);
 			pageSelected = 2;
 		});
+		optionTab.setAction((t) ->
+		{
+			showTabView(optionTab);
+			
+			tabSelectorX1.grab(t.x - MARGIN);
+			tabSelectorX2.grab(t.x + t.width + MARGIN);
+			pageSelected = 3;
+		});
 		modTitleTab.setAction((t) ->
 		{
 			showTabView(modTitleTab);
 			
 			tabSelectorX1.grab(t.x - MARGIN);
 			tabSelectorX2.grab(t.x + t.width + MARGIN);
-			pageSelected = 3;
+			pageSelected = 4;
 		});
 		
 		timelineView.x = NAV_BAR_HEIGHT + MARGIN;
@@ -133,6 +146,9 @@ public class MenuScreen extends UIscreen
 			timelineTab.getAction().onAction(timelineTab);
 			break;
 		case 3:
+			optionTab.getAction().onAction(optionTab);
+			break;
+		case 4:
 			modTitleTab.getAction().onAction(modTitleTab);
 			break;
 		default:
@@ -144,15 +160,15 @@ public class MenuScreen extends UIscreen
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks)
 	{
-		GlStateManager.pushMatrix();
+		GL11.glPushMatrix();
 		{
-			GlStateManager.translate(0, 0, 0);
 			loadView.draw();
 			saveView.draw();
 			timelineView.draw();
+			optionView.draw();
 			modTitleScreenView.draw();
 		}
-		GlStateManager.popMatrix();
+		GL11.glPopMatrix();
 		
 		drawNavigationBar();
 		Window.drawWindows();

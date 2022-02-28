@@ -22,6 +22,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import com.elmfer.parkour_recorder.config.ConfigManager;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.Vec3d;
@@ -314,7 +316,8 @@ public class Recording implements List<ParkourFrame>
 		{
 			return mc.getIntegratedServer().getFolderName();
 		} else
-			return mc.getCurrentServerData().serverName + ": " + mc.getCurrentServerData().serverIP;
+			return mc.getCurrentServerData().serverName +
+					(ConfigManager.isHiddenIp() ? "" : ": " + mc.getCurrentServerData().serverIP);
 	}
 
 	private static String getWorldPath(Minecraft mc)
@@ -482,6 +485,11 @@ public class Recording implements List<ParkourFrame>
 		});
 
 		return subedRecording;
+	}
+	
+	public boolean isLoop()
+	{
+		return initPos.equals(lastPos);
 	}
 
 	private static void save(Recording recording, boolean override)

@@ -3,11 +3,16 @@ package com.elmfer.parkour_recorder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.elmfer.parkour_recorder.animation.Smoother;
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.gui.MenuScreen;
 import com.elmfer.parkour_recorder.gui.UIinput;
+import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.gui.UIrender.Stencil;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
 import com.elmfer.parkour_recorder.parkour.IParkourSession;
+import com.elmfer.parkour_recorder.parkour.KeyInputHUD;
+import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
 import com.elmfer.parkour_recorder.parkour.SessionHUD;
@@ -27,9 +32,10 @@ public class EventHandler {
 	
 	public static final int MAX_HISTORY_SIZE = 16;
 	static Minecraft mc = Minecraft.getMinecraft();
-	public static SessionHUD hud = new SessionHUD();
 	public static IParkourSession session = new RecordingSession();
 	public static List<Recording> recordHistory = new ArrayList<>();
+	
+	private static Smoother keyInputHUDpos = new Smoother();
 	
 	@SubscribeEvent
 	public static void onOpenGui(GuiOpenEvent event)
@@ -46,7 +52,25 @@ public class EventHandler {
 	public static void onOverlayRender(RenderGameOverlayEvent event)
 	{
 		if(event.getType() == ElementType.CHAT)
-			hud.render();
+		{
+			float uiWidth = UIrender.getUIwidth();
+			
+			SessionHUD.render();
+			
+			boolean showKeyInputHUD = !(mc.currentScreen instanceof MenuScreen);
+			if(session instanceof PlaybackSession && ((PlaybackSession) session).isPlaying() && showKeyInputHUD)
+				keyInputHUDpos.grab(uiWidth - 10 - KeyInputHUD.size);
+			else
+				keyInputHUDpos.grab(uiWidth + 5);	
+			
+			float keyInputHUDposX = keyInputHUDpos.getValuef();
+			if(ConfigManager.showInputs() && keyInputHUDposX < uiWidth)
+			{
+				KeyInputHUD.posY = 30;
+				KeyInputHUD.posX = keyInputHUDposX;
+				KeyInputHUD.render();
+			}
+		}
 	}
 	@SubscribeEvent
 	public static void onRenderTick(TickEvent.RenderTickEvent event)
@@ -70,8 +94,8 @@ public class EventHandler {
 		
 		if(event.phase == Phase.START && mc.player != null)
 		{
-			hud.fadedness += hud.increaseOpacity ? 25 : 0;
-			hud.fadedness = Math.max(0, hud.fadedness - 5);
+			SessionHUD.fadedness += SessionHUD.increaseOpacity ? 25 : 0;
+			SessionHUD.fadedness = Math.max(0, SessionHUD.fadedness - 5);
 			session.onClientTick();
 			
 			Settings settings = Settings.getSettings();

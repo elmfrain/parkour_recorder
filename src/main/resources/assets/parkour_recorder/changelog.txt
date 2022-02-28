@@ -1,3 +1,5 @@
+§c§lOffline Changelog
+
 §a§l§nMinor Update v1.1.1.0 - Title Screen
   §e§lAdded Features
     §7§l-Added a title screen§r to the mod's main menu in gratitude towards surpassing 1000 downloads!

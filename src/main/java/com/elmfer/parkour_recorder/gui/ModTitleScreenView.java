@@ -2,8 +2,6 @@ package com.elmfer.parkour_recorder.gui;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import org.lwjgl.opengl.GL11;
@@ -15,6 +13,7 @@ import com.elmfer.parkour_recorder.gui.MenuScreen.IMenuTabView;
 import com.elmfer.parkour_recorder.gui.UIrender.Anchor;
 import com.elmfer.parkour_recorder.gui.UIrender.Direction;
 import com.elmfer.parkour_recorder.gui.widgets.Widget;
+import com.elmfer.parkour_recorder.util.HTTPSfetcher;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -23,7 +22,8 @@ import net.minecraft.util.ResourceLocation;
 
 public class ModTitleScreenView extends Widget implements IMenuTabView
 {
-	private static String changelog = null;
+	private static HTTPSfetcher changelog = null;
+	private static String offlineChangelog = null;
 	private Viewport changelogViewport = new Viewport();
 	private Smoother changelogScrool = new Smoother();
 	
@@ -32,7 +32,15 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 	private float prevLogoRotation = -90.0f;
 	private float logoRotation = -90.0f;
 	private int logoOpacityCounter = 0;
-	private int userControlCooldown = 40;
+	/**
+	 * The state for which the user controls the rotation of the mod's logo
+	 * 
+	 * At -2: Logo rotates on its own, but waits for user to move the cursor before giving control of the rotation to user
+	 * At -1: User has control of the rotation
+	 * At 0 -> 39: No rotation input, but counts up to 40 in this phase
+	 * At 40 <=: The logo rotates on its own
+	 */
+	private int userControlState = 40;
 	private float prevMouseX = 0.0f;
 	private float cursorSpeed = 0.0f;
 	
@@ -42,7 +50,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		cursorSpeed = mouseX - prevMouseX;
 		prevMouseX = mouseX;
 		
-		if(userControlCooldown == -2) userControlCooldown = -1;
+		if(userControlState == -2) userControlState = -1;
 	}
 
 	@Override
@@ -51,7 +59,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		// TODO Auto-generated method stub
 		if(button == 0 && UIinput.getUICursorY() > 15 && !changelogViewport.isHovered(UIinput.getUICursorX(), UIinput.getUICursorY()))
 		{
-			userControlCooldown = -2;
+			userControlState = -2;
 		}
 	}
 
@@ -61,8 +69,8 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		// TODO Auto-generated method stub
 		if(button == 0)
 		{
-			if(userControlCooldown == -2) userControlCooldown = 40;
-			else if(userControlCooldown == -1) userControlCooldown = 0;
+			if(userControlState == -2) userControlState = 40;
+			else if(userControlState == -1) userControlState = 0;
 		}
 	}
 
@@ -90,7 +98,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		else
 		{
 			logoRotation += scrollAmount * 0.15f;
-			userControlCooldown = 15;
+			userControlState = 15;
 		}
 	}
 
@@ -111,10 +119,10 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		fovTransition.setSpeed(1.8);
 		if(logoOpacityCounter < 4) fovTransition.setValue(10.0);
 		
+		if(offlineChangelog == null)
+			loadOfflineChangelog();
 		if(changelog == null)
-		{
-			loadChangelog();
-		}
+			changelog = new HTTPSfetcher("https://prmod.elmfer.com/changelog.txt");
 	}
 
 	@Override
@@ -127,11 +135,11 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 			prevLogoRotation = logoRotation;
 			logoRotation += logoAngleSpeed.getValue();
 			
-			if(userControlCooldown >= 0) userControlCooldown++;
+			if(userControlState >= 0) userControlState++;
 			fovTransition.grab(38.0f);
 			
-			if(userControlCooldown >= 40 || userControlCooldown == -2) logoAngleSpeed.grab(1.8);
-			else if(userControlCooldown == -1) logoAngleSpeed.grab(cursorSpeed * 3);
+			if(userControlState >= 40 || userControlState == -2) logoAngleSpeed.grab(1.8);
+			else if(userControlState == -1) logoAngleSpeed.grab(cursorSpeed * 3);
 			else logoAngleSpeed.grab(0.0);
 			
 			cursorSpeed = 0.0f;
@@ -185,7 +193,8 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 			UIrender.drawString(Anchor.MID_LEFT, I18n.format("com.elmfer.changelog"), 6, 6, 0xFFFFFFFF);
 		}
 		changelogViewport.popMatrix();
-		if(changelog != null)
+		
+		if(offlineChangelog != null)
 		{
 			changelogViewport.top += 17;
 			changelogViewport.left += 5;
@@ -193,33 +202,50 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 			changelogViewport.bottom -= 5;
 			changelogViewport.pushMatrix(true);
 			{
-				GlStateManager.pushMatrix();
+				GL11.glPushMatrix();
 				{
-					GlStateManager.translate(0.0, -changelogScrool.getValue(), 0.0);
+					GL11.glTranslated(0.0, -changelogScrool.getValue(), 0.0);
+					
 					yCursor = 0.0f;
-					for(String line : changelog.split("\n"))
-					{
-						if(UIrender.getStringWidth(line) > changelogViewport.getWidth())
+					//Process changelog line per line
+					String changelogText = changelog.hasFailed() ? changelog.stringContent() + "\n" + offlineChangelog : changelog.stringContent();
+					for(String line : changelogText.split("\n"))
+					{	
+						String formats = "";
+						int linePos = 0;
+						int lineLen = line.length();
+						
+						//Determine indentation
+						float xCursor = 0.0f;
+						int i = 0;
+						for(; i < lineLen; i++)
 						{
-							List<String> sublines = splitStringToFit(changelogViewport.getWidth(), line);
-							for(String subline : sublines)
-							{
-								UIrender.drawString(subline, 0, yCursor, 0xFFFFFFFF);
-								yCursor += UIrender.getStringHeight() + 2;
-							}
+							if(line.charAt(i) != ' ') break;
+							xCursor += 5.0f;
+							lineLen--;
 						}
-						else
+						line = line.substring(i);
+						
+						//Render the line with as much space as it needs
+						//Wraps the line around when it reaches the width of this viewport
+						//All text formatting is preserved for each line
+						do
 						{
-							UIrender.drawString(line, 0, yCursor, 0xFFFFFFFF);
+							String subline = UIrender.splitStringToFit(line.substring(linePos), changelogViewport.getWidth() - xCursor, " ");
+							UIrender.drawString(formats + subline, xCursor, yCursor, 0xFFFFFFFF);
+							linePos += subline.length();
+							formats += UIrender.getTextFormats(subline);
+							
 							yCursor += UIrender.getStringHeight() + 2;
-						}
+						} while(linePos < lineLen);
 					}
+					
 					final float MIN_SCROLL = 0;
 					final float MAX_SCROLL = yCursor - changelogViewport.getHeight() / 2;
 					if(changelogScrool.getValue() < 0) changelogScrool.grab(MIN_SCROLL);
 					else if(changelogScrool.getValue() > MAX_SCROLL) changelogScrool.grab(MAX_SCROLL);
 				}
-				GlStateManager.popMatrix();
+				GL11.glPopMatrix();
 			}
 			changelogViewport.popMatrix();
 		}
@@ -251,60 +277,11 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 	public void onExit()
 	{
 		ModLogoRenderer.unload();
+		offlineChangelog = null;
 		changelog = null;
 	}
 	
-	private static List<String> splitStringToFit(float maxWidth, String str)
-	{
-		List<String> sublines = new ArrayList<>();
-		
-		//If width is too small to work with, give up and return the original string. (Prevents an infinite loop that may occur
-		//if a 
-		if(maxWidth < 40.0f)
-		{
-			sublines.add(str);
-			return sublines;
-		}
-		
-		//Create indents
-		String indents = "";
-		for(int i = 0; i < str.length(); i++)
-		{
-			if(str.charAt(i) == ' ') indents += str.charAt(i);
-			else break;
-		}
-		
-		//Split lines while preserving thier formatting
-		float xCoord = 0.0f;
-		String prevTextFormatting = "";
-		String textFormatting = "";
-		for(int i = 0, s = 0; i < str.length(); i++)
-		{
-			float charWidth = UIrender.getCharWidth(str.charAt(i));
-			xCoord += charWidth;
-			
-			if(str.charAt(i) == '§' && i + 1 < str.length())
-			{
-				prevTextFormatting += str.substring(i, i + 2);
-				i++;
-				continue;
-			}
-			
-			if(i + 1 == str.length()) sublines.add(textFormatting + str.substring(s, i + 1));
-			else if(maxWidth - 30 < xCoord)
-			{
-				sublines.add(textFormatting + str.substring(s, i - 1) + '-');
-				str = str.substring(0, i - 1) + indents + str.substring(i - 1);
-				s = i - 1;
-				xCoord = 0.0f;
-				textFormatting = prevTextFormatting;
-			}
-		}
-		
-		return sublines;
-	}
-	
-	private static void loadChangelog()
+	private static void loadOfflineChangelog()
 	{
 		ResourceLocation loc = new ResourceLocation(ParkourRecorderMod.MOD_ID, "changelog.txt");
 		
@@ -313,10 +290,10 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 			InputStream file = Minecraft.getMinecraft().getResourceManager().getResource(loc).getInputStream();
 			Scanner scanner = new Scanner(file, "utf-8");
 			
-			changelog = "";
+			offlineChangelog = "";
 			while(scanner.hasNextLine())
 			{
-				changelog += scanner.nextLine() + '\n';
+				offlineChangelog += scanner.nextLine() + '\n';
 			}
 			
 			scanner.close();
@@ -325,7 +302,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView
 		catch(IOException e)
 		{
 			e.printStackTrace();
-			changelog = "Failed to load changelog!";
+			offlineChangelog = "Failed to load changelog!";
 		}
 	}
 }
