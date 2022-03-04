@@ -110,8 +110,6 @@ public class ModelManager {
 			scanner.close();
 			modelFile.close();
 		}catch(Exception e) {
-			//CrashReport report = new CrashReport("Invalid Model: ", e.getCause());
-			//Minecraft.crash(report);
 			e.printStackTrace();
 		}
 	}
@@ -149,6 +147,9 @@ public class ModelManager {
 			glVertArrayID = GL30.glGenVertexArrays();
 			vertexCount = modelIndecies.capacity() / Integer.BYTES;
 			
+			int prevBind = GL11.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
+			int prevArryBufBind = GL11.glGetInteger(GL30.GL_ARRAY_BUFFER_BINDING);
+			int prevElemBufBind = GL11.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
 			GL30.glBindVertexArray(glVertArrayID);
 			{
 				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferID);
@@ -165,9 +166,9 @@ public class ModelManager {
 				GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT,         false, VERTEX_BYTES, Float.BYTES * 6);
 				GL20.glVertexAttribPointer(1, 4, GL11.GL_UNSIGNED_BYTE,  true, VERTEX_BYTES, Float.BYTES * 8);
 			}
-			GL30.glBindVertexArray(0);
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+			GL30.glBindVertexArray(prevBind);
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, prevArryBufBind);
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, prevElemBufBind);
 		}
 		
 		public void cleanUp()
@@ -184,5 +185,13 @@ public class ModelManager {
 			GL11.glDrawElements(drawMode, vertexCount, GL11.GL_UNSIGNED_INT, 0);
 			GL30.glBindVertexArray(prevBinding);
 		}
+	}
+	
+	public static void clearCachedModels()
+	{
+		for(Model model : models.values())
+			model.cleanUp();
+		
+		models.clear();
 	}
 }

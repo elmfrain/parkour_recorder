@@ -1,7 +1,9 @@
 package com.elmfer.parkour_recorder.parkour;
 
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
+import com.elmfer.parkour_recorder.render.ParticleArrowLoop;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
 
 import net.minecraft.ChatFormatting;
@@ -117,7 +119,7 @@ public class PlaybackSession implements IParkourSession {
 				isPlaying = true;
 				playbackCountdown = 10;
 				mc.player.input = new ControlledMovementInput();
-				mc.player.setDeltaMovement(0.0, 0.0, 0.0);
+				mc.player.setDeltaMovement(0, 0, 0);
 				frameNumber = recording.startingFrame;
 				waitingForPlayer = false;
 			}
@@ -134,10 +136,16 @@ public class PlaybackSession implements IParkourSession {
 					currentFrame = recording.get(frameNumber);
 					
 					currentFrame.setMovementInput(mc.player.input, mc.player);
+					KeyInputHUD.setParkourFrame(currentFrame);
 					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 					frameNumber++;
 				}
-				else 
+				else if (ConfigManager.isLoopMode() && recording.isLoop())
+				{
+					initiated = false;
+					frameNumber = recording.startingFrame;
+				}
+				else
 					stop();
 			}
 		}
@@ -154,7 +162,7 @@ public class PlaybackSession implements IParkourSession {
 				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
 				ParkourFrame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 				
-				mc.player.setYRot(GraphicsHelper.lerp(countdownAmount, mc.player.getYRot(), firstFrame.headYaw));
+				mc.player.setYRot(GraphicsHelper.lerpAngle(countdownAmount, mc.player.getYRot(), firstFrame.headYaw));
 				mc.player.setXRot(GraphicsHelper.lerp(countdownAmount, mc.player.getXRot(), firstFrame.headPitch));
 				
 				Vec3 pos = mc.player.getPosition(0.0f);
@@ -168,7 +176,7 @@ public class PlaybackSession implements IParkourSession {
 			{
 				ParkourFrame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 				
-				mc.player.yRotO = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+				mc.player.yRotO = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
 				mc.player.setYRot(mc.player.yRotO);
 				mc.player.xRotO = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
 				mc.player.setXRot(mc.player.xRotO);
@@ -194,7 +202,7 @@ public class PlaybackSession implements IParkourSession {
 		isPlaying = false;
 		waitingForPlayer = false;
 
-		//Vec3d playerPos = mc.player.getPositionVec();
+		//Vec3 playerPos = mc.player.getPositionVec();
 		//double motionX = playerPos.x - mc.player.prevPosX;
 		//double motionY = playerPos.y - mc.player.prevPosY;
 		//double motionZ = playerPos.z - mc.player.prevPosZ;
@@ -207,11 +215,19 @@ public class PlaybackSession implements IParkourSession {
 	{
 		despawnParticles();
 		
-		arrow = new ParticleArrow(mc.level, startingPos.x, startingPos.y, startingPos.z);
+		boolean inLoopMode = recording.isLoop() && ConfigManager.isLoopMode();
+		
+		if(inLoopMode)
+			arrow = new ParticleArrowLoop(mc.level, startingPos.x, startingPos.y, startingPos.z);
+		else
+			arrow = new ParticleArrow(mc.level, startingPos.x, startingPos.y, startingPos.z);
 		mc.particleEngine.add(arrow);
 		
-		finish = new ParticleFinish(mc.level, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
-		mc.particleEngine.add(finish);
+		if(!inLoopMode)
+		{
+			finish = new ParticleFinish(mc.level, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
+			mc.particleEngine.add(finish);
+		}
 	}
 	
 	public int getFrameNumber()

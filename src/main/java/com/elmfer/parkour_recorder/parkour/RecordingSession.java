@@ -1,20 +1,22 @@
 package com.elmfer.parkour_recorder.parkour;
 
 import com.elmfer.parkour_recorder.EventHandler;
-import com.mojang.math.Vector3d;
+import com.elmfer.parkour_recorder.config.ConfigManager;
+import com.elmfer.parkour_recorder.render.ParticleArrowLoop;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.KeyboardInput;
-import net.minecraft.world.phys.Vec3;
 
 public class RecordingSession implements IParkourSession {
 
 	protected static final Minecraft mc = Minecraft.getInstance();
 	protected Recording recording = null;
 	protected Recording recordingToOverride = null;
+	private ParticleArrowLoop arrow;
 	protected int overrideStart = 0;
 	protected boolean onOverride = false;
 	protected boolean isRecording = false;
+	private boolean waitingForPlayer = false;
 	protected byte nbRecordPresses = 0;
 
 	public Recording getRecording()
@@ -22,7 +24,10 @@ public class RecordingSession implements IParkourSession {
 	
 	public boolean isRecording()
 	{ return isRecording; }
-	
+
+	public boolean isWaitingForPlayer()
+	{ return waitingForPlayer; }
+
 	@Override
 	public IParkourSession onRecord() 
 	{
@@ -33,11 +38,18 @@ public class RecordingSession implements IParkourSession {
 			if(recording == null)
 				recording = new Recording(mc.player.getPosition(0.0f));
 			isRecording = true;
-			nbRecordPresses++;
+			if (ConfigManager.isLoopMode())
+			{
+				spawnParticles();
+				nbRecordPresses = 1;
+			} else
+				nbRecordPresses = 2;
 			break;
 		case 1:
-			Vec3 v = mc.player.getPosition(0.0f);
-			recording.lastPos = new Vector3d(v.x, v.y, v.z);
+			waitingForPlayer = true;
+			break;
+		case 2:
+			recording.lastPos = mc.player.getPosition(0.0f);
 			
 			if(onOverride)
 			{
@@ -58,6 +70,8 @@ public class RecordingSession implements IParkourSession {
 			
 			isRecording = false;
 			onOverride = false;
+
+			despawnParticles();
 			
 			nbRecordPresses++;
 			
@@ -74,7 +88,7 @@ public class RecordingSession implements IParkourSession {
 		{
 			if(isRecording)
 			{
-				nbRecordPresses = 1;
+				nbRecordPresses = 2;
 				onRecord();
 			}
 			PlaybackSession playback = new PlaybackSession(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
@@ -89,7 +103,7 @@ public class RecordingSession implements IParkourSession {
 	{
 		if(onOverride && isRecording)
 		{
-			nbRecordPresses = 1;
+			nbRecordPresses = 2;
 			return onRecord();
 		}
 		return this;
@@ -99,13 +113,37 @@ public class RecordingSession implements IParkourSession {
 	public void onClientTick()
 	{
 		if(isRecording && !mc.isPaused())
+		{
 			recording.add(new ParkourFrame(mc.options, mc.player));
+			if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPosition(0.0f)) < 0.25)
+			{
+				waitingForPlayer = false;
+				// Finish session
+				nbRecordPresses = 2;
+				EventHandler.session = onRecord();
+				// Set last pos to init pos to mark as loop recording data
+				recording.lastPos = recording.initPos;
+			}
+		}
 	}
 
 	@Override
 	public void onRenderTick()
 	{
 		
+	}
+
+	private void spawnParticles()
+	{
+		despawnParticles();
+
+		arrow = new ParticleArrowLoop(mc.level, recording.initPos.x, recording.initPos.y, recording.initPos.z);
+		mc.particleEngine.add(arrow);
+	}
+
+	private void despawnParticles()
+	{
+		if(arrow != null) arrow.remove();
 	}
 
 	@Override

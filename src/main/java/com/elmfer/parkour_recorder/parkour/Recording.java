@@ -22,7 +22,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import com.mojang.math.Vector3d;
+import com.elmfer.parkour_recorder.config.ConfigManager;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
@@ -65,13 +65,13 @@ public class Recording implements List<ParkourFrame>
 	 **/
 	private static final ByteOrder ENDIANESS = ByteOrder.BIG_ENDIAN;
 
-	public final Vector3d initPos;
+	public final Vec3 initPos;
 	public final List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
 
 	private final List<ParkourFrame> frames = new ArrayList<ParkourFrame>();
 
 	public int startingFrame = 0;
-	public Vector3d lastPos = new Vector3d(0, 0, 0);
+	public Vec3 lastPos = new Vec3(0, 0, 0);
 
 	protected String originalName = null;
 	protected File recordFile = null;
@@ -82,19 +82,13 @@ public class Recording implements List<ParkourFrame>
 
 	public Recording(Vec3 startingPos)
 	{
-		initPos = new Vector3d(startingPos.x, startingPos.y, startingPos.z);
-		this.name = null;
-	}
-	
-	public Recording(Vector3d startingPos)
-	{
 		initPos = startingPos;
 		this.name = null;
 	}
 
 	public Recording()
 	{
-		initPos = new Vector3d(0, 0, 0);
+		initPos = new Vec3(0, 0, 0);
 		name = null;
 	}
 
@@ -113,6 +107,16 @@ public class Recording implements List<ParkourFrame>
 	@Override
 	public String toString()
 	{
+		// Get Vectors that rounds to the nearest tenth
+		double initPosX = Math.round(initPos.x * 10.0) / 10.0;
+		double initPosY = Math.round(initPos.y * 10.0) / 10.0;
+		double initPosZ = Math.round(initPos.z * 10.0) / 10.0;
+		Vec3 initPos = new Vec3(initPosX, initPosY, initPosZ);
+		double lastPosX = Math.round(lastPos.x * 10.0) / 10.0;
+		double lastPosY = Math.round(lastPos.y * 10.0) / 10.0;
+		double lastPosZ = Math.round(lastPos.z * 10.0) / 10.0;
+		Vec3 lastPos = new Vec3(lastPosX, lastPosY, lastPosZ);
+
 		// Create formmated string
 		String s = name + "\n\n";
 		String tab = ":\n   ";
@@ -281,6 +285,12 @@ public class Recording implements List<ParkourFrame>
 		return name;
 	}
 
+	public boolean isLoop()
+	{
+		// init pos and last pos in loop parkour data must be same position.
+		return initPos.equals(lastPos);
+	}
+
 	/**
 	 * Create recording from raw data. May throw an exception if file is corrupted.
 	 **/
@@ -312,7 +322,8 @@ public class Recording implements List<ParkourFrame>
 		{
 			return mc.getSingleplayerServer().getWorldData().getLevelName();
 		} else
-			return mc.getCurrentServer().name + ": " + mc.getCurrentServer().ip;
+			return mc.getCurrentServer().name +
+					(ConfigManager.isHiddenIp() ? "" : ": " + mc.getCurrentServer().ip);
 	}
 
 	private static String getWorldPath(Minecraft mc)
@@ -460,11 +471,11 @@ public class Recording implements List<ParkourFrame>
 		// Get the new initial position
 		List<ParkourFrame> subList = frames.subList(fromIndex, toIndex);
 		int lastIndex = subList.size() - 1;
-		Vector3d initPos = new Vector3d(subList.get(0).posX, subList.get(0).posY, subList.get(0).posZ);
+		Vec3 initPos = new Vec3(subList.get(0).posX, subList.get(0).posY, subList.get(0).posZ);
 
 		// Create Sliced Recording
 		Recording subedRecording = new Recording(initPos);
-		subedRecording.lastPos = new Vector3d(subList.get(lastIndex).posX, subList.get(lastIndex).posY,
+		subedRecording.lastPos = new Vec3(subList.get(lastIndex).posX, subList.get(lastIndex).posY,
 				subList.get(lastIndex).posZ);
 		subedRecording.frames.addAll(subList);
 		subedRecording.name = name;
@@ -652,11 +663,11 @@ public class Recording implements List<ParkourFrame>
 				SavingFormat format = SavingFormat.getFormatFromID(header.FORMAT_ID);
 
 				// Get Vectors
-				Vector3d initPos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+				Vec3 initPos = new Vec3(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
 				buffer.getDouble();
 				buffer.getDouble();
 				buffer.getDouble(); // Skip 24 bytes, v1.0.0.0 originally had a initVelocity vector
-				Vector3d lastPos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
+				Vec3 lastPos = new Vec3(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
 				buffer.getDouble();
 				buffer.getDouble();
 				buffer.getDouble(); // Skip 24 bytes, v1.0.0.0 originally had a lastVelocity vector
@@ -702,8 +713,8 @@ public class Recording implements List<ParkourFrame>
 				ByteBuffer recording = ByteBuffer.wrap(recordingData);
 				final int NUM_FRAMES = recording.getInt();
 				final int NUM_CHECKPOINTS = recording.getInt();
-				Vector3d initPos = new Vector3d(recording.getDouble(), recording.getDouble(), recording.getDouble());
-				Vector3d lastPos = new Vector3d(recording.getDouble(), recording.getDouble(), recording.getDouble());
+				Vec3 initPos = new Vec3(recording.getDouble(), recording.getDouble(), recording.getDouble());
+				Vec3 lastPos = new Vec3(recording.getDouble(), recording.getDouble(), recording.getDouble());
 
 				// Create new recording from file
 				Recording newRecording = new Recording(initPos);

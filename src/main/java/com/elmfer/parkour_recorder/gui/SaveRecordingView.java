@@ -16,6 +16,7 @@ import com.elmfer.parkour_recorder.gui.window.Window;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
 import com.elmfer.parkour_recorder.parkour.RecordingSession;
+import com.elmfer.parkour_recorder.parkour.SessionHUD;
 import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
@@ -40,7 +41,7 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 		
 		clearHistoryButton.setAction((b) ->
 		{
-			String title = I18n.get("com.elmfer.clear_history_?");
+			String title = I18n.get("com.elmfer.clear_history");
 			Window.createWindow(v -> {return new ConfirmationWindow(title, this::clearHistory);});
 		});
 		removeButton.setAction(b ->
@@ -52,7 +53,7 @@ public class SaveRecordingView extends Widget implements IMenuTabView
 		{
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(selections.lastElement());
-			EventHandler.hud.fadedness = 200;
+			SessionHUD.fadedness = 200;
 			Minecraft.getInstance().setScreen(null);
 		});
 		saveLastButton.setAction(b ->
