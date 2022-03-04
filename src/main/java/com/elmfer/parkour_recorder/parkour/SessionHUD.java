@@ -3,20 +3,20 @@ package com.elmfer.parkour_recorder.parkour;
 import org.lwjgl.opengl.GL11;
 
 import com.elmfer.parkour_recorder.EventHandler;
+import com.elmfer.parkour_recorder.config.ConfigManager;
 import com.elmfer.parkour_recorder.gui.UIrender;
 import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.mojang.blaze3d.platform.Window;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.resources.language.I18n;
 
-public class SessionHUD extends GuiComponent
+public class SessionHUD
 {
-	public int fadedness = 0;
-	public boolean increaseOpacity = false;
+	public static int fadedness = 0;
+	public static boolean increaseOpacity = false;
 	
-	public void render()
+	public static void render()
 	{
 		increaseOpacity = false;
 		String s = I18n.get("com.elmfer.stopped");
@@ -29,6 +29,11 @@ public class SessionHUD extends GuiComponent
 				name = name == null ? "[" + I18n.get("com.elmfer.unamed") + "]" : name;
 				s += ": " + name;
 				increaseOpacity = true;
+			}
+			else if(((RecordingSession) EventHandler.session).isWaitingForPlayer())
+			{
+				increaseOpacity = true;
+				s = I18n.get("com.elmfer.waiting_for_player");
 			}
 			else if(((RecordingSession) EventHandler.session).isRecording)
 			{
@@ -71,7 +76,17 @@ public class SessionHUD extends GuiComponent
 			
 			GL11.glBlendFunc(GL11.GL_SRC_ALPHA,  GL11.GL_ONE_MINUS_SRC_ALPHA);
 			
-			UIrender.drawRect(width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
+			boolean showLoopIcon =
+					EventHandler.session instanceof PlaybackSession ? ((PlaybackSession) EventHandler.session).recording.isLoop() : true;
+			
+			if(ConfigManager.isLoopMode() && showLoopIcon)
+			{
+				UIrender.drawRect(width - stringWidth - border - lip * 3 - stringHeight, border - lip, width - border + lip, border + stringHeight + lip, c1);
+				
+				UIrender.drawIcon("loop_icon", width - border - stringWidth - stringHeight, border + border / 2, stringHeight, c);
+			}
+			else
+				UIrender.drawRect(width - stringWidth - border - lip, border - lip, width - border + lip, border + stringHeight + lip, c1);
 			
 			UIrender.drawString(s, width - stringWidth - border, border, c);
 		}

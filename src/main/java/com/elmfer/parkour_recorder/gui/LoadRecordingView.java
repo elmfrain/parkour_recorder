@@ -13,6 +13,7 @@ import com.elmfer.parkour_recorder.gui.window.NamingWindow;
 import com.elmfer.parkour_recorder.gui.window.Window;
 import com.elmfer.parkour_recorder.parkour.PlaybackSession;
 import com.elmfer.parkour_recorder.parkour.Recording;
+import com.elmfer.parkour_recorder.parkour.SessionHUD;
 import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
@@ -39,7 +40,7 @@ public class LoadRecordingView extends Widget implements IMenuTabView
 		{
 			EventHandler.session.cleanUp();
 			EventHandler.session = new PlaybackSession(selections.lastElement());
-			EventHandler.hud.fadedness = 200;
+			SessionHUD.fadedness = 200;
 			Minecraft.getInstance().setScreen(null);
 		});
 		deleteButton.setAction(b ->

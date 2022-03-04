@@ -137,7 +137,6 @@ public class NumberLineView extends Widget
 		//Begin dragging pointer if mouse is pressed on it
 		if(mainViewport.isHovered(cursorX, cursorY) && leftButtonIsPressed && parentWidget.session == SessionType.REPLAY && (parentWidget.timeline.isPaused() || parentWidget.timeline.hasStopped()) && onCurrentZlevel())
 			pointerIsDragging = true;
-		else if(pointerIsDragging) pointerIsDragging = false;
 		
 		//Set timeline position equals to cursor if dragging
 		if(pointerIsDragging) parentWidget.timeline.setFracTime((cursorX - numberLineViewport.getAbsoluteLeft() * 1.0f) / numberLineViewport.getWidth());
@@ -253,7 +252,7 @@ public class NumberLineView extends Widget
 	public void onMouseReleased(int button)
 	{
 		if(button == GLFW.GLFW_MOUSE_BUTTON_1) leftButtonIsPressed = false;
-		
+		pointerIsDragging = false;
 	}
 
 	@Override
