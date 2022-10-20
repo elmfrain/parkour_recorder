@@ -5,13 +5,14 @@ import com.elmfer.parkour_recorder.render.GraphicsHelper;
 import com.elmfer.parkour_recorder.render.ParticleArrow;
 import com.elmfer.parkour_recorder.render.ParticleArrowLoop;
 import com.elmfer.parkour_recorder.render.ParticleFinish;
+import com.mojang.brigadier.LiteralMessage;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.phys.Vec3;
 
 public class PlaybackSession implements IParkourSession {
@@ -185,7 +186,7 @@ public class PlaybackSession implements IParkourSession {
 				Vec3 framePos = new Vec3(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
 				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
 				{
-					Component errorMessage = ComponentUtils.fromMessage(new TranslatableComponent("com.elmfer.playback_failed"));
+					Component errorMessage = ComponentUtils.fromMessage(new LiteralMessage(I18n.get("com.elmfer.playback_failed")));
 					errorMessage.getStyle().applyFormat(ChatFormatting.RED);
 					mc.gui.getChat().addMessage(errorMessage);
 					stop();

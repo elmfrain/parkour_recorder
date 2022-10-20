@@ -15,7 +15,6 @@ import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glLinkProgram;
 import static org.lwjgl.opengl.GL20.glShaderSource;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.util.Scanner;
@@ -144,13 +143,13 @@ public class ShaderManager {
 		String code = "";
 		
 		try {
-			InputStream bufferedFile = Minecraft.getInstance().getResourceManager().getResource(file).getInputStream();
+			InputStream bufferedFile = Minecraft.getInstance().getResourceManager().getResource(file).get().open();
 			Scanner scanner = new Scanner(bufferedFile);
 			while(scanner.hasNextLine()) {
 				code += scanner.nextLine() + "\n";
 			}
 			scanner.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.err.println("Unable to read file!");
 			e.printStackTrace();
 		}

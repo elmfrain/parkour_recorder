@@ -145,7 +145,7 @@ public class UIinput
 	}
 	
 	@SubscribeEvent
-	public static void onKeyPressed(ScreenEvent.KeyboardKeyPressedEvent.Pre event)
+	public static void onKeyPressed(ScreenEvent.KeyPressed.Pre event)
 	{
 		keyPressed = event.getKeyCode();
 		if(event.getKeyCode() == GLFW.GLFW_KEY_LEFT_ALT || event.getKeyCode() == GLFW.GLFW_KEY_RIGHT_ALT)
@@ -157,7 +157,7 @@ public class UIinput
 	}
 	
 	@SubscribeEvent
-	public static void onKeyRelease(ScreenEvent.KeyboardKeyReleasedEvent.Pre event)
+	public static void onKeyRelease(ScreenEvent.KeyReleased.Pre event)
 	{
 		if(event.getKeyCode() == GLFW.GLFW_KEY_LEFT_ALT || event.getKeyCode() == GLFW.GLFW_KEY_RIGHT_ALT)
 			isAltPressed = false;
@@ -168,25 +168,25 @@ public class UIinput
 	}
 	
 	@SubscribeEvent
-	public static void onCharTyped(ScreenEvent.KeyboardCharTypedEvent.Pre event)
+	public static void onCharTyped(ScreenEvent.CharacterTyped.Pre event)
 	{
 		charTyped = event.getCodePoint();
 	}
 	
 	@SubscribeEvent
-	public static void onMouseClicked(ScreenEvent.MouseClickedEvent.Pre event)
+	public static void onMouseClicked(ScreenEvent.MouseButtonPressed.Pre event)
 	{
 		mousePressedStates |= 1 << event.getButton();
 	}
 	
 	@SubscribeEvent
-	public static void onMouseReleased(ScreenEvent.MouseReleasedEvent.Pre event)
+	public static void onMouseReleased(ScreenEvent.MouseButtonReleased.Pre event)
 	{
 		mouseReleasedStates |= 1 << event.getButton();
 	}
 	
 	@SubscribeEvent
-	public static void onGuiScroll(ScreenEvent.MouseScrollEvent.Pre event)
+	public static void onGuiScroll(ScreenEvent.MouseScrolled.Pre event)
 	{
 		scroll = (float) event.getScrollDelta() * 100;
 	}

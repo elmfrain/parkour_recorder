@@ -18,13 +18,14 @@ public class ParkourRecorderMod
 {
 	public static final String MOD_ID = "parkour_recorder";
 	public static final String MOD_NAME = "Parkour Recorder Mod";
-	public static final String MOD_VERSION = "1.1.2.0-1.18.2";
+	public static final String MOD_VERSION = "1.1.2.0-1.19.2";
 	
 	public ParkourRecorderMod()
 	{
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus modLoadingBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modLoadingBus.addListener(this::onSetup);
+		modLoadingBus.addListener(Settings::onRegisterKeybinds);
 	}
 	
 	private void onSetup(FMLClientSetupEvent event)
@@ -36,7 +37,5 @@ public class ParkourRecorderMod
 		//Setup config
 		ModLoadingContext.get().registerConfig(Type.CLIENT, ConfigManager.CONFIG_SPEC);
 		ConfigManager.init(FMLPaths.CONFIGDIR.get().resolve(MOD_ID + ConfigManager.CONFIG_EXTENSION));
-		
-		Settings.getSettings();
 	}
 }

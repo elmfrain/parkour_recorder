@@ -19,7 +19,7 @@ public class ReplayViewerEntity extends Player
 	/**Init dummy player entity**/
 	public ReplayViewerEntity()
 	{
-		super(mc.level, new BlockPos(mc.player.getPosition(1.0f)), 0.0f, mc.player.getGameProfile());
+		super(mc.level, new BlockPos(mc.player.getPosition(1.0f)), 0.0f, mc.player.getGameProfile(), null);
 	}
 	
 	/**Position the viewer entity with previous and current frame information.**/

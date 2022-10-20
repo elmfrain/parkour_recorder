@@ -50,7 +50,7 @@ public class ModLogoRenderer
 			
 			try
 			{
-				InputStream file = Minecraft.getInstance().getResourceManager().getResource(loc).getInputStream();
+				InputStream file = Minecraft.getInstance().getResourceManager().getResource(loc).get().open();
 				byte[] d = IOUtils.toByteArray(file);
 				ByteBuffer idata = ByteBuffer.wrap(d);
 				
@@ -65,7 +65,7 @@ public class ModLogoRenderer
 				
 				file.close();
 			}
-			catch(IOException e)
+			catch(Exception e)
 			{
 				e.printStackTrace();
 			}

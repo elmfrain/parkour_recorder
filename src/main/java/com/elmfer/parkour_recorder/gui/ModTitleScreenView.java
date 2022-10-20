@@ -1,8 +1,8 @@
 package com.elmfer.parkour_recorder.gui;
 
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
 
 import org.lwjgl.opengl.GL11;
 
@@ -98,8 +98,8 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 
 	@Override
 	public void refresh() {
-		// TODO Auto-generated method stub
-		if (!ModLogoRenderer.isLoaded()) {
+		if (!ModLogoRenderer.isLoaded())
+		{
 			ModLogoRenderer.load();
 			prevLogoRotation = -90.0f;
 			logoRotation = -90.0f;
@@ -114,6 +114,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 
 		if (offlineChangelog == null)
 			loadOfflineChangelog();
+		
 		if (changelog == null)
 			changelog = new HTTPSfetcher("https://prmod.elmfer.com/changelog.txt");
 	}
@@ -211,8 +212,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 
 				yCursor = 0.0f;
 				// Process changelog line per line
-				String changelogText = changelog.hasFailed() ? changelog.stringContent() + "\n" + offlineChangelog
-						: changelog.stringContent();
+				String changelogText = changelog.hasFailed() ? offlineChangelog : changelog.stringContent();
 				for (String line : changelogText.split("\n")) {
 					String formats = "";
 					int linePos = 0;
@@ -295,17 +295,21 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 		ResourceLocation loc = new ResourceLocation(ParkourRecorderMod.MOD_ID, "changelog.txt");
 
 		try {
-			InputStream file = Minecraft.getInstance().getResourceManager().getResource(loc).getInputStream();
-			Scanner scanner = new Scanner(file, "utf-8");
-
-			offlineChangelog = "";
-			while (scanner.hasNextLine()) {
-				offlineChangelog += scanner.nextLine() + '\n';
+			InputStream file = Minecraft.getInstance().getResourceManager().getResource(loc).get().open();
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			
+			byte[] fileChunk = new byte[4096];
+			int bytesRead = 0;
+			while(0 < (bytesRead = file.read(fileChunk)))
+			{
+				os.write(fileChunk, 0, bytesRead);
 			}
 
-			scanner.close();
+			offlineChangelog = new String(os.toByteArray(), StandardCharsets.ISO_8859_1);
+			
 			file.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			offlineChangelog = "Failed to load changelog!";
 		}

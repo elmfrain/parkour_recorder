@@ -19,9 +19,9 @@ import com.elmfer.parkour_recorder.parkour.SessionHUD;
 import com.elmfer.parkour_recorder.render.ModelManager;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
-import net.minecraftforge.client.event.ScreenOpenEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,21 +36,20 @@ public class EventHandler {
 	private static Smoother keyInputHUDpos = new Smoother();
 	
 	@SubscribeEvent
-	public static void onOpenGui(ScreenOpenEvent event)
+	public static void onOpenGui(ScreenEvent.Opening event)
 	{
 		Widget.setCurrentZLevel(0);
 		
 		if(mc.getMainRenderTarget() != null && !mc.getMainRenderTarget().isStencilEnabled())
 		{
 			mc.getMainRenderTarget().enableStencil();
-			System.out.println("[Parkour Recorder] : Stencil enabled: " + mc.getMainRenderTarget().isStencilEnabled());
 		}
 	}
 	
 	@SubscribeEvent
-	public static void onOverlayRender(RenderGameOverlayEvent event)
+	public static void onOverlayRender(RenderGuiOverlayEvent event)
 	{
-		if(event.getType() == ElementType.CHAT)
+		if(event.getOverlay().id() == VanillaGuiOverlay.CHAT_PANEL.id())
 		{
 			float uiWidth = UIrender.getUIwidth();
 			

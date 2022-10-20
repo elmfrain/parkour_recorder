@@ -3,7 +3,7 @@ package com.elmfer.parkour_recorder;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraftforge.client.ClientRegistry;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 
 public class Settings {
 	
@@ -22,13 +22,18 @@ public class Settings {
 		keybindOverride = new KeyMapping("com.elmfer.keybind.override", GLFW.GLFW_MOUSE_BUTTON_4, ParkourRecorderMod.MOD_NAME);
 		keybindReloadShaders = new KeyMapping("Reload Resources", GLFW.GLFW_KEY_K, ParkourRecorderMod.MOD_NAME);
 		keybindMainMenu = new KeyMapping("com.elmfer.keybind.main_menu", GLFW.GLFW_KEY_M, ParkourRecorderMod.MOD_NAME);
-		
-		ClientRegistry.registerKeyBinding(keybindRecord);
-		ClientRegistry.registerKeyBinding(keybindPlay);
-		ClientRegistry.registerKeyBinding(keybindOverride);
-		//ClientRegistry.registerKeyBinding(keybindReloadShaders);//
-		ClientRegistry.registerKeyBinding(keybindMainMenu);
 	}
+	
+	public static void onRegisterKeybinds(RegisterKeyMappingsEvent event)
+	{
+		Settings s = getSettings();
+		
+		event.register(s.keybindRecord);
+		event.register(s.keybindPlay);
+		event.register(s.keybindOverride);
+		event.register(s.keybindMainMenu);
+	}
+	
 	public static Settings getSettings()
 	{
 		if(instance == null) instance = new Settings();

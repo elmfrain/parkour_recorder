@@ -37,7 +37,7 @@ public class ModelManager {
 		
 		try {
 			
-			InputStream modelStream = Minecraft.getInstance().getResourceManager().getResource(model).getInputStream();
+			InputStream modelStream = Minecraft.getInstance().getResourceManager().getResource(model).get().open();
 			BufferedInputStream modelFile = new BufferedInputStream(modelStream);
 			modelFile.mark(Integer.MAX_VALUE);
 			String[] modelPath = model.getPath().split("/");
