@@ -1,7 +1,8 @@
 package com.elmfer.parkour_recorder.util;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -81,11 +82,20 @@ public class HTTPSfetcher
 				status = "Connected, Recieving Data";
 				connection.setRequestMethod("GET");
 				
-				BufferedInputStream is = new BufferedInputStream(connection.getInputStream());
+				InputStream is = connection.getInputStream();
 				statusCode = connection.getResponseCode();
 				status = String.format("Recieved Data: %d", statusCode);
 				
-				parent.contentData = new byte[is.available()];
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				
+				byte[] chunk = new byte[4096];
+				int bytesRead = 0;
+				while(0 < (bytesRead = is.read(chunk)))
+				{
+					os.write(chunk, 0, bytesRead);
+				}
+				
+				parent.contentData = os.toByteArray();
 				is.read(parent.contentData);
 				
 				is.close();
