@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "parkourrecorder",
+	"version": "${version}",
+	"name": "ParkourRecorder",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/parkourrecorder/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.elmfer.prmod.ParkourRecorder"
+		],
+		"client": [
+			"com.elmfer.prmod.ParkourRecorderClient"
+		]
+	},
+	"mixins": [
+		"parkourrecorder.mixins.json",
+		{
+			"config": "parkourrecorder.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.6",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
