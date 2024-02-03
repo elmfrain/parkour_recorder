@@ -15,13 +15,14 @@ public class KeyBinds {
 	KeyBinding kbShowMenu;
 	
 	private KeyBinds() {
-		initializeKeybinds();
-		
-		registerKeybinds();
+		createKeybinds();
 	}
 	
 	public void registerKeybinds() {
-		KeyBindingHelper.registerKeyBinding(kbRecord);	
+		KeyBindingHelper.registerKeyBinding(kbRecord);
+		KeyBindingHelper.registerKeyBinding(kbPlay);
+		KeyBindingHelper.registerKeyBinding(kbOverride);
+		KeyBindingHelper.registerKeyBinding(kbShowMenu);
 	}
 	
 	public static KeyBinds getKeyBinds() {
@@ -31,10 +32,10 @@ public class KeyBinds {
 		return singleton;
 	}
 	
-	private void initializeKeybinds() {
-		kbRecord = new KeyBinding("com.elmfer.keybind.record", GLFW.GLFW_KEY_R, ParkourRecorder.MOD_NAME);
-		kbPlay = new KeyBinding("com.elmfer.keybind.play", GLFW.GLFW_KEY_P, ParkourRecorder.MOD_NAME);
-		kbOverride = new KeyBinding("com.elmfer.keybind.override", GLFW.GLFW_MOUSE_BUTTON_4, ParkourRecorder.MOD_NAME);
-		kbShowMenu = new KeyBinding("com.elmfer.keybind.showMenu", GLFW.GLFW_KEY_M, ParkourRecorder.MOD_NAME);
+	private void createKeybinds() {
+		kbRecord = new KeyBinding("com.prmod.keybind.record", GLFW.GLFW_KEY_R, ParkourRecorder.MOD_NAME);
+		kbPlay = new KeyBinding("com.prmod.keybind.play", GLFW.GLFW_KEY_P, ParkourRecorder.MOD_NAME);
+		kbOverride = new KeyBinding("com.prmod.keybind.override", GLFW.GLFW_MOUSE_BUTTON_4, ParkourRecorder.MOD_NAME);
+		kbShowMenu = new KeyBinding("com.prmod.keybind.showMenu", GLFW.GLFW_KEY_M, ParkourRecorder.MOD_NAME);
 	}
 }

@@ -13,7 +13,6 @@ public class ParkourRecorder implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-	
 		EventHandler.registerEventHandlers();
 		KeyBinds.getKeyBinds().registerKeybinds();
 	}
