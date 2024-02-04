@@ -2,7 +2,6 @@ package com.elmfer.prmod.parkour;
 
 import com.elmfer.prmod.config.Config;
 import com.elmfer.prmod.render.GraphicsHelper;
-import com.elmfer.prmod.render.KeyInputHUD;
 import com.elmfer.prmod.render.ParticleArrow;
 import com.elmfer.prmod.render.ParticleArrowLoop;
 import com.elmfer.prmod.render.ParticleFinish;

@@ -1,10 +1,9 @@
-package com.elmfer.prmod.render;
+package com.elmfer.prmod.parkour;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.elmfer.prmod.animation.Smoother;
-import com.elmfer.prmod.parkour.Frame;
 import com.elmfer.prmod.parkour.Frame.Flags;
 import com.elmfer.prmod.ui.UIRender;
 import com.elmfer.prmod.ui.Viewport;
