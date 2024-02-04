@@ -113,12 +113,12 @@ public class Recording implements List<Frame> {
 		String s = name + "\n\n";
 		String tab = ":\n   ";
 		if (recordFile != null)
-			s += I18n.translate("com.elmfer.file") + tab
-					+ (recordFile != null ? recordFile.getName() : "[" + I18n.translate("com.elmfer.unsaved") + "]") + "\n\n";
-		s += I18n.translate("com.elmfer.recording_length") + tab + frames.size() / 20.0f + "s\n\n";
-		s += String.format("%s%s%.2f %.2f %.2f\n\n", I18n.translate("com.elmfer.starting_position"), tab, initPos.x,
+			s += I18n.translate("com.prmod.file") + tab
+					+ (recordFile != null ? recordFile.getName() : "[" + I18n.translate("com.prmod.unsaved") + "]") + "\n\n";
+		s += I18n.translate("com.prmod.recording_length") + tab + frames.size() / 20.0f + "s\n\n";
+		s += String.format("%s%s%.2f %.2f %.2f\n\n", I18n.translate("com.prmod.starting_position"), tab, initPos.x,
 				initPos.y, initPos.z);
-		s += String.format("%s%s%.2f %.2f %.2f\n\n", I18n.translate("com.elmfer.ending_position"), tab, lastPos.x, lastPos.y,
+		s += String.format("%s%s%.2f %.2f %.2f\n\n", I18n.translate("com.prmod.ending_position"), tab, lastPos.x, lastPos.y,
 				lastPos.z);
 		return s;
 	}
