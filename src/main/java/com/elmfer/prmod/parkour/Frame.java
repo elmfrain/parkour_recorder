@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 /** Stores movement inputs and player's states for one tick. **/
@@ -73,7 +74,7 @@ public class Frame {
 	}
 
 	/** Set the entity's movement inputs from the frame **/
-	public void setMovementInput(Input input, ClientPlayerEntity entityIn) {
+	public void setMovementInput(Input input, PlayerEntity entityIn) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 
 		input.pressingForward = getFlag(Flags.FORWARD);
