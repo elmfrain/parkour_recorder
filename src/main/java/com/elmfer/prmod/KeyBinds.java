@@ -8,30 +8,30 @@ import net.minecraft.client.option.KeyBinding;
 public class KeyBinds {
 
 	private static KeyBinds singleton;
-	
+
 	KeyBinding kbRecord;
 	KeyBinding kbPlay;
 	KeyBinding kbOverride;
 	KeyBinding kbShowMenu;
-	
+
 	private KeyBinds() {
 		createKeybinds();
 	}
-	
+
 	public void registerKeybinds() {
 		KeyBindingHelper.registerKeyBinding(kbRecord);
 		KeyBindingHelper.registerKeyBinding(kbPlay);
 		KeyBindingHelper.registerKeyBinding(kbOverride);
 		KeyBindingHelper.registerKeyBinding(kbShowMenu);
 	}
-	
+
 	public static KeyBinds getKeyBinds() {
-		if(singleton == null) 
+		if (singleton == null)
 			singleton = new KeyBinds();
-		
+
 		return singleton;
 	}
-	
+
 	private void createKeybinds() {
 		kbRecord = new KeyBinding("com.prmod.keybind.record", GLFW.GLFW_KEY_R, ParkourRecorder.MOD_NAME);
 		kbPlay = new KeyBinding("com.prmod.keybind.play", GLFW.GLFW_KEY_P, ParkourRecorder.MOD_NAME);
