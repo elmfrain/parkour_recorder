@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.elmfer.prmod.animation.Smoother;
 import com.elmfer.prmod.config.Config;
+import com.elmfer.prmod.mesh.Meshes;
 import com.elmfer.prmod.parkour.KeyInputHUD;
 import com.elmfer.prmod.parkour.ParkourSession;
 import com.elmfer.prmod.parkour.PlaybackSession;
@@ -11,11 +12,15 @@ import com.elmfer.prmod.parkour.Recording;
 import com.elmfer.prmod.parkour.RecordingSession;
 import com.elmfer.prmod.parkour.SessionHUD;
 import com.elmfer.prmod.ui.MenuScreen;
+import com.elmfer.prmod.ui.UIInput;
 import com.elmfer.prmod.ui.UIRender;
 import com.elmfer.prmod.ui.widgets.Widget;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -34,6 +39,9 @@ public class EventHandler {
 		ScreenEvents.BEFORE_INIT.register(EventHandler::onOpenScreen);
 		HudRenderCallback.EVENT.register(EventHandler::onRenderHUD);
 		ClientTickEvents.START_CLIENT_TICK.register(EventHandler::onTick);
+		ClientLifecycleEvents.CLIENT_STARTED.register(EventHandler::onClientStarted);
+		WorldRenderEvents.START.register(EventHandler::onStartRenderWorld);
+		WorldRenderEvents.END.register(EventHandler::onEndRenderWorld);
 	}
 
 	private static void onOpenScreen(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight) {
@@ -57,6 +65,18 @@ public class EventHandler {
 			KeyInputHUD.posX = keyInputHUDposX;
 			KeyInputHUD.render();
 		}
+	}
+	
+	private static void onStartRenderWorld(WorldRenderContext context) {
+		UIRender.newFrame();
+		session.onRenderTick();
+	}
+	
+	private static void onEndRenderWorld(WorldRenderContext context) {
+		// ModelManger.onRenderTick();
+		Widget.updateWidgetsOnRenderTick();
+		UIInput.pollInputs();
+		UIRender.renderBatch();
 	}
 
 	private static void onTick(MinecraftClient client) {
@@ -85,6 +105,10 @@ public class EventHandler {
 
 		if (keyBinds.kbShowMenu.wasPressed())
 			mc.setScreen(new MenuScreen());
+	}
+	
+	private static void onClientStarted(MinecraftClient client) {
+		Meshes.loadMeshes();
 	}
 
 	public static void addToHistory(Recording recording) {
