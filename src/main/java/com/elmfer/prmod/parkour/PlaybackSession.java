@@ -1,6 +1,7 @@
 package com.elmfer.prmod.parkour;
 
 import com.elmfer.prmod.config.Config;
+import com.elmfer.prmod.mixin.EntityMixins;
 import com.elmfer.prmod.render.GraphicsHelper;
 import com.elmfer.prmod.render.ParticleArrow;
 import com.elmfer.prmod.render.ParticleArrowLoop;
@@ -8,6 +9,7 @@ import com.elmfer.prmod.render.ParticleFinish;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.input.KeyboardInput;
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TextContent;
 import net.minecraft.text.TranslatableTextContent;
@@ -165,15 +167,18 @@ public class PlaybackSession implements ParkourSession {
 			
 			mc.player.setYaw(GraphicsHelper.lerpAngle(countdownAmount, mc.player.headYaw, firstFrame.headYaw));
 			mc.player.setPitch(GraphicsHelper.lerp(countdownAmount, mc.player.getPitch(), firstFrame.headPitch));
-			mc.player.prevHeadYaw = mc.player.getYaw();
+			mc.player.prevYaw = mc.player.prevHeadYaw = mc.player.headYaw = mc.player.getYaw();
 			mc.player.prevPitch = mc.player.getPitch();
 			
 			Vec3d pos = mc.player.getPos();
 			double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
 			double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
 			double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
+			pos = new Vec3d(posX, posY, posZ);
 			
-			mc.player.setPos(posX, posY, posZ);
+			((EntityMixins) mc.player).setPosDirect(pos);
+			EntityDimensions dimensions = ((EntityMixins) mc.player).getDimensions();
+			mc.player.setBoundingBox(dimensions.getBoxAt(pos));
 		}
 		else if(isPlaying)
 		{
@@ -195,7 +200,12 @@ public class PlaybackSession implements ParkourSession {
 				stop();
 			}
 			else
-				mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+			{
+				Vec3d currentPos = new Vec3d(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+				((EntityMixins) mc.player).setPosDirect(currentPos);
+				EntityDimensions dimensions = ((EntityMixins) mc.player).getDimensions();
+				mc.player.setBoundingBox(dimensions.getBoxAt(currentPos));
+			}
 		}
 	}
 	
