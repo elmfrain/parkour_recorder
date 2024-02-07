@@ -10,14 +10,11 @@ import org.lwjgl.opengl.GL11;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer.TextLayerType;
 import net.minecraft.client.gl.ShaderProgram;
-import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider.Immediate;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 
 //Rendering implementation for UIs.
 public class UIRender
@@ -25,6 +22,8 @@ public class UIRender
 	public static final Matrix4f identity = new Matrix4f();
 	public static MinecraftClient mc = MinecraftClient.getInstance();
 
+	private static DrawContext drawContext;
+	
 	private static void arrangePositions(float positions[])
 	{
 		if (positions[0] < positions[2])
@@ -44,19 +43,11 @@ public class UIRender
 
 	public static void drawRect(float left, float top, float right, float bottom, int color)
 	{
-		float positions[] = { left, top, right, bottom };
-		arrangePositions(positions);
-
-		Color c = new Color(color);
+		if(drawContext == null)
+			return;
 		
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tessellator.getBuffer();
-		bufferbuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-		bufferbuilder.vertex(positions[0], positions[1], 0.0).color(c.r, c.g, c.b, c.a).next();
-		bufferbuilder.vertex(positions[0], positions[3], 0.0).color(c.r, c.g, c.b, c.a).next();
-		bufferbuilder.vertex(positions[2], positions[3], 0.0).color(c.r, c.g, c.b, c.a).next();
-		bufferbuilder.vertex(positions[2], positions[1], 0.0).color(c.r, c.g, c.b, c.a).next();
-		tessellator.draw();
+		drawContext.fill((int) left, (int) top, (int) right, (int) bottom, color);
+//		drawContext.draw();
 	}
 
 	public static void drawGradientRect(float left, float top, float right, float bottom, int startColor, int endColor)
@@ -75,15 +66,14 @@ public class UIRender
 		arrangePositions(positions);
 		direction.orient(left, top, right, bottom, verticies);
 		
-		RenderSystem.enableBlend();
-		Tessellator tesselator = Tessellator.getInstance();
-		BufferBuilder bufferbuilder = tesselator.getBuffer();
-		bufferbuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-		bufferbuilder.vertex(verticies[0], verticies[1], 0.0).color(c1.r, c1.g, c1.b, c1.a).next();
-		bufferbuilder.vertex(verticies[2], verticies[3], 0.0).color(c1.r, c1.g, c1.b, c1.a).next();
-		bufferbuilder.vertex(verticies[4], verticies[5], 0.0).color(c0.r, c0.g, c0.b, c0.a).next();
-		bufferbuilder.vertex(verticies[6], verticies[7], 0.0).color(c0.r, c0.g, c0.b, c0.a).next();
-		RenderSystem.disableBlend();
+		Matrix4f matrix4f = drawContext.getMatrices().peek().getPositionMatrix();
+		VertexConsumer vertexConsumer = drawContext.getVertexConsumers().getBuffer(RenderLayer.getGui());
+		vertexConsumer.vertex(matrix4f, verticies[0], verticies[1], 0).color(c1.r, c1.g, c1.b, c1.a).next();
+		vertexConsumer.vertex(matrix4f, verticies[2], verticies[3], 0).color(c1.r, c1.g, c1.b, c1.a).next();
+		vertexConsumer.vertex(matrix4f, verticies[4], verticies[5], 0).color(c0.r, c0.g, c0.b, c0.a).next();
+		vertexConsumer.vertex(matrix4f, verticies[6], verticies[7], 0).color(c0.r, c0.g, c0.b, c0.a).next();
+		
+//		drawContext.draw();
 	}
 
 	public static void drawHoveringText(String text, float x, float y)
@@ -170,8 +160,7 @@ public class UIRender
 		anchor.anchor(text, x, y, newPositions);
 
 //		mc.font.draw(identity, text, newPositions[0], newPositions[1], color);
-		Immediate vertexConsumer =  mc.getBufferBuilders().getEntityVertexConsumers();
-		mc.textRenderer.draw(text, newPositions[0], newPositions[1], color, false, identity, vertexConsumer, TextLayerType.SEE_THROUGH, 0x00, 0x00);
+		drawContext.drawText(mc.textRenderer, text, (int) newPositions[0], (int) newPositions[1], color, false);
 	}
 
 	public static String getTextFormats(String src)
@@ -270,7 +259,7 @@ public class UIRender
 			ShaderProgram posColShader = GameRenderer.getPositionColorProgram();
 			posColShader.modelViewMat.set(RenderSystem.getModelViewMatrix());
 			posColShader.projectionMat.set(RenderSystem.getProjectionMatrix());
-			posColShader.colorModulator.set(c.r, c.g, c.b, c.a);
+			posColShader.colorModulator.set(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
 			posColShader.bind();
 //			ModelManager.renderModel(iconKey);
 			posColShader.unbind();
@@ -280,6 +269,17 @@ public class UIRender
 
 		RenderSystem.enableCull();
 		RenderSystem.disableBlend();
+	}
+	
+	public static void newFrame() {
+		drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+	}
+	
+	public static void renderBatch() {
+		if(drawContext == null)
+			return;
+		
+		drawContext.draw();
 	}
 
 	public static class Stencil
