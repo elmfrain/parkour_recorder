@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
-	"id": "parkourrecorder",
-	"version": "${version}",
+	"id": "prmod",
+	"version": "0.3.0a-mc1.20.4",
 	"name": "ParkourRecorder",
 	"description": "A Minecraft mod that allows you to record and playback parkour sessions.",
 	"authors": [
@@ -12,7 +12,7 @@
 		"sources": "https://github.com/elmfrain/parkour_recorder"
 	},
 	"license": "MIT",
-	"icon": "assets/parkourrecorder/icon.png",
+	"icon": "assets/prmod/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"client": [
