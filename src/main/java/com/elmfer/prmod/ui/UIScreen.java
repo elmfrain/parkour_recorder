@@ -17,11 +17,6 @@ public abstract class UIScreen extends Screen implements UIInput.Listener {
 		UIInput.addListener(this);
 	}
 
-	@Override
-	public void finalize() {
-		close();
-	}
-
 	/** When gui closes. **/
 	@Override
 	public void removed() {
