@@ -89,9 +89,9 @@ public class Viewport {
 			return parents.get(0).guiMatrix;
 	}
 
-	public void pushMatrix(boolean setViewport) {
+	public void pushMatrix(boolean clipping) {
 		RenderSystem.getModelViewStack().push();
-		if (setViewport) {
+		if (clipping) {
 			prevViewport = BufferUtils.createIntBuffer(16);
 			GL11.glGetIntegerv(GL11.GL_VIEWPORT, prevViewport);
 
@@ -105,8 +105,8 @@ public class Viewport {
 			int height = (int) (getHeight() * factor);
 			GL11.glViewport(x, y, width, height);
 //			RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0f, getWidth(), 0.0f, getHeight(), 1000.0f, 3000.0f));
-			Matrix4f ortho = new Matrix4f().ortho(0.0f, getWidth(), 0.0f, getHeight(), 1000.0f, 3000.0f);
-			RenderSystem.setProjectionMatrix(ortho, VertexSorter.BY_Z);
+			Matrix4f ortho = new Matrix4f().setOrtho(0.0f, getWidth(), getHeight(), 0.0f, 1000.0f, 21000.0f);
+			RenderSystem.setProjectionMatrix(ortho, VertexSorter.BY_DISTANCE);
 
 			RenderSystem.getModelViewStack().peek().getPositionMatrix().set(getGuiMatrix());
 			RenderSystem.applyModelViewMatrix();
@@ -137,8 +137,7 @@ public class Viewport {
 	}
 
 	private void setupOverlayRendering() {
-		Matrix4f ortho = new Matrix4f().ortho(0.0f, UIRender.getUIwidth(), UIRender.getUIheight(), 0.0f, 1000.0f,
-				3000.0f);
+		Matrix4f ortho = new Matrix4f().setOrtho(0.0f, UIRender.getUIwidth(), UIRender.getUIheight(), 0.0f, 1000.0f, 21000.0f);
 		RenderSystem.setProjectionMatrix(ortho, VertexSorter.BY_Z);
 		RenderSystem.getModelViewStack().loadIdentity();
 		RenderSystem.getModelViewStack().translate(0.0f, 0.0f, -2000.0f);
