@@ -187,7 +187,7 @@ public class Button extends Widget
 		highlightColor.mul((float) (transitions.getTimeline("highlight").getFracTime() * 0.6));
 		c.add(hoveredcolor);
 		c.add(highlightColor);
-		return GraphicsHelper.getIntColor(c, 1.0f);
+		return GraphicsHelper.getIntColor(c, 0.3f);
 	}
 	
 	protected int getTextColor()
