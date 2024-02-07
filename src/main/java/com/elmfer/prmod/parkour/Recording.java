@@ -655,13 +655,11 @@ public class Recording implements List<Frame> {
 
 	@Override
 	public Frame set(int arg0, Frame arg1) {
-		// TODO Auto-generated method stub
-		return null;
+		return frames.set(arg0, arg1);
 	}
 
 	@Override
 	public boolean add(Frame arg0) {
-		// TODO Auto-generated method stub
-		return false;
+		return frames.add(arg0);
 	}
 }
