@@ -2,7 +2,9 @@ package com.elmfer.prmod.render;
 
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
+import org.lwjgl.opengl.GL30;
 
+import com.elmfer.prmod.mesh.Meshes;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
@@ -71,8 +73,8 @@ public class ParticleFinish extends Particle
 			RenderSystem.getModelViewStack().translate(0, Math.sin(ticks * Math.PI / 20.0) * 0.3 + 1.4, 0);
 			RenderSystem.getModelViewStack().translate(0, Math.pow(1.0 - expiredAmount, 2.0) * 5.0, 0);
 			RenderSystem.getModelViewStack().scale(scale, scale, scale);
-			AxisAngle4f yAngle = new AxisAngle4f(0, 1, 0, (float) Math.toRadians(angle) + (float) (Math.toRadians(-Math.pow(expiredAmount, 2.0) * 720.0)));
-			AxisAngle4f zAngle = new AxisAngle4f(0, 0, 1, (float) Math.toRadians(Math.sin(ticks * Math.PI / 20.0) * 10));
+			AxisAngle4f yAngle = new AxisAngle4f((float) Math.toRadians(angle) + (float) (Math.toRadians(-Math.pow(expiredAmount, 2.0) * 720.0)), 0, 1, 0);
+			AxisAngle4f zAngle = new AxisAngle4f((float) Math.toRadians(Math.sin(ticks * Math.PI / 20.0) * 10), 0, 0, 1);
 			RenderSystem.getModelViewStack().multiply(new Quaternionf(yAngle));
 			RenderSystem.getModelViewStack().multiply(new Quaternionf(zAngle));
 			RenderSystem.applyModelViewMatrix();
@@ -83,7 +85,7 @@ public class ParticleFinish extends Particle
 			posColorShader.colorModulator.set(1.0f, 1.0f, 1.0f, (float) ((distanceFromCamera - 0.5) / 3.0));
 			
 			posColorShader.bind();
-//			ModelManager.renderModel("finish");
+			Meshes.get("finish").render(GL30.GL_TRIANGLES);
 			posColorShader.unbind();
 		}
 		RenderSystem.getModelViewStack().pop();

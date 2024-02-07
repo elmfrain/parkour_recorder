@@ -2,7 +2,9 @@ package com.elmfer.prmod.render;
 
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
+import org.lwjgl.opengl.GL11;
 
+import com.elmfer.prmod.mesh.Meshes;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
@@ -55,7 +57,7 @@ public class ParticleArrow extends Particle
 			RenderSystem.getModelViewStack().translate(x, y, z);
 			RenderSystem.getModelViewStack().translate(0, Math.sin((age + partialTicks) * Math.PI / 20.0) * 0.3 + 1.4, 0);
 			RenderSystem.getModelViewStack().scale(scale, scale, scale);
-			AxisAngle4f axisAngle = new AxisAngle4f(0, 1, 0, (float) Math.toRadians(angle));
+			AxisAngle4f axisAngle = new AxisAngle4f((float) Math.toRadians(angle), 0, 1, 0);
 			RenderSystem.getModelViewStack().multiply(new Quaternionf(axisAngle));
 			RenderSystem.applyModelViewMatrix();
 			
@@ -65,7 +67,7 @@ public class ParticleArrow extends Particle
 			posColorShader.colorModulator.set(1.0f, 1.0f, 1.0f, (float) ((distanceFromCamera - 0.5) / 3.0));
 			
 			posColorShader.bind();
-//			ModelManager.renderModel("arrow");
+			Meshes.get("arrow").render(GL11.GL_TRIANGLES);
 			posColorShader.unbind();
 		}
 		RenderSystem.getModelViewStack().pop();

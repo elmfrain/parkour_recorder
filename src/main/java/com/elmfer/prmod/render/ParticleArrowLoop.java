@@ -2,7 +2,9 @@ package com.elmfer.prmod.render;
 
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
+import org.lwjgl.opengl.GL30;
 
+import com.elmfer.prmod.mesh.Meshes;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
@@ -64,7 +66,7 @@ public class ParticleArrowLoop extends ParticleArrow
 			posColorShader.colorModulator.set(1.0f, 1.0f, 1.0f, (float) ((distanceFromCamera - 0.5) / 3.0));
 			
 			posColorShader.bind();
-//			ModelManager.renderModel("arrow-loop-mode");
+			Meshes.get("arrow-loop-mode").render(GL30.GL_TRIANGLES);
 			posColorShader.unbind();
 		}
 		RenderSystem.getModelViewStack().pop();
