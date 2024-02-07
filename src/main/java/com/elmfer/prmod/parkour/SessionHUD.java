@@ -1,11 +1,10 @@
 package com.elmfer.prmod.parkour;
 
-import org.lwjgl.opengl.GL11;
-
 import com.elmfer.prmod.EventHandler;
 import com.elmfer.prmod.config.Config;
 import com.elmfer.prmod.render.GraphicsHelper;
 import com.elmfer.prmod.ui.UIRender;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
@@ -68,16 +67,16 @@ public class SessionHUD
 			int stringWidth = mc.textRenderer.getWidth(s);
 			int stringHeight = mc.textRenderer.fontHeight;
 			
-			int width = res.getScaledHeight();
+			int width = res.getScaledWidth();
 			float fade = Math.min(100, fadedness) / 100.0f;
 			int c = GraphicsHelper.getIntColor(0.9f, 0.9f, 0.9f, fade);
 			int c1 = GraphicsHelper.getIntColor(0.0f, 0.0f, 0.0f, 0.2f * fade);
-			GL11.glEnable(GL11.GL_BLEND);
-			
-			GL11.glBlendFunc(GL11.GL_SRC_ALPHA,  GL11.GL_ONE_MINUS_SRC_ALPHA);
 			
 			boolean showLoopIcon =
 					EventHandler.session instanceof PlaybackSession ? ((PlaybackSession) EventHandler.session).recording.isLoop() : true;
+			
+			RenderSystem.getModelViewStack().loadIdentity();
+			
 			
 			if(Config.isLoopMode() && showLoopIcon)
 			{
