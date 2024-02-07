@@ -5,7 +5,7 @@ import com.elmfer.prmod.config.Config;
 import com.elmfer.prmod.render.ParticleArrowLoop;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.input.Input;
+import net.minecraft.client.input.KeyboardInput;
 
 public class RecordingSession implements ParkourSession {
 
@@ -36,7 +36,9 @@ public class RecordingSession implements ParkourSession {
 		switch(nbRecordPresses) 
 		{
 		case 0:
-			mc.player.input = new Input();
+			if (!(mc.player.input instanceof KeyboardInput))
+				mc.player.input = new KeyboardInput(mc.options);
+			
 			if(recording == null)
 				recording = new Recording(mc.player.getPos());
 			isRecording = true;
@@ -114,18 +116,18 @@ public class RecordingSession implements ParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(isRecording && !mc.isPaused())
+		if(!isRecording || mc.isPaused())
+			return;
+		
+		recording.add(new Frame(mc.options, mc.player));
+		if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPos()) < 0.25)
 		{
-			recording.add(new Frame(mc.options, mc.player));
-			if(waitingForPlayer && recording.initPos.distanceTo(mc.player.getPos()) < 0.25)
-			{
-				waitingForPlayer = false;
-				// Finish session
-				nbRecordPresses = 2;
-				EventHandler.session = onRecord();
-				// Set last pos to init pos to mark as loop recording data
-				recording.lastPos = recording.initPos;
-			}
+			waitingForPlayer = false;
+			// Finish session
+			nbRecordPresses = 2;
+			EventHandler.session = onRecord();
+			// Set last pos to init pos to mark as loop recording data
+			recording.lastPos = recording.initPos;
 		}
 	}
 

@@ -111,89 +111,91 @@ public class PlaybackSession implements ParkourSession {
 	@Override
 	public void onClientTick()
 	{
-		if(!mc.isPaused())
+		if(mc.isPaused())
+			return;
+		
+		playbackCountdown = Math.max(0, playbackCountdown - 1);
+		if(waitingForPlayer && startingPos.distanceTo(mc.player.getPos()) < 0.25)
 		{
-			playbackCountdown = Math.max(0, playbackCountdown - 1);
-			if(waitingForPlayer && startingPos.distanceTo(mc.player.getPos()) < 0.25)
+			isPlaying = true;
+			playbackCountdown = 10;
+			mc.player.input = new ControlledInput();
+			mc.player.setVelocity(new Vec3d(0, 0, 0));
+			frameNumber = recording.startingFrame;
+			waitingForPlayer = false;
+		}
+		if(isPlaying && playbackCountdown == 0)
+		{
+			if(frameNumber < recording.size())
 			{
-				isPlaying = true;
-				playbackCountdown = 10;
-				mc.player.input = new ControlledInput();
-				mc.player.setVelocity(new Vec3d(0, 0, 0));
+				if(!initiated)
+				{
+					mc.player.setPos(startingPos.x, startingPos.y, startingPos.z);
+					if(arrow.isAlive()) arrow.markDead();
+					initiated = true;
+				}
+				currentFrame = recording.get(frameNumber);
+				
+				currentFrame.setMovementInput(mc.player.input, mc.player);
+				KeyInputHUD.setFrame(currentFrame);
+//				mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+				frameNumber++;
+			}
+			else if (Config.isLoopMode() && recording.isLoop())
+			{
+				initiated = false;
 				frameNumber = recording.startingFrame;
-				waitingForPlayer = false;
 			}
-			if(isPlaying && playbackCountdown == 0)
-			{
-				if(frameNumber < recording.size())
-				{
-					if(!initiated)
-					{
-						mc.player.setPos(startingPos.x, startingPos.y, startingPos.z);
-						if(arrow.isAlive()) arrow.markDead();
-						initiated = true;
-					}
-					currentFrame = recording.get(frameNumber);
-					
-					currentFrame.setMovementInput(mc.player.input, mc.player);
-					KeyInputHUD.setFrame(currentFrame);
-					//mc.player.setPosition(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-					frameNumber++;
-				}
-				else if (Config.isLoopMode() && recording.isLoop())
-				{
-					initiated = false;
-					frameNumber = recording.startingFrame;
-				}
-				else
-					stop();
-			}
+			else
+				stop();
 		}
 	}
 
 	@Override
 	public void onRenderTick()
 	{
-		if(!mc.isPaused())
-		{	
-			float partialTicks = mc.getTickDelta();
-			if(playbackCountdown > 0)
+		if(mc.isPaused())
+			return;
+			
+		float partialTicks = mc.getTickDelta();
+		if(playbackCountdown > 0)
+		{
+			float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
+			Frame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
+			
+			mc.player.setYaw(GraphicsHelper.lerpAngle(countdownAmount, mc.player.headYaw, firstFrame.headYaw));
+			mc.player.setPitch(GraphicsHelper.lerp(countdownAmount, mc.player.getPitch(), firstFrame.headPitch));
+			mc.player.prevHeadYaw = mc.player.getYaw();
+			mc.player.prevPitch = mc.player.getPitch();
+			
+			Vec3d pos = mc.player.getPos();
+			double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
+			double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
+			double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
+			
+			mc.player.setPos(posX, posY, posZ);
+		}
+		else if(isPlaying)
+		{
+			Frame prevFrame = recording.get(Math.max(0, frameNumber - 2));
+			
+			mc.player.prevHeadYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+			mc.player.setYaw(mc.player.prevHeadYaw);
+			mc.player.prevPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+			mc.player.setPitch(mc.player.prevPitch);
+			
+			Vec3d playerPos = mc.player.getPos();
+			Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
+			if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
 			{
-				float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
-				Frame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
-				
-				mc.player.setYaw(GraphicsHelper.lerpAngle(countdownAmount, mc.player.headYaw, firstFrame.headYaw));
-				mc.player.setPitch(GraphicsHelper.lerp(countdownAmount, mc.player.getPitch(), firstFrame.headPitch));
-				
-				Vec3d pos = mc.player.getPos();
-				double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
-				double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
-				double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
-				
-				mc.player.setPos(posX, posY, posZ);
+				TextContent errorMessageContent = new TranslatableTextContent("com.prmod.playback_failed", "Playback failed", new Object[0]);
+				MutableText errorMessage = MutableText.of(errorMessageContent);
+				errorMessage.setStyle(errorMessage.getStyle().withColor(0xff0000));
+				mc.inGameHud.getChatHud().addMessage(null);
+				stop();
 			}
-			else if(isPlaying)
-			{
-				Frame prevFrame = recording.get(Math.max(0, frameNumber - 2));
-				
-				mc.player.prevHeadYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-				mc.player.setYaw(mc.player.prevHeadYaw);
-				mc.player.prevPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
-				mc.player.setPitch(mc.player.prevPitch);
-				
-				Vec3d playerPos = mc.player.getPos();
-				Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
-				if(5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0)
-				{
-					TextContent errorMessageContent = new TranslatableTextContent("com.prmod.playback_failed", "Playback failed", new Object[0]);
-					MutableText errorMessage = MutableText.of(errorMessageContent);
-					errorMessage.setStyle(errorMessage.getStyle().withColor(0xff0000));
-					mc.inGameHud.getChatHud().addMessage(null);
-					stop();
-				}
-				else
-					mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-			}
+			else
+				mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
 		}
 	}
 	
