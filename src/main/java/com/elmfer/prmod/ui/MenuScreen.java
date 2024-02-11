@@ -154,9 +154,7 @@ public class MenuScreen extends UIScreen
 	
 	@Override
 	public void render(DrawContext stack, int mouseX, int mouseY, float partialTicks)
-	{
-		drawNavigationBar();
-		
+	{	
 		RenderSystem.getModelViewStack().push();
 		{	
 			loadView.draw();
@@ -168,7 +166,7 @@ public class MenuScreen extends UIScreen
 		RenderSystem.getModelViewStack().pop();
 		RenderSystem.applyModelViewMatrix();
 		
-//		drawNavigationBar();
+		drawNavigationBar();
 		Window.drawWindows();
 	}
 	
