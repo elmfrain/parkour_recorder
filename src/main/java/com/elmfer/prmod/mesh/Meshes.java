@@ -18,7 +18,9 @@ public class Meshes {
 	private static final Map<String, Mesh> meshes = new HashMap<String, Mesh>();
 	
 	private static boolean loadedMeshes = false;
+	private static boolean loadedIcons = false;
 	private static boolean hasWarnedAboutMeshesAlreadyLoaded = false;
+	private static boolean hasWarnedAboutIconsAlreadyLoaded = false;
 	
 	public static void loadMeshes() {
 		if(loadedMeshes) {
@@ -38,6 +40,41 @@ public class Meshes {
 		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/finish.ply")).makeRenderable(format);
 		
 		loadedMeshes = true;
+	}
+	
+	public static void loadIcons() {
+		if (loadedIcons) {
+			if (!hasWarnedAboutIconsAlreadyLoaded) {
+				ParkourRecorder.LOGGER.warn("Icons have already been loaded!");
+				hasWarnedAboutIconsAlreadyLoaded = true;
+			}
+			return;
+		}
+		
+		ParkourRecorder.LOGGER.info("Loading icons...");
+		
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/add_checkpoint_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/checkpoint.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/checkpoint_icon.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/down_key.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/end_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/left_key.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/loop_icon.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/next_checkpoint_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/next_frame_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/pause_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/play_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/prev_checkpoint_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/prev_frame_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/remove_checkpoint_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/rewind_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/right_key.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/settings_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/sneak_key.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/spacebar_key.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/sprint_key.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/start_button.ply"));
+		load(new Identifier(ParkourRecorder.MOD_ID, "meshes/icons/up_key.ply"));
 	}
 	
 	public static Mesh get(String name) {

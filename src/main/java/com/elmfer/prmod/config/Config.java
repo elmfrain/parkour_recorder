@@ -12,7 +12,7 @@ public class Config {
 	}
 	
 	public static boolean showInputs() {
-		return false;
+		return true;
 	}
 	
 	public static TimeStampFormat getTimeStampFormat() {
