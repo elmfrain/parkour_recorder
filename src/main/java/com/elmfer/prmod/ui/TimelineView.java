@@ -114,7 +114,7 @@ public class TimelineView extends Widget implements IMenuTabView
 			} else
 			{
 				gear.rewind();
-				b.setHighlighted(b.isPressed());
+				b.setHighlighted(false);
 			}
 		});
 		rewindButton.setAction(b -> timeline.rewind());
@@ -706,7 +706,7 @@ public class TimelineView extends Widget implements IMenuTabView
 				RenderSystem.getModelViewStack().push();
 				{
 					RenderSystem.getModelViewStack().translate(x + width / 2, y + height / 2, 0.0);
-					AxisAngle4f axis = new AxisAngle4f(0.0f, 0.0f, 1.0f, (float) Math.toRadians(gear.getProperty("rotation").getValue()));
+					AxisAngle4f axis = new AxisAngle4f((float) Math.toRadians(gear.getProperty("rotation").getValue()), 0.0f, 0.0f, 1.0f);
 					RenderSystem.getModelViewStack().multiply(new Quaternionf(axis));
 					RenderSystem.applyModelViewMatrix();
 
