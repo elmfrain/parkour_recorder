@@ -40,6 +40,7 @@ public class EventHandler {
 		HudRenderCallback.EVENT.register(EventHandler::onRenderHUD);
 		ClientTickEvents.START_CLIENT_TICK.register(EventHandler::onTick);
 		ClientLifecycleEvents.CLIENT_STARTED.register(EventHandler::onClientStarted);
+		ClientLifecycleEvents.CLIENT_STOPPING.register(EventHandler::onClientStopping);
 		WorldRenderEvents.START.register(EventHandler::onStartRenderWorld);
 		WorldRenderEvents.END.register(EventHandler::onEndRenderWorld);
 	}
@@ -110,6 +111,11 @@ public class EventHandler {
 	private static void onClientStarted(MinecraftClient client) {
 		Meshes.loadMeshes();
 		Meshes.loadIcons();
+	}
+	
+	private static void onClientStopping(MinecraftClient client) {
+		Config.save();
+		Config.waitForSave();
 	}
 
 	public static void addToHistory(Recording recording) {
