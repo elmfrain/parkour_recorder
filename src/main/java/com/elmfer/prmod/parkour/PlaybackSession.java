@@ -196,7 +196,7 @@ public class PlaybackSession implements ParkourSession {
 				TextContent errorMessageContent = new TranslatableTextContent("com.prmod.playback_failed", "Playback failed", new Object[0]);
 				MutableText errorMessage = MutableText.of(errorMessageContent);
 				errorMessage.setStyle(errorMessage.getStyle().withColor(0xff0000));
-				mc.inGameHud.getChatHud().addMessage(null);
+				mc.inGameHud.getChatHud().addMessage(errorMessage);
 				stop();
 			}
 			else
