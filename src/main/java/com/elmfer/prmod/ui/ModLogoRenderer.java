@@ -45,7 +45,7 @@ public class ModLogoRenderer
 		{
 			if(isLoaded) return;
 			
-			Identifier loc = new Identifier(ParkourRecorder.MOD_ID, "models/3d_logo_baked.bin");
+			Identifier loc = new Identifier(ParkourRecorder.MOD_ID, "meshes/3d_logo_baked.bin");
 			
 			try
 			{
