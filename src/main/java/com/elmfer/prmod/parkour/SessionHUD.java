@@ -4,6 +4,7 @@ import com.elmfer.prmod.EventHandler;
 import com.elmfer.prmod.config.Config;
 import com.elmfer.prmod.render.GraphicsHelper;
 import com.elmfer.prmod.ui.UIRender;
+import com.elmfer.prmod.ui.UIScreen;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
@@ -15,8 +16,12 @@ public class SessionHUD
 	public static int fadedness = 0;
 	public static boolean increaseOpacity = false;
 	
+	@SuppressWarnings("resource")
 	public static void render()
 	{
+		if(MinecraftClient.getInstance().currentScreen instanceof UIScreen)
+			return;
+		
 		increaseOpacity = false;
 		String s = I18n.translate("com.prmod.stopped");
 		if(EventHandler.session instanceof RecordingSession)
