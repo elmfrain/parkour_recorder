@@ -13,7 +13,6 @@ env:
 permissions:
   contents: write
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,10 +30,12 @@ jobs:
           distribution: "temurin"
           java-version: 17
 
-      - name: Apply Mod Version
+      - name: Setup Python (for mod tools)
         uses: actions/setup-python@v5
         with:
           python-version: 'pypy3.9'
+        
+      - name: Apply Mod Version
         run: cd tools && python3 save_version.py ${{ env.MOD_VERSION }} ${{ env.MINECRAFT_VERSION }}
 
       - name: Make Gradle Wrapper Executable
