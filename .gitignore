@@ -35,6 +35,9 @@ run/
 # java
 
 hs_err_*.log
+
+# Python tool scripts
+__pycache__
 replay_*.log
 *.hprof
 *.jfr
