@@ -11,30 +11,30 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableTextContent;
 
 public abstract class UIScreen extends Screen implements UIInput.Listener {
-	public UIScreen() {
-		super(MutableText
-				.of(new TranslatableTextContent("com.prmod.parkour_recorder", "Parkour Recorder", new Object[0])));
-		UIInput.addListener(this);
-	}
+    public UIScreen() {
+        super(MutableText
+                .of(new TranslatableTextContent("com.prmod.parkour_recorder", "Parkour Recorder", new Object[0])));
+        UIInput.addListener(this);
+    }
 
-	/** When gui closes. **/
-	@Override
-	public void removed() {
-		Window.closeWindows();
-		UIInput.clearListeners();
-		Widget.clearWidgets();
-	}
+    /** When gui closes. **/
+    @Override
+    public void removed() {
+        Window.closeWindows();
+        UIInput.clearListeners();
+        Widget.clearWidgets();
+    }
 
-	@Override
-	public boolean keyPressed(int p_231046_1_, int p_231046_2_, int p_231046_3_) {
-		return false;
-	}
+    @Override
+    public boolean keyPressed(int p_231046_1_, int p_231046_2_, int p_231046_3_) {
+        return false;
+    }
 
-	@Override
-	public void onKeyPressed(int keyCode) {
-		if (!Window.areWindowsOpen() && keyCode == GLFW.GLFW_KEY_ESCAPE) {
-			MinecraftClient mc = MinecraftClient.getInstance();
-			mc.setScreen(null);
-		}
-	}
+    @Override
+    public void onKeyPressed(int keyCode) {
+        if (!Window.areWindowsOpen() && keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            MinecraftClient mc = MinecraftClient.getInstance();
+            mc.setScreen(null);
+        }
+    }
 }

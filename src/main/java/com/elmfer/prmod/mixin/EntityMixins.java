@@ -9,9 +9,9 @@ import net.minecraft.util.math.Vec3d;
 
 @Mixin(Entity.class)
 public interface EntityMixins {
-	@Accessor("pos")
-	public void setPosDirect(Vec3d pos);
-	
-	@Accessor("dimensions")
-	public EntityDimensions getDimensions();
+    @Accessor("pos")
+    public void setPosDirect(Vec3d pos);
+
+    @Accessor("dimensions")
+    public EntityDimensions getDimensions();
 }
