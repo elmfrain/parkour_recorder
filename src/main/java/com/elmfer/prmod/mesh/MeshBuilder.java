@@ -34,6 +34,8 @@ public class MeshBuilder
 	
 	private boolean isRenderable = false;
 	
+	private Vector4f colorModulator = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+	
 	public MeshBuilder(VertexFormat format)
 	{
 		this.vertexFormat = format;
@@ -87,6 +89,10 @@ public class MeshBuilder
 		vertexData.flip();
 		indexData.flip();
 		
+		int lastVertexArray = GL30.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
+		int lastArrayBuffer = GL15.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+		int lastElementBuffer = GL15.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
+		
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
 		if(vertexData.capacity() <= glVertexBufferSize)
 			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexData);
@@ -107,7 +113,9 @@ public class MeshBuilder
 		
 		GL30.glBindVertexArray(glVAO);
 		GL15.glDrawElements(mode, numIndicies, GL11.GL_UNSIGNED_INT, 0);
-		GL30.glBindVertexArray(0);
+		GL30.glBindVertexArray(lastVertexArray);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lastArrayBuffer);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, lastElementBuffer);
 	}
 	
 	public MeshBuilder position(float x, float y, float z)
@@ -166,6 +174,11 @@ public class MeshBuilder
 	
 	public MeshBuilder color(float r, float g, float b, float a)
 	{
+		r *= colorModulator.x;
+		g *= colorModulator.y;
+		b *= colorModulator.z;
+		a *= colorModulator.w;
+		
 		attribBuilder.clear();
 		attribBuilder.put((byte) (r * 255)).put((byte) (g * 255)).put((byte) (b * 255)).put((byte) (a * 255));
 		attribBuilder.flip();
@@ -177,18 +190,12 @@ public class MeshBuilder
 	
 	public MeshBuilder color(float r, float g, float b)
 	{
-		attribBuilder.clear();
-		attribBuilder.put((byte) (r * 255)).put((byte) (g * 255)).put((byte) (b * 255)).put((byte) 255);
-		attribBuilder.flip();
-		
-		vertexDataStream.write(attribBuilder.array(), 0, attribBuilder.limit());
-		
-		return this;
+		return color(r, g, b, 1.0f);
 	}
 	
 	public MeshBuilder color()
 	{
-		return color(1.0f, 1.0f, 1.0f);
+		return color(colorModulator.x, colorModulator.y, colorModulator.z, colorModulator.w);
 	}
 	
 	public MeshBuilder texid(int id)
@@ -247,6 +254,22 @@ public class MeshBuilder
 		return indexData;
 	}
 	
+	public void setColorModulator(Vector4f color) {
+		colorModulator.set(color);
+	}
+	
+	public void setColorModulator(float r, float g, float b, float a) {
+		colorModulator.set(r, g, b, a);
+	}
+	
+	public void setColorModulator(float r, float g, float b) {
+		colorModulator.set(r, g, b, 1.0f);
+	}
+	
+	public Vector4f getColorModulator() {
+		return colorModulator;
+	}
+	
 	private void initForRendering() {
 		if(isRenderable) return;
 		
@@ -257,6 +280,9 @@ public class MeshBuilder
 		glVertexBufferSize = vertexDataStream.size();
 		glElementBufferSize = indexDataStream.size();
 		
+		int lastVertexArray = GL30.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
+		int lastArrayBuffer = GL15.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+		int lastElementBuffer = GL15.glGetInteger(GL15.GL_ELEMENT_ARRAY_BUFFER_BINDING);
 		GL30.glBindVertexArray(glVAO);
 		{
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glVBO);
@@ -266,9 +292,9 @@ public class MeshBuilder
 			
 			vertexFormat.apply();
 		}
-		GL30.glBindVertexArray(0);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL30.glBindVertexArray(lastVertexArray);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, lastArrayBuffer);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, lastElementBuffer);
 		
 		isRenderable = true;
 	}
