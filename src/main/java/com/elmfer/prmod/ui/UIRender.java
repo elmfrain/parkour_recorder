@@ -7,6 +7,9 @@ import java.util.List;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
+import com.elmfer.prmod.mesh.MeshBuilder;
+import com.elmfer.prmod.mesh.Meshes;
+import com.elmfer.prmod.mesh.VertexFormat;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
@@ -22,6 +25,7 @@ public class UIRender
 	public static final Matrix4f identity = new Matrix4f();
 	public static MinecraftClient mc = MinecraftClient.getInstance();
 
+	private static MeshBuilder meshBuilder = new MeshBuilder(VertexFormat.POS_COLOR);
 	private static DrawContext drawContext;
 	
 	private static void arrangePositions(float positions[])
@@ -47,7 +51,7 @@ public class UIRender
 			return;
 		
 		drawContext.fill((int) left, (int) top, (int) right, (int) bottom, color);
-//		drawContext.draw();
+		drawContext.draw();
 	}
 
 	public static void drawGradientRect(float left, float top, float right, float bottom, int startColor, int endColor)
@@ -73,7 +77,7 @@ public class UIRender
 		vertexConsumer.vertex(matrix4f, verticies[4], verticies[5], 0).color(c0.r, c0.g, c0.b, c0.a).next();
 		vertexConsumer.vertex(matrix4f, verticies[6], verticies[7], 0).color(c0.r, c0.g, c0.b, c0.a).next();
 		
-//		drawContext.draw();
+		drawContext.draw();
 	}
 
 	public static void drawHoveringText(String text, float x, float y)
@@ -161,6 +165,7 @@ public class UIRender
 
 //		mc.font.draw(identity, text, newPositions[0], newPositions[1], color);
 		drawContext.drawText(mc.textRenderer, text, (int) newPositions[0], (int) newPositions[1], color, false);
+//		drawContext.draw();
 	}
 
 	public static String getTextFormats(String src)
@@ -246,40 +251,69 @@ public class UIRender
 	
 	public static void drawIcon(String iconKey, float x, float y, float scale, int color)
 	{
+		if (!Meshes.hasMesh(iconKey)) return;
+		
 		Color c = new Color(color);
-		RenderSystem.enableBlend();
-		RenderSystem.disableCull();
-
-		RenderSystem.getModelViewStack().push();
-		{
-			RenderSystem.getModelViewStack().translate(x, y, 0.0);
-			RenderSystem.getModelViewStack().scale(scale, -scale, 1.0f);
-			RenderSystem.applyModelViewMatrix();
-
-			ShaderProgram posColShader = GameRenderer.getPositionColorProgram();
-			posColShader.modelViewMat.set(RenderSystem.getModelViewMatrix());
-			posColShader.projectionMat.set(RenderSystem.getProjectionMatrix());
-			posColShader.colorModulator.set(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
-			posColShader.bind();
-//			ModelManager.renderModel(iconKey);
-			posColShader.unbind();
-		}
-		RenderSystem.getModelViewStack().pop();
-		RenderSystem.applyModelViewMatrix();
-
-		RenderSystem.enableCull();
-		RenderSystem.disableBlend();
+//		RenderSystem.enableBlend();
+//		RenderSystem.disableCull();
+//
+//		RenderSystem.getModelViewStack().push();
+//		{
+//			RenderSystem.getModelViewStack().translate(x, y, 0.0);
+//			RenderSystem.getModelViewStack().scale(scale, -scale, 1.0f);
+//			RenderSystem.applyModelViewMatrix();
+//
+//			ShaderProgram posColShader = GameRenderer.getPositionColorProgram();
+//			posColShader.modelViewMat.set(RenderSystem.getModelViewMatrix());
+//			posColShader.projectionMat.set(RenderSystem.getProjectionMatrix());
+//			posColShader.colorModulator.set(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
+//			posColShader.bind();
+//			Meshes.get(iconKey).render(GL11.GL_TRIANGLES);
+//			posColShader.unbind();
+//		}
+//		RenderSystem.getModelViewStack().pop();
+//		RenderSystem.applyModelViewMatrix();
+//
+//		RenderSystem.enableCull();
+//		RenderSystem.disableBlend();
+		
+		meshBuilder.pushMatrix();
+		meshBuilder.getModelView().translate(x, y, 0.0f);
+		meshBuilder.getModelView().scale(scale, -scale, 1.0f);
+		meshBuilder.setColorModulator(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
+		Meshes.get(iconKey).putMeshElements(meshBuilder);
+		meshBuilder.popMatrix();
+		meshBuilder.setColorModulator(1.0f, 1.0f, 1.0f, 1.0f);
+		
+		renderBatch();
 	}
 	
 	public static void newFrame() {
 		drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+		meshBuilder.reset();
 	}
 	
 	public static void renderBatch() {
 		if(drawContext == null)
 			return;
 		
-		drawContext.draw();
+//		drawContext.draw();
+		
+		RenderSystem.enableBlend();
+		RenderSystem.disableCull();
+
+		ShaderProgram posColShader = GameRenderer.getPositionColorProgram();
+		posColShader.modelViewMat.set(RenderSystem.getModelViewMatrix());
+		posColShader.projectionMat.set(RenderSystem.getProjectionMatrix());
+		posColShader.colorModulator.set(1.0f, 1.0f, 1.0f, 1.0f);
+		posColShader.bind();
+		meshBuilder.drawElements(GL11.GL_TRIANGLES);
+		posColShader.unbind();
+
+		RenderSystem.enableCull();
+		RenderSystem.disableBlend();
+		
+		meshBuilder.reset();
 	}
 
 	public static class Stencil
