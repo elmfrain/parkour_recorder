@@ -109,6 +109,7 @@ public class EventHandler {
 	
 	private static void onClientStarted(MinecraftClient client) {
 		Meshes.loadMeshes();
+		Meshes.loadIcons();
 	}
 
 	public static void addToHistory(Recording recording) {
