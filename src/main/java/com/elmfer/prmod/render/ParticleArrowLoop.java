@@ -56,7 +56,7 @@ public class ParticleArrowLoop extends ParticleArrow
 			RenderSystem.getModelViewStack().translate(x, y, z);
 			RenderSystem.getModelViewStack().translate(0, Math.sin((age + partialTicks) * Math.PI / 20.0) * 0.3 + 1.4, 0);
 			RenderSystem.getModelViewStack().scale(scale, scale, scale);
-			AxisAngle4f axisAngle = new AxisAngle4f(0, 1, 0, (float) Math.toRadians(angle));
+			AxisAngle4f axisAngle = new AxisAngle4f((float) Math.toRadians(angle), 0, 1, 0);
 			RenderSystem.getModelViewStack().multiply(new Quaternionf(axisAngle));
 			RenderSystem.applyModelViewMatrix();
 			
