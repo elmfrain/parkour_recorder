@@ -111,7 +111,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 
 		fovTransition.setSpeed(1.8);
 		if (logoOpacityCounter < 4)
-			fovTransition.setValue(10.0);
+			fovTransition.setValue(0.175);
 
 		if (offlineChangelog == null)
 			loadOfflineChangelog();
@@ -131,7 +131,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 
 			if (userControlState >= 0)
 				userControlState++;
-			fovTransition.grab(38.0f);
+			fovTransition.grab(0.663);
 
 			if (userControlState >= 40 || userControlState == -2)
 				logoAngleSpeed.grab(1.8);
@@ -156,8 +156,8 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 		// Draw main body
 		UIRender.drawGradientRect(uiWidth / 4 - 10, 15, uiWidth * 3 / 4 + 10, uiHeight * 5 / 6, 1711276032, 0);
 		UIRender.drawRect(uiWidth / 3, 18, uiWidth * 2 / 3, yCursor, 1275068416);
-		UIRender.drawGradientRect(Direction.TO_RIGHT, uiWidth / 4 - 10, 18, uiWidth / 3, yCursor, 0, 1275068416);
-		UIRender.drawGradientRect(Direction.TO_LEFT, uiWidth * 2 / 3, 18, uiWidth * 3 / 4 + 10, yCursor, 0, 1275068416);
+		UIRender.drawGradientRect(Direction.TO_RIGHT, uiWidth / 4 - 10, 18, uiWidth / 3 - 0.5f, yCursor, 0, 1275068416);
+		UIRender.drawGradientRect(Direction.TO_LEFT, uiWidth * 2 / 3 - 0.5f, 18, uiWidth * 3 / 4 + 10, yCursor, 0, 1275068416);
 
 		//Render Title
 		String title = I18n.translate("com.prmod.parkour_recorder");
@@ -262,19 +262,22 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
 		Matrix4f prevProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
 		RenderSystem.getProjectionMatrix().identity();
 		RenderSystem.getProjectionMatrix().translate(new Vector3f(0.0f, 0.04f, 0.0f));
-		RenderSystem.getProjectionMatrix().mul((new Matrix4f()).perspective((float) fovTransition.getValue(),
+		RenderSystem.getProjectionMatrix().mul(new Matrix4f().setPerspective((float) fovTransition.getValue(),
 				(float) UIRender.getWindowWidth() / (float) UIRender.getWindowHeight(), 0.05f, 50.0f));
+//		RenderSystem.getProjectionMatrix().mul((new Matrix4f()).perspective((float) fovTransition.getValue(),
+//				(float) UIRender.getWindowWidth() / (float) UIRender.getWindowHeight(), 0.05f, 50.0f));
 
 		RenderSystem.getModelViewStack().push();
 		{
 			float rotation = (float) Math
 					.toRadians(prevLogoRotation + (logoRotation - prevLogoRotation) * UIRender.getPartialTicks());
 			RenderSystem.getModelViewStack().peek().getPositionMatrix().identity();
-			AxisAngle4f xRot = new AxisAngle4f(0.0907571f, 0.0f, 0.0f, rotation);
-			RenderSystem.getModelViewStack().peek().getPositionMatrix().mul(new Matrix4f().rotate(xRot)); // 5.2 deg on x axis
+//			AxisAngle4f xRot = new AxisAngle4f(rotation, 0.0907571f, 0.0f, 0.0f);
+			AxisAngle4f xRot = new AxisAngle4f(0.0907571f, 1, 0, 0);
+			RenderSystem.getModelViewStack().peek().getPositionMatrix().rotate(xRot);
 			RenderSystem.getModelViewStack().translate(0.0, -1.51, -10.0);
-			AxisAngle4f yRot = new AxisAngle4f(0.0f, 1.0f, 0.0f, (float) Math.toRadians(180.0f));
-			RenderSystem.getModelViewStack().peek().getPositionMatrix().mul(new Matrix4f().rotate(yRot)); // 180 deg on y
+			AxisAngle4f yRot = new AxisAngle4f(rotation, 0, 1, 0);
+			RenderSystem.getModelViewStack().peek().getPositionMatrix().rotate(yRot);
 			RenderSystem.applyModelViewMatrix();
 
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, logoOpacityCounter / 25.0f);
