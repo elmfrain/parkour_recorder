@@ -144,10 +144,13 @@ public class Recording implements List<Frame> {
         ByteBuffer header = ByteBuffer.wrap(headerData);
 
         // Record data; starting position, ending position, frames, checkpoints, etc.
+        int allFramesSize = 0; // Total serialized size in bytes of all frames
+        for (Frame f : frames)
+            allFramesSize += f.getSerializedSize();
         int allCheckpointsSize = 0; // Total serialized size in bytes of all checkpoints
         for (Checkpoint c : checkpoints)
             allCheckpointsSize += c.getSerializedSize();
-        byte[] recordingData = new byte[BYTES + Frame.BYTES * frames.size() + allCheckpointsSize];
+        byte[] recordingData = new byte[BYTES + allFramesSize + allCheckpointsSize];
         ByteBuffer recording = ByteBuffer.wrap(recordingData);
 
         // Fill header data
@@ -491,6 +494,7 @@ public class Recording implements List<Frame> {
             case V1_0_0_0:
                 return V1_0_0_0;
             case V1_0_1_0:
+            case V1_1_3_0:
                 return V1_0_1_0;
             default:
                 return null;

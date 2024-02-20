@@ -16,6 +16,8 @@ public class OptionView extends Widget implements IMenuTabView {
     private Button hiddenIpButton = new Button(getHiddenIpText());
     private CategoryHeading playbackSection = new CategoryHeading("com.prmod.playback_options");
     private Button showInputsButton = new Button(getShowInputsText());
+    private Button playbackAttacksButton = new Button(getPlaybackAttacksText());
+    private Button playbackUsesButton = new Button(getPlaybackUsesText());
 
     public OptionView() {
         super();
@@ -35,6 +37,16 @@ public class OptionView extends Widget implements IMenuTabView {
             Config.setShowInputs(!Config.showInputs());
             showInputsButton.setText(getShowInputsText());
         });
+
+        playbackAttacksButton.setAction(b -> {
+            Config.setPlaybackAttacks(!Config.playbackAttacks());
+            playbackAttacksButton.setText(getPlaybackAttacksText());
+        });
+
+        playbackUsesButton.setAction(b -> {
+            Config.setPlaybackUses(!Config.playbackUses());
+            playbackUsesButton.setText(getPlaybackUsesText());
+        });
     }
 
     private static String getLoopButtonText() {
@@ -51,6 +63,18 @@ public class OptionView extends Widget implements IMenuTabView {
     private static String getShowInputsText() {
         return I18n.translate("com.prmod.show_inputs",
                 Config.showInputs() ? I18n.translate("com.prmod.enabled") : I18n.translate("com.prmod.disabled"));
+    }
+
+    private static String getPlaybackAttacksText() {
+        return I18n.translate("com.prmod.playback_attacks",
+                Config.playbackAttacks() ? I18n.translate("com.prmod.enabled") : I18n.translate("com.prmod.disabled"))
+                + " " + I18n.translate("com.prmod.use_wisely");
+    }
+
+    private static String getPlaybackUsesText() {
+        return I18n.translate("com.prmod.playback_uses",
+                Config.playbackUses() ? I18n.translate("com.prmod.enabled") : I18n.translate("com.prmod.disabled"))
+                + " " + I18n.translate("com.prmod.use_wisely");
     }
 
     @Override
@@ -101,7 +125,7 @@ public class OptionView extends Widget implements IMenuTabView {
         aside.pushMatrix(false);
         {
             Widget[] buttons = { recordingSection, enableLoopButton, menuSection, hiddenIpButton, playbackSection,
-                    showInputsButton };
+                    showInputsButton, playbackAttacksButton, playbackUsesButton };
 
             int i = 0;
             for (Widget button : buttons) {

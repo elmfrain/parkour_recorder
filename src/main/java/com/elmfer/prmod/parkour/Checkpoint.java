@@ -49,6 +49,7 @@ public class Checkpoint {
         public static Deserializer getDeserializer(SaveFormat format) {
             switch (format) {
             case V1_0_1_0:
+            case V1_1_3_0:
                 return V1_0_1_0;
             default:
                 return null;

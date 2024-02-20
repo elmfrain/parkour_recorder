@@ -3,7 +3,9 @@
 	"package": "com.elmfer.prmod.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"client": [
-		"EntityMixins"
+		"EntityMixins",
+    "KeyBindingMixins",
+    "MinecraftClientMixins"
 	],
 	"injectors": {
 		"defaultRequire": 1

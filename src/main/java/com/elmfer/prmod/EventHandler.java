@@ -15,6 +15,7 @@ import com.elmfer.prmod.ui.MenuScreen;
 import com.elmfer.prmod.ui.UIInput;
 import com.elmfer.prmod.ui.UIRender;
 import com.elmfer.prmod.ui.widgets.Widget;
+import com.elmfer.prmod.util.KeyBindingStateHandler;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -25,6 +26,8 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.util.hit.BlockHitResult;
 
 public class EventHandler {
 
@@ -32,7 +35,10 @@ public class EventHandler {
     public static final MinecraftClient mc = MinecraftClient.getInstance();
     public static ParkourSession session = new RecordingSession();
     public static ArrayList<Recording> recordHistory = new ArrayList<>();
-
+    public static KeyBindingStateHandler attackHandler = new KeyBindingStateHandler();
+    public static KeyBindingStateHandler useHandler = new KeyBindingStateHandler();
+    public static BlockHitResult hitResult = null;
+    
     private static Smoother keyInputHUDpos = new Smoother();
 
     public static void registerEventHandlers() {
@@ -43,6 +49,38 @@ public class EventHandler {
         ClientLifecycleEvents.CLIENT_STOPPING.register(EventHandler::onClientStopping);
         WorldRenderEvents.START.register(EventHandler::onStartRenderWorld);
         WorldRenderEvents.END.register(EventHandler::onEndRenderWorld);
+    }
+    
+    public static void addToHistory(Recording recording) {
+        if (recordHistory.size() >= MAX_HISTORY_LENGTH) {
+            recordHistory.remove(0);
+        }
+        recordHistory.add(recording);
+    }
+    
+    /**
+     * Called on <code>MinecraftClient.handleInputEvents()</code> to modify the
+     * state of the attack and use keybindings when the player is in a playback
+     * session and to capture the state of the clicks at the correct time.
+     */
+    public static void onHandleInputEvents() {
+        GameOptions gameSettings = mc.options;
+        
+        if (session instanceof PlaybackSession && session.isActive()) {
+            mc.crosshairTarget = hitResult != null ? hitResult : mc.crosshairTarget;
+            attackHandler.modifyKeyBindingState(gameSettings.attackKey);
+            useHandler.modifyKeyBindingState(gameSettings.useKey);
+            
+            return;
+        }
+        
+        // Only capute Block hits when the player is not in a playback session
+        hitResult = mc.crosshairTarget != null && mc.crosshairTarget instanceof BlockHitResult ? (BlockHitResult) mc.crosshairTarget : null;
+        attackHandler.capturePress(gameSettings.attackKey);
+        useHandler.capturePress(gameSettings.useKey);
+        
+        attackHandler.reset();
+        useHandler.reset();
     }
 
     private static void onOpenScreen(MinecraftClient client, Screen screen, int scaledWidth, int scaledHeight) {
@@ -74,6 +112,7 @@ public class EventHandler {
     }
 
     private static void onEndRenderWorld(WorldRenderContext context) {
+//        session.onRenderTick();
         // ModelManger.onRenderTick();
         Widget.updateWidgetsOnRenderTick();
         UIInput.pollInputs();
@@ -116,12 +155,5 @@ public class EventHandler {
     private static void onClientStopping(MinecraftClient client) {
         Config.save();
         Config.waitForSave();
-    }
-
-    public static void addToHistory(Recording recording) {
-        if (recordHistory.size() >= MAX_HISTORY_LENGTH) {
-            recordHistory.remove(0);
-        }
-        recordHistory.add(recording);
     }
 }

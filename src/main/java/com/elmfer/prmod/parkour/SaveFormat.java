@@ -5,7 +5,7 @@ package com.elmfer.prmod.parkour;
  * is simply a mod version that had changed how things were saved.
  **/
 public enum SaveFormat {
-    V1_0_0_0(1), V1_0_1_0(0);
+    V1_0_0_0(1), V1_0_1_0(0), V1_1_3_0(-1);
 
     // Latest format
     public static final SaveFormat LATEST = SaveFormat.values()[SaveFormat.values().length - 1];
