@@ -61,6 +61,22 @@ public class Config {
 
         return false;
     }
+    
+    public static boolean playbackAttacks() {
+        if (config.has("playbackAttacks")) {
+            return config.get("playbackAttacks").getAsBoolean();
+        }
+
+        return false;
+    }
+    
+    public static boolean playbackUses() {
+        if (config.has("playbackUses")) {
+            return config.get("playbackUses").getAsBoolean();
+        }
+
+        return false;
+    }
 
     public static TimeStampFormat getTimeStampFormat() {
         if (config.has("timeStampFormat")) {
@@ -84,6 +100,14 @@ public class Config {
 
     public static void setTimeStampFormat(TimeStampFormat format) {
         config.addProperty("timeStampFormat", format.name());
+    }
+    
+    public static void setPlaybackAttacks(boolean playbackAttacks) {
+        config.addProperty("playbackAttacks", playbackAttacks);
+    }
+    
+    public static void setPlaybackUses(boolean playbackUses) {
+        config.addProperty("playbackUses", playbackUses);
     }
 
     public static void save() {
