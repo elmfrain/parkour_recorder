@@ -2,18 +2,21 @@ package com.elmfer.prmod.parkour;
 
 import java.nio.ByteBuffer;
 
+import com.elmfer.prmod.EventHandler;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
 
 /** Stores movement inputs and player's states for one tick. **/
 public class Frame {
 
-    /** Number of bytes needed to represent a frame. Used for serializing. **/
-    public static final int BYTES = 42;
+    /** Number of bytes needed to represent a frame without a blockcapture element. Used for serializing. **/
+    private static final int BYTES = 42;
 
     public final float headYaw;
     public final float headPitch;
@@ -23,6 +26,8 @@ public class Frame {
     public final double posY;
     public final double posZ;
     private final short flags;
+    
+    public final BlockHitResult hitResult;
 
     /** Create a frame from keybinds and the player's state. **/
     public Frame(GameOptions gameSettingsIn, ClientPlayerEntity playerIn) {
@@ -55,20 +60,23 @@ public class Frame {
             flags |= Flags.BACKWARD.value;
         if (playerIn.isSprinting())
             flags |= Flags.SPRINTING.value;
-        if (gameSettingsIn.attackKey.isPressed())
+        if (EventHandler.attackHandler.getCapture())
             flags |= Flags.HITTING.value;
-        if (gameSettingsIn.useKey.isPressed())
+        if (EventHandler.useHandler.getCapture())
             flags |= Flags.USING.value;
         if (playerIn.isOnGround())
             flags |= Flags.ON_GROUND.value;
         if (playerIn.getAbilities().flying)
             flags |= Flags.FLYING.value;
+        
+        hitResult = EventHandler.hitResult;
+
         this.flags = flags;
     }
 
     /** Manually set the states. Internal use only **/
     private Frame(short flags, float headYaw, float headPitch, double posX, double posY, double posZ, float handYaw,
-            float handPitch) {
+            float handPitch, BlockHitResult hitResult) {
         this.flags = flags;
         this.headYaw = headYaw;
         this.headPitch = headPitch;
@@ -77,6 +85,7 @@ public class Frame {
         this.posX = posX;
         this.posY = posY;
         this.posZ = posZ;
+        this.hitResult = hitResult;
     }
 
     /** Create frame from raw data. **/
@@ -86,8 +95,6 @@ public class Frame {
 
     /** Set the entity's movement inputs from the frame **/
     public void setMovementInput(Input input, PlayerEntity entityIn) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
         input.pressingForward = getFlag(Flags.FORWARD);
         input.pressingBack = getFlag(Flags.BACKWARD);
         input.pressingLeft = getFlag(Flags.LEFT_STRAFE);
@@ -96,16 +103,29 @@ public class Frame {
         input.sneaking = getFlag(Flags.SNEAKING);
         entityIn.setSneaking(getFlag(Flags.SNEAKING));
         entityIn.setSprinting(getFlag(Flags.SPRINTING));
-        mc.player.getAbilities().flying = getFlag(Flags.FLYING);
+        entityIn.getAbilities().flying = getFlag(Flags.FLYING);
+        
+        MinecraftClient mc = MinecraftClient.getInstance();
+        
+        if (entityIn == mc.player) {
+            EventHandler.attackHandler.tick(getFlag(Flags.HITTING));
+            EventHandler.useHandler.tick(getFlag(Flags.USING));
+            EventHandler.hitResult = hitResult;
+        }
     }
 
     public boolean getFlag(Flags flag) {
         return (flags & flag.value) != 0;
     }
 
+    public int getSerializedSize() {
+        BlockHitCapture hitCapture = new BlockHitCapture(hitResult);
+        return BYTES + hitCapture.getSerializedSize();
+    }
+    
     /** Convert frame to serialized data. **/
     public byte[] serialize() {
-        byte[] data = new byte[BYTES];
+        byte[] data = new byte[getSerializedSize()];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.putShort(flags);
         buffer.putFloat(headYaw);
@@ -115,16 +135,25 @@ public class Frame {
         buffer.putDouble(posZ);
         buffer.putFloat(armYawOffset);
         buffer.putFloat(armPitchOffset);
+        BlockHitCapture hitCapture = new BlockHitCapture(hitResult);
+        buffer.put(hitCapture.serialize());
 
         return data;
     }
 
     /** An enum that stores which bit belongs to each flag. **/
     public static enum Flags {
-        JUMPING((short) 0x001), SNEAKING((short) 0x002), FORWARD((short) 0x004), LEFT_STRAFE((short) 0x008),
-        RIGHT_STRAFE((short) 0x010), BACKWARD((short) 0x020), SPRINTING((short) 0x040), HITTING((short) 0x080),
-        USING((short) 0x100), ON_GROUND((short) 0x200), FLYING((short) 0x400), ATTACK((short) 0x800),
-        USE((short) 0x1000);
+        JUMPING((short) 0x001),
+        SNEAKING((short) 0x002),
+        FORWARD((short) 0x004),
+        LEFT_STRAFE((short) 0x008),
+        RIGHT_STRAFE((short) 0x010),
+        BACKWARD((short) 0x020),
+        SPRINTING((short) 0x040),
+        HITTING((short) 0x080),
+        USING((short) 0x100),
+        ON_GROUND((short) 0x200),
+        FLYING((short) 0x400);
 
         public final short value;
 
@@ -143,6 +172,8 @@ public class Frame {
                 return V1_0_0_0;
             case V1_0_1_0:
                 return V1_0_1_0;
+            case V1_1_3_0:
+                return V1_1_3_0;
             default:
                 return null;
             }
@@ -157,7 +188,7 @@ public class Frame {
                 double posX = buffer.getDouble();
                 double posY = buffer.getDouble();
                 double posZ = buffer.getDouble();
-                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, 0.0f, 0.0f);
+                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, 0.0f, 0.0f, null);
             }
         };
         public static Deserializer V1_0_1_0 = new Deserializer() {
@@ -171,7 +202,22 @@ public class Frame {
                 double posZ = buffer.getDouble();
                 float handYawOffset = buffer.getFloat();
                 float handPitchOffset = buffer.getFloat();
-                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, handYawOffset, handPitchOffset);
+                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, handYawOffset, handPitchOffset, null);
+            }
+        };
+        public static Deserializer V1_1_3_0 = new Deserializer() {
+            @Override
+            public Frame deSerialize(ByteBuffer buffer) {
+                short flags = buffer.getShort();
+                float headYaw = buffer.getFloat();
+                float headPitch = buffer.getFloat();
+                double posX = buffer.getDouble();
+                double posY = buffer.getDouble();
+                double posZ = buffer.getDouble();
+                float handYawOffset = buffer.getFloat();
+                float handPitchOffset = buffer.getFloat();
+                BlockHitCapture hitCapture = BlockHitCapture.deSerialize(buffer, SaveFormat.V1_1_3_0);
+                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, handYawOffset, handPitchOffset, hitCapture.blockHitResult);
             }
         };
     }
