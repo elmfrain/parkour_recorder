@@ -3,6 +3,7 @@ package com.elmfer.prmod.parkour;
 import java.nio.ByteBuffer;
 
 import com.elmfer.prmod.EventHandler;
+import com.elmfer.prmod.config.Config;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.input.Input;
@@ -108,8 +109,10 @@ public class Frame {
         MinecraftClient mc = MinecraftClient.getInstance();
         
         if (entityIn == mc.player) {
-            EventHandler.attackHandler.tick(getFlag(Flags.HITTING));
-            EventHandler.useHandler.tick(getFlag(Flags.USING));
+            if(Config.playbackAttacks())
+                EventHandler.attackHandler.tick(getFlag(Flags.HITTING));
+            if(Config.playbackUses())
+                EventHandler.useHandler.tick(getFlag(Flags.USING));
             EventHandler.hitResult = hitResult;
         }
     }
