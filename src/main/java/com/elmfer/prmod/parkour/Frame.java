@@ -10,13 +10,17 @@ import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
 
 /** Stores movement inputs and player's states for one tick. **/
 public class Frame {
 
-    /** Number of bytes needed to represent a frame without a blockcapture element. Used for serializing. **/
+    /**
+     * Number of bytes needed to represent a frame without a blockcapture element.
+     * Used for serializing.
+     **/
     private static final int BYTES = 42;
 
     public final float headYaw;
@@ -27,7 +31,7 @@ public class Frame {
     public final double posY;
     public final double posZ;
     private final short flags;
-    
+
     public final BlockHitResult hitResult;
 
     /** Create a frame from keybinds and the player's state. **/
@@ -47,9 +51,9 @@ public class Frame {
         // Get Input Data
         short flags = 0;
         Input playerInput = playerIn.input;
-        if (playerInput.jumping)
+        if (playerInput.playerInput.jump())
             flags |= Flags.JUMPING.value;
-        if (playerInput.sneaking)
+        if (playerInput.playerInput.sneak())
             flags |= Flags.SNEAKING.value;
         if (gameSettingsIn.forwardKey.isPressed())
             flags |= Flags.FORWARD.value;
@@ -69,7 +73,7 @@ public class Frame {
             flags |= Flags.ON_GROUND.value;
         if (playerIn.getAbilities().flying)
             flags |= Flags.FLYING.value;
-        
+
         hitResult = EventHandler.hitResult;
 
         this.flags = flags;
@@ -96,22 +100,18 @@ public class Frame {
 
     /** Set the entity's movement inputs from the frame **/
     public void setMovementInput(Input input, PlayerEntity entityIn) {
-        input.pressingForward = getFlag(Flags.FORWARD);
-        input.pressingBack = getFlag(Flags.BACKWARD);
-        input.pressingLeft = getFlag(Flags.LEFT_STRAFE);
-        input.pressingRight = getFlag(Flags.RIGHT_STRAFE);
-        input.jumping = getFlag(Flags.JUMPING);
-        input.sneaking = getFlag(Flags.SNEAKING);
+        input.playerInput = new PlayerInput(getFlag(Flags.FORWARD), getFlag(Flags.BACKWARD), getFlag(Flags.LEFT_STRAFE),
+                getFlag(Flags.RIGHT_STRAFE), getFlag(Flags.JUMPING), getFlag(Flags.SNEAKING), getFlag(Flags.SPRINTING));
         entityIn.setSneaking(getFlag(Flags.SNEAKING));
         entityIn.setSprinting(getFlag(Flags.SPRINTING));
         entityIn.getAbilities().flying = getFlag(Flags.FLYING);
-        
+
         MinecraftClient mc = MinecraftClient.getInstance();
-        
+
         if (entityIn == mc.player) {
-            if(Config.playbackAttacks())
+            if (Config.playbackAttacks())
                 EventHandler.attackHandler.tick(getFlag(Flags.HITTING));
-            if(Config.playbackUses())
+            if (Config.playbackUses())
                 EventHandler.useHandler.tick(getFlag(Flags.USING));
             EventHandler.hitResult = hitResult;
         }
@@ -125,7 +125,7 @@ public class Frame {
         BlockHitCapture hitCapture = new BlockHitCapture(hitResult);
         return BYTES + hitCapture.getSerializedSize();
     }
-    
+
     /** Convert frame to serialized data. **/
     public byte[] serialize() {
         byte[] data = new byte[getSerializedSize()];
@@ -146,17 +146,9 @@ public class Frame {
 
     /** An enum that stores which bit belongs to each flag. **/
     public static enum Flags {
-        JUMPING((short) 0x001),
-        SNEAKING((short) 0x002),
-        FORWARD((short) 0x004),
-        LEFT_STRAFE((short) 0x008),
-        RIGHT_STRAFE((short) 0x010),
-        BACKWARD((short) 0x020),
-        SPRINTING((short) 0x040),
-        HITTING((short) 0x080),
-        USING((short) 0x100),
-        ON_GROUND((short) 0x200),
-        FLYING((short) 0x400);
+        JUMPING((short) 0x001), SNEAKING((short) 0x002), FORWARD((short) 0x004), LEFT_STRAFE((short) 0x008),
+        RIGHT_STRAFE((short) 0x010), BACKWARD((short) 0x020), SPRINTING((short) 0x040), HITTING((short) 0x080),
+        USING((short) 0x100), ON_GROUND((short) 0x200), FLYING((short) 0x400);
 
         public final short value;
 
@@ -220,7 +212,8 @@ public class Frame {
                 float handYawOffset = buffer.getFloat();
                 float handPitchOffset = buffer.getFloat();
                 BlockHitCapture hitCapture = BlockHitCapture.deSerialize(buffer, SaveFormat.V1_1_3_0);
-                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, handYawOffset, handPitchOffset, hitCapture.blockHitResult);
+                return new Frame(flags, headYaw, headPitch, posX, posY, posZ, handYawOffset, handPitchOffset,
+                        hitCapture.blockHitResult);
             }
         };
     }
