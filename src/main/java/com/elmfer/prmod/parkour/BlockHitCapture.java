@@ -81,7 +81,7 @@ public class BlockHitCapture {
         
         byte flags = 0;
         
-        flags |= blockHitResult.getSide().getId() & 0x0F; // Direction, 4 bits
+        flags |= blockHitResult.getSide().getIndex() & 0x0F; // Direction, 4 bits
         flags |= blockHitResult.getType() == BlockHitResult.Type.BLOCK ? 0 : 0x10; // Block or miss, 1 bit
         flags |= blockHitResult.isInsideBlock() ? 0x20 : 0; // Inside block, 1 bit
         flags |= 0xC0; // remaining 2 bits reserved, non-null indicator
@@ -90,7 +90,7 @@ public class BlockHitCapture {
     }
     
     private void setFlagsFromByte(byte flags) {
-        direction = Direction.byId(flags & 0x0F);
+        direction = Direction.byIndex(flags & 0x0F);
         missed = (flags & 0x10) != 0;
         isInsideBlock = (flags & 0x20) != 0;
     }
