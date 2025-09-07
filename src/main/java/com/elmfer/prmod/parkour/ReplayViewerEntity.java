@@ -5,6 +5,7 @@ import com.elmfer.prmod.render.GraphicsHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.input.Input;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.GameMode;
 
 /**
  * A client only entity used during replay (in the Timeline GUI). The
@@ -17,7 +18,7 @@ public class ReplayViewerEntity extends PlayerEntity {
 
     /** Init dummy player entity **/
     public ReplayViewerEntity() {
-        super(mc.world, mc.player.getBlockPos(), 0.0f, mc.player.getGameProfile());
+        super(mc.world, mc.player.getGameProfile());
     }
 
     /** Position the viewer entity with previous and current frame information. **/
@@ -30,9 +31,9 @@ public class ReplayViewerEntity extends PlayerEntity {
         setPos(posX, posY, posZ);
         frame.setMovementInput(movementInput, this);
 
-        prevX = getX();
-        prevY = getY();
-        prevZ = getZ();
+        lastX = getX();
+        lastY = getY();
+        lastZ = getZ();
 
         // Set head rotations
         headYaw = GraphicsHelper.lerp(partialTicks, prevFrame.headYaw, frame.headYaw);
@@ -47,9 +48,9 @@ public class ReplayViewerEntity extends PlayerEntity {
         mc.player.renderPitch = mc.player.lastRenderPitch = mc.player.getPitch() - handPitchOffset;
 
         // Updates entity to prevent movement glitches
-        sidewaysSpeed = movementInput.movementSideways;
-        forwardSpeed = movementInput.movementForward;
-        jumping = this.movementInput.jumping;
+        sidewaysSpeed = movementInput.getMovementInput().x;
+        forwardSpeed = movementInput.getMovementInput().y;
+        jumping = this.movementInput.playerInput.jump();
         tick();
     }
 
@@ -63,6 +64,12 @@ public class ReplayViewerEntity extends PlayerEntity {
     public boolean isCreative() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public GameMode getGameMode() {
+        // TODO Auto-generated method stub
+        return GameMode.DEFAULT;
     }
 
 }
