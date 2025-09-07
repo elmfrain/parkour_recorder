@@ -37,8 +37,8 @@ public class EventHandler {
     public static KeyBindingStateHandler useHandler = new KeyBindingStateHandler();
     public static BlockHitResult hitResult = null;
 
-    private static SessionHUD sessionHUD = new SessionHUD();
-    private static KeyInputHUD keyInputHUD = new KeyInputHUD();
+    public static SessionHUD sessionHUD = new SessionHUD();
+    public static KeyInputHUD keyInputHUD = new KeyInputHUD();
 
     public static void registerEventHandlers() {
         ScreenEvents.BEFORE_INIT.register(EventHandler::onOpenScreen);

@@ -1,5 +1,6 @@
 package com.elmfer.prmod.parkour;
 
+import com.elmfer.prmod.EventHandler;
 import com.elmfer.prmod.config.Config;
 import com.elmfer.prmod.mixin.EntityMixins;
 import com.elmfer.prmod.render.GraphicsHelper;
@@ -127,7 +128,7 @@ public class PlaybackSession implements ParkourSession {
                 currentFrame = recording.get(frameNumber);
 
                 currentFrame.setMovementInput(mc.player.input, mc.player);
-                KeyInputHUD.setFrame(currentFrame);
+                EventHandler.keyInputHUD.setFrame(currentFrame);
 //				mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
                 frameNumber++;
             } else if (Config.isLoopMode() && recording.isLoop()) {
@@ -143,15 +144,15 @@ public class PlaybackSession implements ParkourSession {
         if (mc.isPaused())
             return;
 
-        float partialTicks = mc.getTickDelta();
+        float partialTicks = mc.getRenderTickCounter().getTickProgress(false);
         if (playbackCountdown > 0) {
             float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
             Frame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
 
             mc.player.setYaw(GraphicsHelper.lerpAngle(countdownAmount, mc.player.headYaw, firstFrame.headYaw));
             mc.player.setPitch(GraphicsHelper.lerp(countdownAmount, mc.player.getPitch(), firstFrame.headPitch));
-            mc.player.prevYaw = mc.player.prevHeadYaw = mc.player.headYaw = mc.player.getYaw();
-            mc.player.prevPitch = mc.player.getPitch();
+            mc.player.lastBodyYaw = mc.player.lastHeadYaw = mc.player.headYaw = mc.player.getYaw();
+            mc.player.lastPitch = mc.player.getPitch();
 
             Vec3d pos = mc.player.getPos();
             double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
@@ -165,10 +166,10 @@ public class PlaybackSession implements ParkourSession {
         } else if (isPlaying) {
             Frame prevFrame = recording.get(Math.max(0, frameNumber - 2));
 
-            mc.player.prevHeadYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-            mc.player.setYaw(mc.player.prevHeadYaw);
-            mc.player.prevPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
-            mc.player.setPitch(mc.player.prevPitch);
+            mc.player.lastHeadYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+            mc.player.setYaw(mc.player.lastHeadYaw);
+            mc.player.lastPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+            mc.player.setPitch(mc.player.lastPitch);
 
             Vec3d playerPos = mc.player.getPos();
             Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
