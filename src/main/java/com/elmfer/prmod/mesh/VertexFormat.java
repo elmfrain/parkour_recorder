@@ -6,6 +6,7 @@ import java.util.List;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+@Deprecated
 public final class VertexFormat {
     public static final VertexFormat POS = new VertexFormat();
     public static final VertexFormat POS_UV = new VertexFormat();
@@ -51,11 +52,17 @@ public final class VertexFormat {
         attributes.add(new VertexAttribute(usage, type, size, normalized));
         return this;
     }
-
-    public void apply() {
+    
+    public int stride() {
         int stride = 0;
         for (VertexAttribute attrib : attributes)
             stride += attrib.numBytes();
+        
+        return stride;
+    }
+
+    public void apply() {
+        int stride = stride();
 
         long pointer = 0;
         for (int i = 0; i < attributes.size(); i++) {

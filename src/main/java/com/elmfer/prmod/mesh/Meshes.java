@@ -11,6 +11,7 @@ import java.util.Scanner;
 import com.elmfer.prmod.ParkourRecorder;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.Identifier;
 
 public class Meshes {
@@ -33,11 +34,12 @@ public class Meshes {
 
         ParkourRecorder.LOGGER.info("Loading meshes...");
 
-        VertexFormat format = VertexFormat.POS_COLOR;
+        com.mojang.blaze3d.vertex.VertexFormat format = VertexFormats.POSITION_COLOR; 
+//        VertexFormat format = VertexFormat.POS_COLOR;
 
-        load(Identifier.of(ParkourRecorder.MOD_ID, "meshes/arrow.ply")).makeRenderable(format);
-        load(Identifier.of(ParkourRecorder.MOD_ID, "meshes/arrow-loop-mode.ply")).makeRenderable(format);
-        load(Identifier.of(ParkourRecorder.MOD_ID, "meshes/finish.ply")).makeRenderable(format);
+        load(Identifier.of(ParkourRecorder.MOD_ID, "meshes/arrow.ply")).uploadToGPU(format);
+        load(Identifier.of(ParkourRecorder.MOD_ID, "meshes/arrow-loop-mode.ply")).uploadToGPU(format);
+        load(Identifier.of(ParkourRecorder.MOD_ID, "meshes/finish.ply")).uploadToGPU(format);
 
         loadedMeshes = true;
     }

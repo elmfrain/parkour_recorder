@@ -4,10 +4,18 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL30;
 
 import com.elmfer.prmod.ParkourRecorder;
 import com.elmfer.prmod.mesh.VertexFormat.VertexAttribute;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.util.BufferAllocator;
 
 public class Mesh {
     public final String name;
@@ -25,12 +33,28 @@ public class Mesh {
     private int glEBO;
     private int glVAO;
 
+    private int numVerticies = -1;
+    private int numIndicies = -1;
+    
+    private GpuBuffer gpuVertexBuffer;
+    private GpuBuffer gpuIndexBuffer;
+    
     public Mesh(String name) {
         this.name = name;
     }
 
     public int numVertices() {
-        return positions.size() / 3;
+        if (numVerticies == -1)
+            return positions.size() / 3;
+        
+        return numVerticies;
+    }
+    
+    public int numIndicies() {
+        if (numIndicies == -1)
+            return positions.size();
+        
+        return numIndicies;
     }
 
     public boolean hasUvs() {
@@ -43,6 +67,14 @@ public class Mesh {
 
     public boolean isRenderable() {
         return isRenderable;
+    }
+    
+    public GpuBuffer getVertexBuffer() {
+        return gpuVertexBuffer;
+    }
+    
+    public GpuBuffer getIndexBuffer() {
+        return gpuIndexBuffer;
     }
 
     public void putMeshArrays(MeshBuilder builder) {
@@ -108,7 +140,48 @@ public class Mesh {
             }
         }
     }
+    
+    public void uploadToGPU(com.mojang.blaze3d.vertex.VertexFormat format) {
+        int numVerticies = numVertices();
+        int initialSize = numVertices() * format.getVertexSize();
+        
+        ByteBuffer indexBackingBuffer = BufferUtils.createByteBuffer(indices.size() * 4);
+        indices.forEach(i -> indexBackingBuffer.putInt(i));
+        gpuIndexBuffer = RenderSystem.getDevice().createBuffer(() -> name, GpuBuffer.USAGE_INDEX, indexBackingBuffer);
+        
+        
+        try(BufferAllocator bufferAllocator = BufferAllocator.method_72201(initialSize)) {
+            BufferBuilder bufferBuilder = new BufferBuilder(bufferAllocator, com.mojang.blaze3d.vertex.VertexFormat.DrawMode.TRIANGLES, format);
+            
+            for (int i = 0; i < numVerticies; i++)
+            for (VertexFormatElement element : format.getElements()) {
+                switch(element.usage()) {
+                case POSITION:
+                    putPosition(bufferBuilder, i);
+                    break;
+                case UV:
+                    putUV(bufferBuilder, i);
+                    break;
+                case NORMAL:
+                    putNormal(bufferBuilder, i);
+                    break;
+                case COLOR:
+                    putColor(bufferBuilder, i);
+                    break;
+                default:
+                    break;
+                }
+            }
+            
+            try(BuiltBuffer builtBuffer = bufferBuilder.end()) {
+                gpuVertexBuffer = RenderSystem.getDevice().createBuffer(() -> name, GpuBuffer.USAGE_VERTEX, builtBuffer.getBuffer());
+            }
+        }
+        
+        clearOriginalData();
+    }
 
+    @Deprecated
     public void makeRenderable(VertexFormat format) {
         if (isRenderable)
             return;
@@ -136,8 +209,10 @@ public class Mesh {
         GL30.glBindVertexArray(0);
 
         isRenderable = true;
+        clearOriginalData();
     }
 
+    @Deprecated
     public void render(int mode) {
         if (!isRenderable) {
             if (!hasWarnedAboutNotBeingRenderable) {
@@ -152,11 +227,13 @@ public class Mesh {
         GL30.glBindVertexArray(0);
     }
 
+    @Deprecated
     private void putPosition(MeshBuilder builder, int index) {
         index *= 3;
         builder.position(positions.get(index), positions.get(index + 1), positions.get(index + 2));
     }
 
+    @Deprecated
     private void putUV(MeshBuilder builder, int index) {
         index *= 2;
         ArrayList<Float> uvs = this.uvs.orElse(null);
@@ -167,11 +244,13 @@ public class Mesh {
             builder.uv();
     }
 
+    @Deprecated
     private void putNormal(MeshBuilder builder, int index) {
         index *= 3;
         builder.normal(normals.get(index), normals.get(index + 1), normals.get(index + 2));
     }
 
+    @Deprecated
     private void putColor(MeshBuilder builder, int index) {
         index *= 4;
         ArrayList<Float> colors = this.colors.orElse(null);
@@ -180,5 +259,47 @@ public class Mesh {
             builder.color(colors.get(index), colors.get(index + 1), colors.get(index + 2), colors.get(index + 3));
         else
             builder.color();
+    }
+    
+    private void putPosition(BufferBuilder builder, int index) {
+        index *= 3;
+        builder.vertex(positions.get(index), positions.get(index + 1), positions.get(index + 2));
+    }
+    
+    private void putUV(BufferBuilder builder, int index) {
+        index *= 2;
+        index *= 2;
+        ArrayList<Float> uvs = this.uvs.orElse(null);
+
+        if (uvs != null)
+            builder.texture(uvs.get(index), uvs.get(index + 1));
+        else
+            builder.texture(0, 0);
+    }
+    
+    private void putNormal(BufferBuilder builder, int index) {
+        index *= 3;
+        builder.normal(normals.get(index), normals.get(index + 1), normals.get(index + 2));
+    }
+    
+    private void putColor(BufferBuilder builder, int index) {
+        index *= 4;
+        ArrayList<Float> colors = this.colors.orElse(null);
+
+        if (colors != null)
+            builder.color(colors.get(index), colors.get(index + 1), colors.get(index + 2), colors.get(index + 3));
+        else
+            builder.color(-1);
+    }
+    
+    private void clearOriginalData() {
+        numVerticies = positions.size() / 3;
+        numIndicies = indices.size();
+                
+        positions.clear();
+        normals.clear();
+        indices.clear();
+        uvs.ifPresent(list -> list.clear());
+        colors.ifPresent(list -> list.clear());
     }
 }
