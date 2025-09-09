@@ -265,12 +265,12 @@ public class TimelineView extends Widget implements IMenuTabView {
             if (session == SessionType.REPLAY) {
                 PlaybackSession session = (PlaybackSession) EventHandler.session;
                 int currentFrame = (int) this.timeline.getProperty("framePos").getValue();
-                KeyInputHUD.setFrame(session.recording.get(currentFrame));
+                EventHandler.keyInputHUD.setFrame(session.recording.get(currentFrame));
             }
 
-            KeyInputHUD.posY = taskBar.bottom + smallMargin * 2;
-            KeyInputHUD.posX = UIRender.getUIwidth() - smallMargin * 2 - KeyInputHUD.size;
-            KeyInputHUD.render();
+            EventHandler.keyInputHUD.posY = taskBar.bottom + smallMargin * 2;
+            EventHandler.keyInputHUD.posX = UIRender.getUIwidth() - smallMargin * 2 - EventHandler.keyInputHUD.size;
+            EventHandler.keyInputHUD.render();
         }
 
         // Render the timeline bar
@@ -375,7 +375,6 @@ public class TimelineView extends Widget implements IMenuTabView {
             taskBar.pushMatrix(false);
             {
                 RenderSystem.getModelViewStack().translate(0, taskBar.getHeight(), 0);
-                RenderSystem.applyModelViewMatrix();
 
                 UIRender.drawRect(SMALL_MARGIN, SMALL_MARGIN, STRING_LENGTH + stringOffset,
                         SMALL_MARGIN + STRING_HEIGHT, BACKROUND_COLOR);
@@ -649,18 +648,16 @@ public class TimelineView extends Widget implements IMenuTabView {
                 UIRender.drawRect(x, y, x + width, y + height, backgroundColor);
 
                 // Render Gear Icon
-                RenderSystem.getModelViewStack().push();
+                RenderSystem.getModelViewStack().pushMatrix();
                 {
-                    RenderSystem.getModelViewStack().translate(x + width / 2, y + height / 2, 0.0);
+                    RenderSystem.getModelViewStack().translate(x + width / 2, y + height / 2, 0.0f);
                     AxisAngle4f axis = new AxisAngle4f((float) Math.toRadians(gear.getProperty("rotation").getValue()),
                             0.0f, 0.0f, 1.0f);
-                    RenderSystem.getModelViewStack().multiply(new Quaternionf(axis));
-                    RenderSystem.applyModelViewMatrix();
+                    RenderSystem.getModelViewStack().rotate(axis);
 
                     UIRender.drawIcon(getIcon(), 0, 0, MODEL_SCALE, iconColor);
                 }
-                RenderSystem.getModelViewStack().pop();
-                RenderSystem.applyModelViewMatrix();
+                RenderSystem.getModelViewStack().popMatrix();
             }
         }
     }

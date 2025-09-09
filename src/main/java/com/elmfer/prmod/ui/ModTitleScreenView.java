@@ -4,11 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.joml.AxisAngle4f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
-
 import com.elmfer.prmod.ParkourRecorder;
 import com.elmfer.prmod.animation.Smoother;
 import com.elmfer.prmod.ui.MenuScreen.IMenuTabView;
@@ -17,7 +12,6 @@ import com.elmfer.prmod.ui.UIRender.Direction;
 import com.elmfer.prmod.ui.widgets.Widget;
 import com.elmfer.prmod.util.HTTPSFetcher;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
@@ -162,15 +156,13 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
         // Render Title
         String title = I18n.translate("com.prmod.parkour_recorder");
         float titleWidth = UIRender.getStringWidth(title);
-        RenderSystem.getModelViewStack().push();
+        RenderSystem.getModelViewStack().pushMatrix();
         {
             RenderSystem.getModelViewStack().scale(2.0f, 2.0f, 1.0f);
-            RenderSystem.applyModelViewMatrix();
             UIRender.drawString(Anchor.TOP_CENTER, title, uiWidth / 4, 13.5f, -10066330);
             UIRender.drawString(Anchor.TOP_CENTER, title, uiWidth / 4, 12.5f, 0xFFFFFFFF);
         }
-        RenderSystem.getModelViewStack().pop();
-        RenderSystem.applyModelViewMatrix();
+        RenderSystem.getModelViewStack().popMatrix();
 
         // Render tagline
         String tagline = "by elmfer - v" + ParkourRecorder.MOD_VERSION;
@@ -206,10 +198,9 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
         changelogViewport.bottom -= 5;
         changelogViewport.pushMatrix(true);
         {
-            RenderSystem.getModelViewStack().push();
+            RenderSystem.getModelViewStack().pushMatrix();
             {
-                RenderSystem.getModelViewStack().translate(0.0, -changelogScrool.getValue(), 0.0);
-                RenderSystem.applyModelViewMatrix();
+                RenderSystem.getModelViewStack().translate(0.0f, -changelogScrool.getValuef(), 0.0f);
 
                 yCursor = 0.0f;
                 // Process changelog line per line
@@ -251,43 +242,42 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
                 else if (changelogScrool.getValue() > MAX_SCROLL)
                     changelogScrool.grab(MAX_SCROLL);
             }
-            RenderSystem.getModelViewStack().pop();
+            RenderSystem.getModelViewStack().popMatrix();
         }
         changelogViewport.popMatrix();
 
         // Draw the 3D logo
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        GL11.glDisable(GL11.GL_CULL_FACE);
-
-        Matrix4f prevProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
-        RenderSystem.getProjectionMatrix().identity();
-        RenderSystem.getProjectionMatrix().translate(new Vector3f(0.0f, 0.04f, 0.0f));
-        RenderSystem.getProjectionMatrix().mul(new Matrix4f().setPerspective((float) fovTransition.getValue(),
-                (float) UIRender.getWindowWidth() / (float) UIRender.getWindowHeight(), 0.05f, 50.0f));
-//		RenderSystem.getProjectionMatrix().mul((new Matrix4f()).perspective((float) fovTransition.getValue(),
-//				(float) UIRender.getWindowWidth() / (float) UIRender.getWindowHeight(), 0.05f, 50.0f));
-
-        RenderSystem.getModelViewStack().push();
-        {
-            float rotation = (float) Math
-                    .toRadians(prevLogoRotation + (logoRotation - prevLogoRotation) * UIRender.getPartialTicks());
-            RenderSystem.getModelViewStack().peek().getPositionMatrix().identity();
-//			AxisAngle4f xRot = new AxisAngle4f(rotation, 0.0907571f, 0.0f, 0.0f);
-            AxisAngle4f xRot = new AxisAngle4f(0.0907571f, 1, 0, 0);
-            RenderSystem.getModelViewStack().peek().getPositionMatrix().rotate(xRot);
-            RenderSystem.getModelViewStack().translate(0.0, -1.51, -10.0);
-            AxisAngle4f yRot = new AxisAngle4f(rotation, 0, 1, 0);
-            RenderSystem.getModelViewStack().peek().getPositionMatrix().rotate(yRot);
-            RenderSystem.applyModelViewMatrix();
-
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, logoOpacityCounter / 25.0f);
-            ModLogoRenderer.render();
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-        RenderSystem.getModelViewStack().pop();
-        RenderSystem.applyModelViewMatrix();
-
-        RenderSystem.setProjectionMatrix(prevProjection, VertexSorter.BY_Z);
+//        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+//        GL11.glDisable(GL11.GL_CULL_FACE);
+//
+//        Matrix4f prevProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
+//        RenderSystem.getProjectionMatrix().identity();
+//        RenderSystem.getProjectionMatrix().translate(new Vector3f(0.0f, 0.04f, 0.0f));
+//        RenderSystem.getProjectionMatrix().mul(new Matrix4f().setPerspective((float) fovTransition.getValue(),
+//                (float) UIRender.getWindowWidth() / (float) UIRender.getWindowHeight(), 0.05f, 50.0f));
+////		RenderSystem.getProjectionMatrix().mul((new Matrix4f()).perspective((float) fovTransition.getValue(),
+////				(float) UIRender.getWindowWidth() / (float) UIRender.getWindowHeight(), 0.05f, 50.0f));
+//
+//        RenderSystem.getModelViewStack().push();
+//        {
+//            float rotation = (float) Math
+//                    .toRadians(prevLogoRotation + (logoRotation - prevLogoRotation) * UIRender.getPartialTicks());
+//            RenderSystem.getModelViewStack().peek().getPositionMatrix().identity();
+////			AxisAngle4f xRot = new AxisAngle4f(rotation, 0.0907571f, 0.0f, 0.0f);
+//            AxisAngle4f xRot = new AxisAngle4f(0.0907571f, 1, 0, 0);
+//            RenderSystem.getModelViewStack().peek().getPositionMatrix().rotate(xRot);
+//            RenderSystem.getModelViewStack().translate(0.0, -1.51, -10.0);
+//            AxisAngle4f yRot = new AxisAngle4f(rotation, 0, 1, 0);
+//            RenderSystem.getModelViewStack().peek().getPositionMatrix().rotate(yRot);
+//            RenderSystem.applyModelViewMatrix();
+//
+//            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, logoOpacityCounter / 25.0f);
+//            ModLogoRenderer.render();
+//            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        }
+//        RenderSystem.getModelViewStack().popMatrix();
+//
+//        RenderSystem.setProjectionMatrix(prevProjection, VertexSorter.BY_Z);
         // End draw 3D logo
     }
 
@@ -298,7 +288,7 @@ public class ModTitleScreenView extends Widget implements IMenuTabView {
     }
 
     private static void loadOfflineChangelog() {
-        Identifier loc = new Identifier(ParkourRecorder.MOD_ID, "changelog.txt");
+        Identifier loc = Identifier.of(ParkourRecorder.MOD_ID, "changelog.txt");
 
         try {
             InputStream file = MinecraftClient.getInstance().getResourceManager().getResource(loc).get()

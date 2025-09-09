@@ -38,7 +38,7 @@ public class LoadRecordingView extends Widget implements IMenuTabView {
         openButton.setAction(b -> {
             EventHandler.session.cleanUp();
             EventHandler.session = new PlaybackSession(selections.lastElement());
-            SessionHUD.fadedness = 200;
+            EventHandler.sessionHUD.appear();
             MinecraftClient.getInstance().setScreen(null);
         });
         deleteButton.setAction(b -> {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
@@ -13,11 +14,15 @@ import com.elmfer.prmod.mesh.VertexFormat;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.render.state.ColoredQuadGuiElementRenderState;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.texture.TextureSetup;
 
 //Rendering implementation for UIs.
 public class UIRender {
@@ -46,7 +51,6 @@ public class UIRender {
             return;
 
         drawContext.fill((int) left, (int) top, (int) right, (int) bottom, color);
-        drawContext.draw();
     }
 
     public static void drawGradientRect(float left, float top, float right, float bottom, int startColor,
@@ -64,14 +68,9 @@ public class UIRender {
         arrangePositions(positions);
         direction.orient(left, top, right, bottom, verticies);
 
-        Matrix4f matrix4f = drawContext.getMatrices().peek().getPositionMatrix();
-        VertexConsumer vertexConsumer = drawContext.getVertexConsumers().getBuffer(RenderLayer.getGui());
-        vertexConsumer.vertex(matrix4f, verticies[0], verticies[1], 0).color(c1.r, c1.g, c1.b, c1.a).next();
-        vertexConsumer.vertex(matrix4f, verticies[2], verticies[3], 0).color(c1.r, c1.g, c1.b, c1.a).next();
-        vertexConsumer.vertex(matrix4f, verticies[4], verticies[5], 0).color(c0.r, c0.g, c0.b, c0.a).next();
-        vertexConsumer.vertex(matrix4f, verticies[6], verticies[7], 0).color(c0.r, c0.g, c0.b, c0.a).next();
-
-        drawContext.draw();
+        drawContext.state.addSimpleElement(new ColoredQuadGuiElementRenderState(RenderPipelines.GUI,
+                TextureSetup.empty(), new Matrix3x2f(), (int) verticies[0], (int) verticies[1], (int) verticies[4],
+                (int) verticies[5], startColor, endColor, drawContext.scissorStack.peekLast()));
     }
 
     public static void drawHoveringText(String text, float x, float y) {
@@ -93,7 +92,7 @@ public class UIRender {
     }
 
     public static float getPartialTicks() {
-        return mc.getTickDelta();
+        return mc.getRenderTickCounter().getTickProgress(true);
     }
 
     public static int getStringWidth(String text) {
@@ -141,9 +140,7 @@ public class UIRender {
         float newPositions[] = { 0, 0 };
         anchor.anchor(text, x, y, newPositions);
 
-//		mc.font.draw(identity, text, newPositions[0], newPositions[1], color);
         drawContext.drawText(mc.textRenderer, text, (int) newPositions[0], (int) newPositions[1], color, false);
-//		drawContext.draw();
     }
 
     public static String getTextFormats(String src) {
@@ -258,7 +255,7 @@ public class UIRender {
     }
 
     public static void newFrame() {
-        drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+        drawContext = new DrawContext(mc, new GuiRenderState());
         meshBuilder.reset();
     }
 
@@ -268,21 +265,21 @@ public class UIRender {
 
 //		drawContext.draw();
 
-        RenderSystem.enableBlend();
-        RenderSystem.disableCull();
-
-        ShaderProgram posColShader = GameRenderer.getPositionColorProgram();
-        posColShader.modelViewMat.set(RenderSystem.getModelViewMatrix());
-        posColShader.projectionMat.set(RenderSystem.getProjectionMatrix());
-        posColShader.colorModulator.set(1.0f, 1.0f, 1.0f, 1.0f);
-        posColShader.bind();
-        meshBuilder.drawElements(GL11.GL_TRIANGLES);
-        posColShader.unbind();
-
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-
-        meshBuilder.reset();
+//        RenderSystem.enableBlend();
+//        RenderSystem.disableCull();
+//
+//        ShaderProgram posColShader = GameRenderer.getPositionColorProgram();
+//        posColShader.modelViewMat.set(RenderSystem.getModelViewMatrix());
+//        posColShader.projectionMat.set(RenderSystem.getProjectionMatrix());
+//        posColShader.colorModulator.set(1.0f, 1.0f, 1.0f, 1.0f);
+//        posColShader.bind();
+//        meshBuilder.drawElements(GL11.GL_TRIANGLES);
+//        posColShader.unbind();
+//
+//        RenderSystem.enableCull();
+//        RenderSystem.disableBlend();
+//
+//        meshBuilder.reset();
     }
 
     public static class Stencil {

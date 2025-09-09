@@ -144,7 +144,7 @@ public class MenuScreen extends UIScreen {
 
     @Override
     public void render(DrawContext stack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.getModelViewStack().push();
+        RenderSystem.getModelViewStack().pushMatrix();
         {
             loadView.draw();
             saveView.draw();
@@ -152,8 +152,7 @@ public class MenuScreen extends UIScreen {
             optionView.draw();
             modTitleScreenView.draw();
         }
-        RenderSystem.getModelViewStack().pop();
-        RenderSystem.applyModelViewMatrix();
+        RenderSystem.getModelViewStack().popMatrix();
 
         drawNavigationBar();
         Window.drawWindows();

@@ -129,12 +129,12 @@ abstract public class Window extends Widget {
     public static void drawWindows() {
         int i = 0;
         for (Window window : LOADED_WINDOWS) {
-            RenderSystem.getModelViewStack().push();
+            RenderSystem.getModelViewStack().pushMatrix();
             {
                 RenderSystem.getModelViewStack().translate(4 * i, 4 * i++, 0);
                 window.draw();
             }
-            RenderSystem.getModelViewStack().pop();
+            RenderSystem.getModelViewStack().popMatrix();
             i++;
         }
     }

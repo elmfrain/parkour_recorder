@@ -43,7 +43,7 @@ public class ModLogoRenderer {
         if (isLoaded)
             return;
 
-        Identifier loc = new Identifier(ParkourRecorder.MOD_ID, "meshes/3d_logo_baked.bin");
+        Identifier loc = Identifier.of(ParkourRecorder.MOD_ID, "meshes/3d_logo_baked.bin");
 
         try {
             InputStream file = MinecraftClient.getInstance().getResourceManager().getResource(loc).get()
@@ -82,22 +82,22 @@ public class ModLogoRenderer {
      * Renders the mesh if it's loaded.
      */
     public static void render() {
-        if (!isLoaded)
-            return;
-
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-        ShaderProgram shader = GameRenderer.getPositionTexProgram();
-        shader.modelViewMat.set(RenderSystem.getModelViewMatrix());
-        shader.projectionMat.set(RenderSystem.getProjectionMatrix());
-        shader.colorModulator.set(RenderSystem.getShaderColor());
-
-        shader.bind();
-        shadow_plane.render(GL11.GL_TRIANGLES);
-        pr_logo.render(GL11.GL_TRIANGLES);
-        shader.unbind();
+//        if (!isLoaded)
+//            return;
+//
+//        GL11.glEnable(GL11.GL_BLEND);
+//        GL11.glEnable(GL11.GL_DEPTH_TEST);
+//        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+//
+//        ShaderProgram shader = GameRenderer.getPositionTexProgram();
+//        shader.modelViewMat.set(RenderSystem.getModelViewMatrix());
+//        shader.projectionMat.set(RenderSystem.getProjectionMatrix());
+//        shader.colorModulator.set(RenderSystem.getShaderColor());
+//
+//        shader.bind();
+//        shadow_plane.render(GL11.GL_TRIANGLES);
+//        pr_logo.render(GL11.GL_TRIANGLES);
+//        shader.unbind();
     }
 
     private static void loadMeshes(ByteBuffer buffer) {

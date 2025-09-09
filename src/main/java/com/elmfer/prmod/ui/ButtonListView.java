@@ -26,10 +26,9 @@ public class ButtonListView extends Widget {
         viewport.pushMatrix(true);
         {
             // Draw buttons
-            RenderSystem.getModelViewStack().push();
+            RenderSystem.getModelViewStack().pushMatrix();
             {
-                RenderSystem.getModelViewStack().translate(0, scrollPosition.getValue(), 0);
-                RenderSystem.applyModelViewMatrix();
+                RenderSystem.getModelViewStack().translate(0, scrollPosition.getValuef(), 0);
 
                 int i = 0;
                 for (Widget child : getChildrenWidgets()) {
@@ -39,8 +38,7 @@ public class ButtonListView extends Widget {
                     child.draw();
                 }
             }
-            RenderSystem.getModelViewStack().pop();
-            RenderSystem.applyModelViewMatrix();
+            RenderSystem.getModelViewStack().popMatrix();
 
             // Draw scroll tab
             int tabHeight = (int) (((float) viewport.getHeight() / listHeight) * viewport.getHeight());

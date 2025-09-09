@@ -208,11 +208,10 @@ public class TextField extends Button {
                         GraphicsHelper.getIntColor(0.7f, 0.7f, 0.7f, titleTransparency));
             }
 
-            RenderSystem.getModelViewStack().push();
+            RenderSystem.getModelViewStack().pushMatrix();
             {
                 float scroll = (float) textScroll.getValue();
-                RenderSystem.getModelViewStack().translate(scroll, 0.0, 0.0);
-                RenderSystem.applyModelViewMatrix();
+                RenderSystem.getModelViewStack().translate(scroll, 0.0f, 0.0f);
 
                 if (focused) {
                     boolean showCursor = ((System.currentTimeMillis() - lastTimeCursorMoved) / 600) % 2 == 0;
@@ -235,8 +234,7 @@ public class TextField extends Button {
 
                 UIRender.drawString(Anchor.MID_LEFT, getText(), x + SPACING, y + height / 2, textColor);
             }
-            RenderSystem.getModelViewStack().pop();
-            RenderSystem.applyModelViewMatrix();
+            RenderSystem.getModelViewStack().popMatrix();
         }
         Stencil.popStencilState();
     }

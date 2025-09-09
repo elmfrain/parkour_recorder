@@ -32,6 +32,10 @@ public class SessionHUD implements HudElement {
         fadedness = Math.max(0, fadedness - 5);
     }
 
+    public void appear() {
+        fadedness = 200;
+    }
+    
     public void render() {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.currentScreen instanceof UIScreen)
