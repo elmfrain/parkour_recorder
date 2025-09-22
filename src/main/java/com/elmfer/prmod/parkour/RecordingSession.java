@@ -14,12 +14,12 @@ public class RecordingSession implements ParkourSession {
     protected Recording recording = null;
     protected Recording recordingToOverride = null;
 
-    private ParticleArrowLoop arrow;
     protected int overrideStart = 0;
-    protected boolean onOverride = false;
     protected boolean isRecording = false;
+    protected SessionState state = SessionState.READY_TO_RECORD;
+
+    private ParticleArrowLoop arrow;
     private boolean waitingForPlayer = false;
-    protected byte nbRecordPresses = 0;
 
     public Recording getRecording() {
         return recording;
@@ -29,33 +29,49 @@ public class RecordingSession implements ParkourSession {
         return isRecording;
     }
 
+    public boolean isOverriding() {
+        return recordingToOverride != null;
+    }
+
     public boolean isWaitingForPlayer() {
         return waitingForPlayer;
     }
 
+    /**
+     * Called when a keybind or other event triggers the 'Record' action of this
+     * session.
+     * 
+     * @return This session, or a new playback session if the recording had been
+     *         finalized.
+     */
     @Override
     public ParkourSession onRecord() {
-        switch (nbRecordPresses) {
-        case 0:
+        switch (state) {
+        case READY_TO_RECORD:
             if (!(mc.player.input instanceof KeyboardInput))
                 mc.player.input = new KeyboardInput(mc.options);
 
             if (recording == null)
                 recording = new Recording(mc.player.getPos());
+
             isRecording = true;
+
             if (Config.isLoopMode()) {
                 spawnParticles();
-                nbRecordPresses = 1;
-            } else
-                nbRecordPresses = 2;
+                state = SessionState.WAITING_TO_FINISH_LOOPED_RECORDING;
+                break;
+            }
+
+            state = SessionState.READY_TO_FINISH_RECORDING;
+
             break;
-        case 1:
+        case WAITING_TO_FINISH_LOOPED_RECORDING:
             waitingForPlayer = true;
             break;
-        case 2:
+        case READY_TO_FINISH_RECORDING:
             recording.lastPos = mc.player.getPos();
 
-            if (onOverride) {
+            if (isOverriding()) {
                 String name = recordingToOverride.originalName != null ? recordingToOverride.originalName + " - " : "";
                 Recording record = recordingToOverride.subList(0, overrideStart);
                 record.lastPos = recording.lastPos;
@@ -70,11 +86,8 @@ public class RecordingSession implements ParkourSession {
             }
 
             isRecording = false;
-            onOverride = false;
 
             despawnParticles();
-
-            nbRecordPresses++;
 
             return new PlaybackSession(EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
         }
@@ -82,28 +95,43 @@ public class RecordingSession implements ParkourSession {
         return this;
     }
 
+    /**
+     * Called when a keybind or other event triggers the 'Play' action of this
+     * session.
+     * 
+     * @return A new playback session if the current recording is not empty, or this
+     *         session otherwise.
+     */
     @Override
     public ParkourSession onPlay() {
-        if (recording != null) {
-            if (isRecording) {
-                nbRecordPresses = 2;
-                onRecord();
-            }
-            PlaybackSession playback = new PlaybackSession(
-                    EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
-            playback.onPlay();
-            return playback;
+        if (recording == null)
+            return this;
+
+        if (isRecording) {
+            state = SessionState.READY_TO_FINISH_RECORDING;
+            onRecord();
         }
-        return this;
+        PlaybackSession playback = new PlaybackSession(
+                EventHandler.recordHistory.get(EventHandler.recordHistory.size() - 1));
+        playback.onPlay();
+
+        return playback;
     }
 
+    /**
+     * Called when a keybind or other event triggers the 'Override' action of this
+     * session.
+     * 
+     * @return This session if current session is not recording, or new playback
+     *         session otherwise.
+     */
     @Override
     public ParkourSession onOverride() {
-        if (onOverride && isRecording) {
-            nbRecordPresses = 2;
-            return onRecord();
-        }
-        return this;
+        if (!isOverriding() || !isRecording)
+            return this;
+
+        state = SessionState.READY_TO_FINISH_RECORDING;
+        return onRecord();
     }
 
     @Override
@@ -112,11 +140,14 @@ public class RecordingSession implements ParkourSession {
             return;
 
         recording.add(new Frame(mc.options, mc.player));
-        if (waitingForPlayer && recording.initPos.distanceTo(mc.player.getPos()) < 0.25) {
+
+        if (shouldFinalizeLoopedRecording()) {
             waitingForPlayer = false;
-            // Finish session
-            nbRecordPresses = 2;
+
+            state = SessionState.READY_TO_FINISH_RECORDING;
+
             EventHandler.session = onRecord();
+
             // Set last pos to init pos to mark as loop recording data
             recording.lastPos = recording.initPos;
         }
@@ -125,6 +156,10 @@ public class RecordingSession implements ParkourSession {
     @Override
     public void onRenderTick() {
 
+    }
+
+    private boolean shouldFinalizeLoopedRecording() {
+        return waitingForPlayer && recording.initPos.distanceTo(mc.player.getPos()) < 0.25;
     }
 
     private void spawnParticles() {
@@ -146,6 +181,10 @@ public class RecordingSession implements ParkourSession {
 
     @Override
     public void cleanUp() {
+    }
+
+    protected static enum SessionState {
+        READY_TO_RECORD, WAITING_TO_FINISH_LOOPED_RECORDING, READY_TO_FINISH_RECORDING
     }
 
 }

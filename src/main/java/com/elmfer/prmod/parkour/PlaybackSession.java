@@ -3,6 +3,7 @@ package com.elmfer.prmod.parkour;
 import com.elmfer.prmod.EventHandler;
 import com.elmfer.prmod.config.Config;
 import com.elmfer.prmod.mixin.EntityMixins;
+import com.elmfer.prmod.parkour.RecordingSession.SessionState;
 import com.elmfer.prmod.render.GraphicsHelper;
 import com.elmfer.prmod.render.ParticleArrow;
 import com.elmfer.prmod.render.ParticleArrowLoop;
@@ -18,12 +19,13 @@ import net.minecraft.util.math.Vec3d;
 
 public class PlaybackSession implements ParkourSession {
 
-    public static final MinecraftClient mc = MinecraftClient.getInstance();
+    private static final MinecraftClient MC = MinecraftClient.getInstance();
 
     public final Recording recording;
+
     private ParticleArrow arrow;
     private ParticleFinish finish;
-    private boolean isPlaying = false;
+    private boolean playing = false;
     private boolean waitingForPlayer = false;
     private int frameNumber = 0;
     private Frame currentFrame = null;
@@ -40,19 +42,27 @@ public class PlaybackSession implements ParkourSession {
     }
 
     public boolean isPlaying() {
-        return isPlaying;
+        return playing;
     }
 
     public boolean isWaitingForPlayer() {
         return waitingForPlayer;
     }
 
+    /**
+     * Set starting frame prior to starting playback. Sets the starting position to
+     * that frame.
+     * 
+     * @param framePos The frame number to start at
+     */
     public void startAt(int framePos) {
         boolean wasWaiting = waitingForPlayer;
         stop();
 
         framePos = Math.max(Math.min(framePos, recording.size() - 2), 0);
+
         Frame startingFrame = recording.get(framePos);
+
         startingPos = new Vec3d(startingFrame.posX, startingFrame.posY, startingFrame.posZ);
         frameNumber = framePos;
         recording.startingFrame = framePos;
@@ -64,134 +74,207 @@ public class PlaybackSession implements ParkourSession {
         }
     }
 
+    /**
+     * Called when a keybind or other event triggers the 'Record' action of this
+     * session.
+     * 
+     * @return This session, or a new recording session if not playing
+     */
     @Override
     public ParkourSession onRecord() {
-        if (!isPlaying) {
-            despawnParticles();
-            RecordingSession session = new RecordingSession();
-            session.onRecord();
-            return session;
-        }
-        return this;
+        if (playing)
+            return this;
+
+        despawnParticles();
+        RecordingSession session = new RecordingSession();
+        session.onRecord();
+        return session;
     }
 
+    /**
+     * Called when a keybind or other event triggers the 'Play' action of this
+     * session.
+     * 
+     * @return This playback session
+     */
     @Override
     public ParkourSession onPlay() {
-        if (!isPlaying && !waitingForPlayer) {
+        if (!playing && !waitingForPlayer) {
             waitingForPlayer = true;
             spawnParticles();
-        } else if (isPlaying || waitingForPlayer)
+        } else if (playing || waitingForPlayer)
             stop();
+
         return this;
     }
 
+    /**
+     * Called when a keybind or other event triggers the 'Override' action of this
+     * session.
+     * 
+     * @return This session if current session is not playing, or new recording
+     *         session otherwise.
+     */
     @Override
     public ParkourSession onOverride() {
-        if (isPlaying) {
-            RecordingSession overridingSession = new RecordingSession();
-            overridingSession.recording = new Recording(recording.initPos);
-            overridingSession.recordingToOverride = recording;
-            overridingSession.onOverride = true;
-            overridingSession.isRecording = true;
-            overridingSession.nbRecordPresses = 1;
-            overridingSession.overrideStart = frameNumber - 1;
-            overridingSession.recording.setName(recording.getName());
-            stop();
+        if (!playing)
+            return this;
 
-            return overridingSession;
-        }
-        return this;
+        RecordingSession overridingSession = new RecordingSession();
+
+        overridingSession.recording = new Recording(recording.initPos);
+        overridingSession.recordingToOverride = recording;
+        overridingSession.isRecording = true;
+        overridingSession.state = SessionState.READY_TO_FINISH_RECORDING;
+        overridingSession.overrideStart = frameNumber - 1;
+        overridingSession.recording.setName(recording.getName());
+
+        stop();
+
+        return overridingSession;
     }
 
     @Override
     public void onClientTick() {
-        if (mc.isPaused())
+        if (MC.isPaused())
             return;
 
         playbackCountdown = Math.max(0, playbackCountdown - 1);
-        if (waitingForPlayer && startingPos.distanceTo(mc.player.getPos()) < 0.25) {
-            isPlaying = true;
-            playbackCountdown = 10;
-            mc.player.input = new ControlledInput();
-            mc.player.setVelocity(new Vec3d(0, 0, 0));
-            frameNumber = recording.startingFrame;
-            waitingForPlayer = false;
-        }
-        if (isPlaying && playbackCountdown == 0) {
-            if (frameNumber < recording.size()) {
-                if (!initiated) {
-                    mc.player.setPos(startingPos.x, startingPos.y, startingPos.z);
-                    if (arrow.isAlive())
-                        arrow.markDead();
-                    initiated = true;
-                }
-                currentFrame = recording.get(frameNumber);
 
-                currentFrame.setMovementInput(mc.player.input, mc.player);
-                EventHandler.keyInputHUD.setFrame(currentFrame);
-//				mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-                frameNumber++;
-            } else if (Config.isLoopMode() && recording.isLoop()) {
-                initiated = false;
-                frameNumber = recording.startingFrame;
-            } else
-                stop();
+        if (shouldPlaybackStart()) {
+            playing = true;
+            playbackCountdown = 10;
+
+            MC.player.input = new ControlledInput();
+            MC.player.setVelocity(new Vec3d(0, 0, 0));
+
+            frameNumber = recording.startingFrame;
+
+            waitingForPlayer = false;
+            return;
         }
+
+        if (!playing || playbackCountdown > 0)
+            return;
+
+        if (frameNumber < recording.size()) {
+            if (!initiated) {
+                MC.player.setPos(startingPos.x, startingPos.y, startingPos.z);
+                if (arrow.isAlive())
+                    arrow.markDead();
+                initiated = true;
+            }
+
+            currentFrame = recording.get(frameNumber);
+            currentFrame.setMovementInput(MC.player.input, MC.player);
+            EventHandler.keyInputHUD.setFrame(currentFrame);
+
+//          mc.player.setPos(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+            frameNumber++;
+            return;
+        }
+
+        if (Config.isLoopMode() && recording.isLoop()) {
+            initiated = false;
+            frameNumber = recording.startingFrame;
+            return;
+        }
+
+        stop();
     }
 
     @Override
     public void onRenderTick() {
-        if (mc.isPaused())
+        if (MC.isPaused())
             return;
 
-        float partialTicks = mc.getRenderTickCounter().getTickProgress(false);
         if (playbackCountdown > 0) {
-            float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
-            Frame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
-
-            mc.player.setYaw(GraphicsHelper.lerpAngle(countdownAmount, mc.player.headYaw, firstFrame.headYaw));
-            mc.player.setPitch(GraphicsHelper.lerp(countdownAmount, mc.player.getPitch(), firstFrame.headPitch));
-            mc.player.lastBodyYaw = mc.player.lastHeadYaw = mc.player.headYaw = mc.player.getYaw();
-            mc.player.lastPitch = mc.player.getPitch();
-
-            Vec3d pos = mc.player.getPos();
-            double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
-            double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
-            double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
-            pos = new Vec3d(posX, posY, posZ);
-
-            ((EntityMixins) mc.player).setPosDirect(pos);
-            EntityDimensions dimensions = ((EntityMixins) mc.player).getDimensions();
-            mc.player.setBoundingBox(dimensions.getBoxAt(pos));
-        } else if (isPlaying) {
-            Frame prevFrame = recording.get(Math.max(0, frameNumber - 2));
-
-            mc.player.lastHeadYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
-            mc.player.setYaw(mc.player.lastHeadYaw);
-            mc.player.lastPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
-            mc.player.setPitch(mc.player.lastPitch);
-
-            Vec3d playerPos = mc.player.getPos();
-            Vec3d framePos = new Vec3d(prevFrame.posX, prevFrame.posY, prevFrame.posZ);
-            if (5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0) {
-                TextContent errorMessageContent = new TranslatableTextContent("com.prmod.playback_failed",
-                        "Playback failed", new Object[0]);
-                MutableText errorMessage = MutableText.of(errorMessageContent);
-                errorMessage.setStyle(errorMessage.getStyle().withColor(0xff0000));
-                mc.inGameHud.getChatHud().addMessage(errorMessage);
-                stop();
-            } else {
-                Vec3d currentPos = new Vec3d(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
-                ((EntityMixins) mc.player).setPosDirect(currentPos);
-                EntityDimensions dimensions = ((EntityMixins) mc.player).getDimensions();
-                mc.player.setBoundingBox(dimensions.getBoxAt(currentPos));
-            }
+            interpolatePlayerToStartingPosition();
+            return;
         }
+
+        if (!playing)
+            return;
+
+        float partialTicks = MC.getRenderTickCounter().getTickProgress(false);
+        Frame prevFrame = recording.get(Math.max(0, frameNumber - 2));
+
+        MC.player.lastHeadYaw = GraphicsHelper.lerpAngle(partialTicks, prevFrame.headYaw, currentFrame.headYaw);
+        MC.player.setYaw(MC.player.lastHeadYaw);
+        MC.player.lastPitch = GraphicsHelper.lerp(partialTicks, prevFrame.headPitch, currentFrame.headPitch);
+        MC.player.setPitch(MC.player.lastPitch);
+
+        if (isPlayerOutOfSyncWithPlayback(prevFrame)) {
+            TextContent errorMessageContent = new TranslatableTextContent("com.prmod.playback_failed",
+                    "Playback failed", new Object[0]);
+
+            MutableText errorMessage = MutableText.of(errorMessageContent);
+            errorMessage.setStyle(errorMessage.getStyle().withColor(0xff0000));
+
+            MC.inGameHud.getChatHud().addMessage(errorMessage);
+
+            stop();
+            return;
+        }
+
+        Vec3d currentPos = new Vec3d(currentFrame.posX, currentFrame.posY, currentFrame.posZ);
+        ((EntityMixins) MC.player).setPosDirect(currentPos);
+        EntityDimensions dimensions = ((EntityMixins) MC.player).getDimensions();
+        MC.player.setBoundingBox(dimensions.getBoxAt(currentPos));
+    }
+
+    /**
+     * Sometimes in a multiplayer server, the player could lag or be yanked to a
+     * previous position. To prevent any potential illegal movements (and risk of
+     * being kicked from the server), this method will determine if playback is not
+     * going as intended by seeing if the player's position is not in sync with the
+     * playback. It sort of takes into account player teleportation to prevent false
+     * positives.
+     * 
+     * @param frame Frame to compare against
+     * @return True if player is not in the intended position (e.g. multiplayer
+     *         server kicks back player to a previous position)
+     */
+    private boolean isPlayerOutOfSyncWithPlayback(Frame frame) {
+        Vec3d playerPos = MC.player.getPos();
+        Vec3d framePos = new Vec3d(frame.posX, frame.posY, frame.posZ);
+
+        return 5.0 < playerPos.distanceTo(framePos) && playerPos.distanceTo(framePos) < 7.0;
+    }
+
+    /**
+     * Smoothly interpolate the player's current position into the starting
+     * position.
+     */
+    private void interpolatePlayerToStartingPosition() {
+        float partialTicks = MC.getRenderTickCounter().getTickProgress(false);
+
+        float countdownAmount = (10 - playbackCountdown + partialTicks) / 10;
+        Frame firstFrame = recording.get(Math.max(0, recording.startingFrame - 1));
+
+        MC.player.setYaw(GraphicsHelper.lerpAngle(countdownAmount, MC.player.headYaw, firstFrame.headYaw));
+        MC.player.setPitch(GraphicsHelper.lerp(countdownAmount, MC.player.getPitch(), firstFrame.headPitch));
+        MC.player.lastBodyYaw = MC.player.lastHeadYaw = MC.player.headYaw = MC.player.getYaw();
+        MC.player.lastPitch = MC.player.getPitch();
+
+        Vec3d pos = MC.player.getPos();
+        double posX = GraphicsHelper.lerp(countdownAmount, pos.x, firstFrame.posX);
+        double posY = GraphicsHelper.lerp(countdownAmount, pos.y, firstFrame.posY);
+        double posZ = GraphicsHelper.lerp(countdownAmount, pos.z, firstFrame.posZ);
+        pos = new Vec3d(posX, posY, posZ);
+
+        ((EntityMixins) MC.player).setPosDirect(pos);
+        EntityDimensions dimensions = ((EntityMixins) MC.player).getDimensions();
+        MC.player.setBoundingBox(dimensions.getBoxAt(pos));
+    }
+
+    private boolean shouldPlaybackStart() {
+        return waitingForPlayer && startingPos.distanceTo(MC.player.getPos()) < 0.25;
     }
 
     private void stop() {
         despawnParticles();
-        isPlaying = false;
+        playing = false;
         waitingForPlayer = false;
 
         // Vec3 playerPos = mc.player.getPositionVec();
@@ -200,7 +283,7 @@ public class PlaybackSession implements ParkourSession {
         // double motionZ = playerPos.z - mc.player.prevPosZ;
         // mc.player.setVelocity(motionX, motionY, motionZ);
 
-        mc.player.input = new KeyboardInput(mc.options);
+        MC.player.input = new KeyboardInput(MC.options);
     }
 
     private void spawnParticles() {
@@ -209,14 +292,15 @@ public class PlaybackSession implements ParkourSession {
         boolean inLoopMode = recording.isLoop() && Config.isLoopMode();
 
         if (inLoopMode)
-            arrow = new ParticleArrowLoop(mc.world, startingPos.x, startingPos.y, startingPos.z);
+            arrow = new ParticleArrowLoop(MC.world, startingPos.x, startingPos.y, startingPos.z);
         else
-            arrow = new ParticleArrow(mc.world, startingPos.x, startingPos.y, startingPos.z);
-        mc.particleManager.addParticle(arrow);
+            arrow = new ParticleArrow(MC.world, startingPos.x, startingPos.y, startingPos.z);
+
+        MC.particleManager.addParticle(arrow);
 
         if (!inLoopMode) {
-            finish = new ParticleFinish(mc.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
-            mc.particleManager.addParticle(finish);
+            finish = new ParticleFinish(MC.world, recording.lastPos.x, recording.lastPos.y, recording.lastPos.z);
+            MC.particleManager.addParticle(finish);
         }
     }
 
@@ -233,7 +317,7 @@ public class PlaybackSession implements ParkourSession {
 
     @Override
     public boolean isActive() {
-        return isPlaying;
+        return playing;
     }
 
     @Override
