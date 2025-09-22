@@ -147,6 +147,7 @@ public class Mesh {
         
         ByteBuffer indexBackingBuffer = BufferUtils.createByteBuffer(indices.size() * 4);
         indices.forEach(i -> indexBackingBuffer.putInt(i));
+        indexBackingBuffer.flip();
         gpuIndexBuffer = RenderSystem.getDevice().createBuffer(() -> name, GpuBuffer.USAGE_INDEX, indexBackingBuffer);
         
         

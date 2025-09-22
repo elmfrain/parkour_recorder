@@ -262,6 +262,7 @@ public class UIRender {
     public static void renderBatch() {
         if (drawContext == null)
             return;
+        
 
 //		drawContext.draw();
 

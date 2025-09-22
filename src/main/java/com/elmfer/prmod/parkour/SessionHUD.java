@@ -35,7 +35,7 @@ public class SessionHUD implements HudElement {
     public void appear() {
         fadedness = 200;
     }
-    
+
     public void render() {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.currentScreen instanceof UIScreen)
@@ -69,10 +69,11 @@ public class SessionHUD implements HudElement {
             name = name == null ? "[" + I18n.translate("com.prmod.unamed") + "]" : name;
             message += " - " + name;
         }
-        
+
         fadedness = Math.min(200, fadedness);
-        if (fadedness < 5) return;
-        
+        if (fadedness < 5)
+            return;
+
         Window res = mc.getWindow();
 
         int border = 10;
@@ -92,8 +93,8 @@ public class SessionHUD implements HudElement {
         RenderSystem.getModelViewStack().identity();
 
         if (Config.isLoopMode() && showLoopIcon) {
-            UIRender.drawRect(width - stringWidth - border - lip * 3 - stringHeight, border - lip,
-                    width - border + lip, border + stringHeight + lip, c1);
+            UIRender.drawRect(width - stringWidth - border - lip * 3 - stringHeight, border - lip, width - border + lip,
+                    border + stringHeight + lip, c1);
 
             UIRender.drawIcon("loop_icon", width - border - stringWidth - stringHeight, border + border / 2,
                     stringHeight, c);
@@ -102,8 +103,10 @@ public class SessionHUD implements HudElement {
                     border + stringHeight + lip, c1);
 
         UIRender.drawString(message, width - stringWidth - border, border, c);
+        
+        UIRender.drawString("test", 0, 0, -1);
     }
-    
+
     @Override
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         render();

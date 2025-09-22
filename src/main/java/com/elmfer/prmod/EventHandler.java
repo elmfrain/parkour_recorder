@@ -49,7 +49,7 @@ public class EventHandler {
         WorldRenderEvents.END.register(EventHandler::onEndRenderWorld);
         
         HudElementRegistry.addFirst(SessionHUD.HUD_ID, sessionHUD);
-        HudElementRegistry.addFirst(SessionHUD.HUD_ID, keyInputHUD);
+        HudElementRegistry.addFirst(KeyInputHUD.HUD_ID, keyInputHUD);
     }
 
     public static void addToHistory(Recording recording) {
