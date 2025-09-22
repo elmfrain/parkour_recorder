@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 
 import com.elmfer.prmod.ParkourRecorder;
-import com.elmfer.prmod.ui.NumberLineView.TimeStampFormat;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
